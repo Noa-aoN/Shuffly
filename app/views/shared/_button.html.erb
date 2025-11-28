@@ -1,0 +1,7 @@
+<div class="mt-6">
+  <% if f.present? %>
+    <%= f.submit button_text, class: "bg-blue-500 text-white px-4 py-2 rounded" %>
+  <% else %>
+    <%= link_to button_text, path, class: "bg-blue-500 text-white px-4 py-2 rounded" %>
+  <% end %>
+</div>

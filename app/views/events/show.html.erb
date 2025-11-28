@@ -1,0 +1,27 @@
+<h1 class="text-2xl font-bold mb-2">イベント結果</h1>
+<h2 class="text-xl mb-2"><%= @event.title %></h2>
+
+<% all_members = JSON.parse(@event.members_json || "[]") %>
+<p class="mb-4">入力されたメンバー数: <%= all_members.size %>人</p>
+
+<h3 class="text-lg font-semibold mb-2">グループ分け結果</h3>
+
+<% if @result %>
+  <% JSON.parse(@result.result_json).each do |group_name, members| %>
+    <h4 class="font-semibold mt-2"><%= group_name %>（メンバー数: <%= members.size %>人）</h4>
+    <ul class="list-disc ml-6 mb-2">
+      <% members.each do |m| %>
+        <li>
+          <%= m["name"] %>
+          <% if m["role"].present? %>(役割: <%= m["role"] %>)<% end %>
+          <% if m["order_index"].present? %>[順番: <%= m["order_index"] %>]<% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+<% else %>
+  <p>結果はまだ生成されていません。</p>
+<% end %>
+
+<!-- 新しいイベント作成ボタンを部分テンプレート化 -->
+<%= render 'shared/button', f: nil, button_text: "新しいイベントを作る", path: new_event_path %>
