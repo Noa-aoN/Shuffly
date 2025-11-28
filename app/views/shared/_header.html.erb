@@ -1,0 +1,19 @@
+<header class="bg-gray-800 text-white p-4">
+  <div class="flex items-center justify-between w-full px-4">
+    <!-- 左側：ロゴ -->
+    <div class="flex-shrink-0">
+      <%= link_to "Shuffly", root_path, class: "text-white font-bold text-xl no-underline" %>
+    </div>
+
+    <!-- 右側：ナビゲーション -->
+    <nav class="flex space-x-4">
+      <% if user_signed_in? %>
+        <%= link_to "マイページ", "#", class: "text-white hover:underline" %>
+        <%= link_to "ログアウト", destroy_user_session_path, method: :delete, class: "text-white hover:underline" %>
+      <% else %>
+        <%= link_to "ログイン", new_user_session_path, class: "text-white hover:underline" %>
+        <%= link_to "サインアップ", new_user_registration_path, class: "text-white hover:underline" %>
+      <% end %>
+    </nav>
+  </div>
+</header>

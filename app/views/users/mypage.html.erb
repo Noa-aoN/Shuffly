@@ -1,0 +1,12 @@
+<h1>マイページ</h1>
+
+<h2>過去のイベント一覧</h2>
+<ul>
+  <% @user.events.each do |event| %>
+    <li>
+      <%= event.title %> - <%= event.created_at.strftime("%Y/%m/%d") %>
+      <%= link_to "詳細を見る", event_path(event) %>
+      <%= link_to "再利用", new_event_path(event_id: event.id) %>
+    </li>
+  <% end %>
+</ul>

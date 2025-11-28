@@ -1,0 +1,43 @@
+<h1 class="text-2xl font-bold mb-4">新しいイベントを作成</h1>
+
+<%= form_with model: @event, data: { turbo: false } do |f| %>
+  <div class="mb-4">
+    <%= f.label :title, "イベントタイトル", class: "block font-semibold" %>
+    <%= f.text_field :title, class: "border rounded p-2 w-full" %>
+  </div>
+
+  <div class="mb-4">
+    <%= f.label :members_input, "メンバー（1行1名）", class: "block font-semibold" %>
+    <%= f.text_area :members_input, rows: 5, class: "border rounded p-2 w-full" %>
+  </div>
+
+  <div class="mb-4">
+    <%= f.label :group_count, "グループ数", class: "block font-semibold" %>
+    <%= f.number_field :group_count, class: "border rounded p-2 w-24" %>
+  </div>
+
+  <div class="mb-4">
+    <%= f.label :group_names, "グループ名（複数ある場合は改行またはカンマで区切る）", class: "block font-semibold" %>
+    <%= f.text_area :group_names, rows: 3, class: "border rounded p-2 w-full" %>
+  </div>
+
+  <div class="mb-4">
+    <%= f.label :roles, "役割リスト（オプション、改行またはカンマで区切る）", class: "block font-semibold" %>
+    <%= f.text_area :roles, rows: 3, class: "border rounded p-2 w-full" %>
+  </div>
+
+  <div class="mb-4">
+    <label class="inline-flex items-center">
+      <%= f.check_box :enable_role_shuffle, value: "1" %>
+      <span class="ml-2">役割を抽選する</span>
+    </label>
+    <br>
+    <label class="inline-flex items-center mt-1">
+      <%= f.check_box :enable_order_shuffle, value: "1" %>
+      <span class="ml-2">順番を決める</span>
+    </label>
+  </div>
+
+  <!-- ボタン部分テンプレートを呼び出す -->
+  <%= render 'shared/button', f: f, button_text: "シャッフル＆結果表示" %>
+<% end %>
