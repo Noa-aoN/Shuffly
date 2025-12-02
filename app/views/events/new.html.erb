@@ -50,12 +50,16 @@
       </div>
 
       <div class="mt-4">
-        <%= button_to "イベント保存", @event.persisted? ? event_path(@event) : events_path, method: @event.persisted? ? :patch : :post, class: "bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md", form: { id: 'saveEventForm' }, data: { turbo: false } %>
+        <%= button_to "イベント保存", @event.persisted? ? event_path(@event) : events_path, 
+              method: @event.persisted? ? :patch : :post,
+              class: "bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md",
+              form: { id: 'saveEventForm' },
+              data: { turbo: false } %>
       </div>
     </div>
 
     <!-- 右カラム: 結果表示 -->
-    <div class="md:w-1/2 space-y-4">
+    <div class="md:w-1/2 space-y-4 relative z-0">
       <div>
         <h2 class="text-xl font-semibold mb-2">グループ表示</h2>
         <div class="flex items-center mb-2 gap-4">
@@ -86,7 +90,7 @@
   </div>
 
   <!-- トースト -->
-  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white px-4 py-2 rounded opacity-0 transition-opacity"></div>
+  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white px-4 py-2 rounded opacity-0 transition-opacity pointer-events-none"></div>
 </div>
 
 <script>

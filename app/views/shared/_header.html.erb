@@ -1,4 +1,4 @@
-<header class="bg-gray-800 text-white p-4">
+<header class="bg-gray-800 text-white p-4 relative z-50">
   <div class="flex items-center justify-between w-full px-4">
     <!-- 左側：ロゴ -->
     <div class="flex-shrink-0">
@@ -8,7 +8,8 @@
     <!-- 右側：ナビゲーション -->
     <nav class="flex space-x-4">
       <% if user_signed_in? %>
-        <%= link_to "マイページ", "#", class: "text-white hover:underline" %>
+        <!-- 仮リンクの場合は turbo 無効化 -->
+        <%= link_to "マイページ", "#", class: "text-white hover:underline", data: { turbo: false } %>
         <%= link_to "ログアウト", destroy_user_session_path, method: :delete, class: "text-white hover:underline" %>
       <% else %>
         <%= link_to "ログイン", new_user_session_path, class: "text-white hover:underline" %>
