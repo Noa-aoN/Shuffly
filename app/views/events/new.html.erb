@@ -31,9 +31,23 @@
         end %></textarea>
 
         <div class="flex gap-2 items-center">
-          <button id="btn-trigger-import" type="button" class="px-4 py-2 bg-gray-100 border rounded hover:bg-gray-200">メンバーリストから入力</button>
+          <%= render 'shared/button',
+                f: nil,
+                button_text: 'メンバーリストから入力',
+                id: 'btn-trigger-import',
+                path: '#',
+                variant: 'secondary',
+                full_mobile: false,
+                extra_class: 'px-4 py-2 border rounded hover:bg-gray-200' %>
           <input id="importFile" type="file" accept=".txt,.csv" class="hidden">
-          <button id="btn-paste-clipboard" type="button" class="px-4 py-2 bg-gray-50 border rounded hover:bg-gray-100">クリップボード貼り付け</button>
+          <%= render 'shared/button',
+                f: nil,
+                button_text: 'クリップボード貼り付け',
+                id: 'btn-paste-clipboard',
+                path: '#',
+                variant: 'secondary',
+                full_mobile: false,
+                extra_class: 'px-4 py-2 border rounded hover:bg-gray-100' %>
         </div>
       </div>
 
@@ -44,12 +58,15 @@
           <h2 class="text-lg font-semibold">設定</h2>
         </div>
 
-        <!-- タブボタン -->
-        <div class="flex gap-2 mb-4">
-          <button type="button" id="tab-settings-groups" class="px-3 py-1 text-sm border rounded bg-blue-100">グループ</button>
-          <button type="button" id="tab-settings-order" class="px-3 py-1 text-sm border rounded">順番</button>
-          <button type="button" id="tab-settings-roles" class="px-3 py-1 text-sm border rounded">役職</button>
-        </div>
+        <!-- タブボタン（カード名の下・中央配置） -->
+        <%= render 'shared/tabs',
+              tabs: [
+                { id: 'tab-settings-groups', text: 'グループ設定', variant: 'ghost', extra_class: 'px-3 py-1 text-sm border rounded' },
+                { id: 'tab-settings-order',  text: '順番設定', variant: 'ghost', extra_class: 'px-3 py-1 text-sm border rounded' },
+                { id: 'tab-settings-roles',  text: '役職設定', variant: 'ghost', extra_class: 'px-3 py-1 text-sm border rounded' }
+              ],
+              active_id: 'tab-settings-groups',
+              container_class: 'flex justify-center gap-2 mb-4' %>
 
         <!-- グループパネル -->
         <div id="panel-settings-groups" class="settings-panel">
@@ -106,23 +123,58 @@
         <!-- グループ用アクション -->
         <div id="settings-action-groups" class="mt-4">
           <div class="flex gap-2 mb-3">
-            <button type="button" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">グループ分け実行</button>
-            <button type="button" class="px-4 py-2 bg-gray-100 border rounded hover:bg-gray-200">前のグループへ</button>
-            <button type="button" class="px-4 py-2 bg-gray-100 border rounded hover:bg-gray-200">後ろのグループへ</button>
+            <%= render 'shared/button',
+                  f: nil,
+                  button_text: 'グループ分け実行',
+                  id: nil,
+                  path: '#',
+                  variant: 'primary',
+                  full_mobile: false,
+                  extra_class: 'flex-1' %>
+            <%= render 'shared/button',
+                  f: nil,
+                  button_text: '前のグループへ',
+                  id: nil,
+                  path: '#',
+                  variant: 'secondary',
+                  full_mobile: false,
+                  extra_class: 'px-4 py-2 border rounded hover:bg-gray-200' %>
+            <%= render 'shared/button',
+                  f: nil,
+                  button_text: '後ろのグループへ',
+                  id: nil,
+                  path: '#',
+                  variant: 'secondary',
+                  full_mobile: false,
+                  extra_class: 'px-4 py-2 border rounded hover:bg-gray-200' %>
           </div>
         </div>
 
         <!-- 順番用アクション -->
         <div id="settings-action-order" class="mt-4 hidden">
           <div class="flex gap-2">
-            <button type="button" class="flex-1 px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600">順番決め実行</button>
+            <%= render 'shared/button',
+                  f: nil,
+                  button_text: '順番決め実行',
+                  id: nil,
+                  path: '#',
+                  variant: 'primary',
+                  full_mobile: false,
+                  extra_class: 'flex-1' %>
           </div>
         </div>
 
         <!-- 役職用アクション -->
         <div id="settings-action-roles" class="mt-4 hidden">
           <div class="flex gap-2">
-            <button type="button" class="px-4 py-2 bg-indigo-100 border rounded hover:bg-indigo-200">役職決め実行</button>
+            <%= render 'shared/button',
+                  f: nil,
+                  button_text: '役職決め実行',
+                  id: nil,
+                  path: '#',
+                  variant: 'secondary',
+                  full_mobile: false,
+                  extra_class: 'px-4 py-2 border rounded hover:bg-indigo-200' %>
           </div>
         </div>
       </div>
@@ -139,14 +191,18 @@
             <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
             <h2 class="text-lg font-semibold">結果</h2>
           </div>
-
-          <!-- 切替タブ（ページネーション的切替） -->
-          <div class="flex gap-2">
-            <button type="button" class="px-3 py-1 text-sm border rounded" id="tab-groups">グループ表示</button>
-            <button type="button" class="px-3 py-1 text-sm border rounded" id="tab-order">順番表示</button>
-            <button type="button" class="px-3 py-1 text-sm border rounded" id="tab-roles">役職表示</button>
-          </div>
+          <!-- タブはカード名の下・中央に表示するためここでは非表示に -->
         </div>
+
+        <!-- タブボタン（カード名の下・中央配置） -->
+        <%= render 'shared/tabs',
+              tabs: [
+                { id: 'tab-groups', text: 'グループ表示', variant: 'ghost', extra_class: 'px-3 py-1 text-sm border rounded' },
+                { id: 'tab-order',  text: '順番表示', variant: 'ghost', extra_class: 'px-3 py-1 text-sm border rounded' },
+                { id: 'tab-roles',  text: '役職表示', variant: 'ghost', extra_class: 'px-3 py-1 text-sm border rounded' }
+              ],
+              active_id: 'tab-settings-groups',
+              container_class: 'flex justify-center gap-2 mb-4' %>
 
         <!-- グループ表示＋統計（デフォルト表示） -->
         <div id="panel-groups" class="result-panel">
@@ -165,7 +221,14 @@
                 <option value="\t">タブ</option>
               </select>
             </label>
-            <button id="btn-copy-groupoutput" class="ml-auto px-3 py-1 bg-green-500 text-white rounded">コピー</button>
+            <%= render 'shared/button',
+                  f: nil,
+                  button_text: 'コピー',
+                  id: 'btn-copy-groupoutput',
+                  path: '#',
+                  variant: 'secondary',
+                  full_mobile: false,
+                  extra_class: 'ml-auto px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600' %>
           </div>
           <textarea id="groupOutput" rows="8" readonly class="border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
 
@@ -197,9 +260,30 @@
         <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-3">
 
         <div class="flex gap-2 mb-3">
-          <button id="btn-toggle-presentation" type="button" class="px-4 py-2 bg-yellow-400 rounded hover:bg-yellow-500">プレゼン表示</button>
-          <button id="btn-export-results" type="button" class="px-4 py-2 bg-gray-100 border rounded hover:bg-gray-200">結果出力</button>
-          <button id="btn-save-results" type="button" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">結果保存</button>
+          <%= render 'shared/button',
+                f: nil,
+                button_text: 'プレゼン表示',
+                id: 'btn-toggle-presentation',
+                path: '#',
+                variant: 'secondary',
+                full_mobile: false,
+                extra_class: 'px-4 py-2 bg-yellow-400 rounded hover:bg-yellow-500' %>
+          <%= render 'shared/button',
+                f: nil,
+                button_text: '結果出力',
+                id: 'btn-export-results',
+                path: '#',
+                variant: 'secondary',
+                full_mobile: false,
+                extra_class: 'px-4 py-2 border rounded hover:bg-gray-200' %>
+          <%= render 'shared/button',
+                f: nil,
+                button_text: '結果保存',
+                id: 'btn-save-results',
+                path: '#',
+                variant: 'primary',
+                full_mobile: false,
+                extra_class: 'px-4 py-2' %>
         </div>
 
         <p class="text-xs text-gray-500">保存ボタンは、現在の設定・グループ・順番・役職を hidden fields にセットしてフォームを submit します。</p>
@@ -762,19 +846,19 @@ window.onload = () => {
   // Settings action buttons (find within containers and attach in order)
   const gAct = document.getElementById('settings-action-groups');
   if (gAct) {
-    const btns = gAct.querySelectorAll('button');
+    const btns = gAct.querySelectorAll('button, a[role="button"]');
     if (btns[0]) btns[0].addEventListener('click', ()=>{ assignGroups(); switchResultTab('groups'); });   // グループ分け実行
     if (btns[1]) btns[1].addEventListener('click', ()=>{ undoHistory(); switchResultTab('groups'); });    // 前のグループへ
     if (btns[2]) btns[2].addEventListener('click', ()=>{ redoHistory(); switchResultTab('groups'); });    // 後ろのグループへ
   }
   const oAct = document.getElementById('settings-action-order');
   if (oAct) {
-    const b = oAct.querySelector('button');
+    const b = oAct.querySelector('button, a[role="button"]');
     if (b) b.addEventListener('click', ()=>{ assignOrder(); switchResultTab('order'); });
   }
   const rAct = document.getElementById('settings-action-roles');
   if (rAct) {
-    const b = rAct.querySelector('button');
+    const b = rAct.querySelector('button, a[role="button"]');
     if (b) b.addEventListener('click', ()=>{ assignRoles(); switchResultTab('roles'); });
   }
 })();

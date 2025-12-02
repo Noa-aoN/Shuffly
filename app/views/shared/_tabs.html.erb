@@ -1,0 +1,19 @@
+<% tabs = local_assigns.fetch(:tabs, []) %>
+<% container_class = local_assigns.fetch(:container_class, 'flex gap-2 mb-4') %>
+<% active_id = local_assigns.fetch(:active_id, nil) %>
+
+<div class="<%= container_class %>" role="tablist" aria-label="tabs">
+  <% tabs.each do |t| %>
+    <% id = (t[:id] || t['id']) %>
+    <% text = (t[:text] || t['text'] || '') %>
+    <% extra = (t[:extra_class] || t['extra_class'] || '') %>
+
+    <%# Use direct button markup with the requested compact size (px-3 py-1 text-sm border rounded) %>
+    <% classes = ['px-3', 'py-1', 'text-sm', 'border', 'rounded', extra].reject(&:blank?).join(' ') %>
+    <% if active_id && id.to_s == active_id.to_s %>
+      <% classes = [classes, 'bg-blue-100'].join(' ') %>
+    <% end %>
+
+    <button type="button" id="<%= id %>" class="<%= classes %>" role="tab"><%= text %></button>
+  <% end %>
+</div>
