@@ -1,33 +1,55 @@
-<%# app/views/events/new.html.erb %>
 <div class="max-w-6xl mx-auto p-6">
   <h1 class="text-3xl font-bold mb-6"><%= @event.title.presence || "イベント作成" %></h1>
-
   <div class="flex flex-col md:flex-row gap-6">
 
-    <!-- 左カラム: 入力フォーム -->
+    <!-- 左カラム: 入力 -->
     <div class="md:w-1/2 space-y-4">
+      <!-- イベント名 -->
       <div>
         <label class="block font-semibold mb-1">イベント名</label>
         <input type="text" id="eventTitle" value="<%= @event.title %>" class="border rounded-md px-3 py-2 w-full">
       </div>
 
+      <!-- 参加者入力 -->
       <div>
         <label class="block font-semibold mb-1">参加者（履歴付き）</label>
-        <textarea id="membersInput" rows="10" class="border rounded-md px-3 py-2 w-full"><%= JSON.parse(@event.members_json || '[]').map { |m| m["name"] }.join("\n") %></textarea>
-        <p class="text-sm text-gray-500 mt-1">例: Alice#1A#2B</p>
+        <textarea id="membersInput" rows="10" class="border rounded-md px-3 py-2 w-full"><%= begin
+          members = @event.members_json.present? ? JSON.parse(@event.members_json) : []
+          members.map do |m|
+            if m.is_a?(Hash)
+              name = m["name"]
+              hist = m["history"]&.join("") || ""
+              "#{name}#{hist}"
+            else
+              m
+            end
+          end.join("\n")
+        rescue JSON::ParserError
+          ""
+        end %></textarea>
+        <p class="text-sm text-gray-500 mt-1">例: Alice#1A#2B (カンマまたは改行で区切れます)</p>
       </div>
 
+      <!-- グループ数 -->
       <div class="flex items-center gap-4">
         <div>
           <label class="block font-semibold mb-1">グループ数</label>
-          <input type="number" id="groupCount" value="<%= @event.group_count.presence || 3 %>" min="1" max="26" class="border rounded-md px-2 py-1 w-20" oninput="updateGroupSizeHint()">
+          <input type="number" id="groupCount" value="<%= @event.group_count.presence || 3 %>" min="1" max="26" class="border rounded-md px-2 py-1 w-20" oninput="updateParticipantCount(); showGroups(); showStats();">
         </div>
         <span id="groupSizeHint" class="text-gray-600 mt-6"></span>
       </div>
 
+      <!-- グループ名 -->
+      <div class="mt-2">
+        <label class="block font-semibold mb-1">グループ名（任意・改行またはカンマで区切り）</label>
+        <textarea id="customGroupNames" rows="2" placeholder="Team Alpha, Team Beta" class="border rounded-md px-3 py-2 w-full" oninput="showGroups()"></textarea>
+        <p class="text-sm text-gray-500 mt-1">入力がある場合は、こちらの名前がグループ表示に使用されます。入力数がグループ数を上書きします。ただし内部履歴は常に A,B,C... のIDで管理します。</p>
+      </div>
+
+      <!-- 役割 -->
       <div>
         <label class="block font-semibold mb-1">役割（任意）</label>
-        <textarea id="rolesInput" rows="3" placeholder="リーダー, サブリーダー, ..." class="border rounded-md px-3 py-2 w-full"><%= @event.roles %></textarea>
+        <textarea id="rolesInput" rows="3" placeholder="リーダー, サブリーダー, ..." class="border rounded-md px-3 py-2 w-full"><%= @event.setting_json["roles"] rescue "" %></textarea>
         <div class="mt-1">
           <label class="inline-flex items-center space-x-2">
             <input type="checkbox" id="enableRoleShuffle" class="rounded border-gray-300">
@@ -36,40 +58,38 @@
         </div>
       </div>
 
-      <div>
-        <label class="inline-flex items-center space-x-2">
-          <input type="checkbox" id="enableOrderShuffle" class="rounded border-gray-300">
-          <span>メンバー順をランダムに</span>
-        </label>
-      </div>
-
+      <!-- 操作ボタン -->
       <div class="flex flex-wrap gap-2 mt-4">
-        <button onclick="assignGroupsJSON()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">グループ分け実行</button>
-        <button onclick="undoHistory()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md">⬅️ 戻る</button>
-        <button onclick="redoHistory()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md">➡️ 進む</button>
+        <button onclick="assignGroups()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">グループ分け実行</button>
+        <button onclick="undoHistory()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md">⬅️ 1ステップ戻る</button>
+        <button onclick="redoHistory()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md">➡️ 1ステップ進む</button>
       </div>
 
+      <!-- 保存フォーム -->
       <div class="mt-4">
-        <%= button_to "イベント保存", @event.persisted? ? event_path(@event) : events_path, 
-              method: @event.persisted? ? :patch : :post,
-              class: "bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md",
-              form: { id: 'saveEventForm' },
-              data: { turbo: false } %>
+        <%= f = form_with(model: @event, local: true) do |f| %>
+          <%= f.hidden_field :members_json, id: 'membersJsonInput' %>
+          <%= f.hidden_field :member_results_json, id: 'resultsJsonInput' %>
+          <%= f.hidden_field :member_order_json, id: 'orderJsonInput' %>
+          <%= f.hidden_field :setting_json, id: 'settingsJsonInput' %>
+          <%= f.hidden_field :history_json, id: 'historyJsonInput' %>
+          <%= f.submit "イベント保存", class: "bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md" %>
+        <% end %>
       </div>
     </div>
 
     <!-- 右カラム: 結果表示 -->
-    <div class="md:w-1/2 space-y-4 relative z-0">
+    <div class="md:w-1/2 space-y-4">
       <div>
         <h2 class="text-xl font-semibold mb-2">グループ表示</h2>
         <div class="flex items-center mb-2 gap-4">
           <label class="inline-flex items-center gap-1">
-            <input type="checkbox" id="showGroupLabel" checked onchange="renderGroups()" class="rounded border-gray-300">
+            <input type="checkbox" id="showGroupLabel" checked onchange="showGroups()" class="rounded border-gray-300">
             <span>グループ名表示</span>
           </label>
           <label class="inline-flex items-center gap-1">
             <span>セパレータ:</span>
-            <select id="separatorSelect" onchange="renderGroups()" class="border rounded-md px-2 py-1">
+            <select id="separatorSelect" onchange="showGroups()" class="border rounded-md px-2 py-1">
               <option value=" ">スペース</option>
               <option value=",">カンマ</option>
               <option value="  ">ダブルスペース</option>
@@ -86,181 +106,281 @@
         <textarea id="statsOutput" rows="10" readonly class="border rounded-md px-3 py-2 w-full text-lg"></textarea>
       </div>
     </div>
-
   </div>
 
-  <!-- トースト -->
-  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white px-4 py-2 rounded opacity-0 transition-opacity pointer-events-none"></div>
+  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white px-4 py-2 rounded opacity-0 transition-opacity"></div>
 </div>
 
 <script>
-  // --- JSON対応版: SPAライクに整備 ---
-  let history = [], currentHistoryIndex = -1;
+let history = [], currentHistoryIndex = -1;
 
-  window.onload = () => {
-    updateParticipantCount();
-    pushToHistory();
-    renderGroups();
-    renderStats();
-  };
+function clampGroupCount(v){
+  return Math.min(Math.max(parseInt(v) || 1, 1), 26);
+}
 
-  function parseEntry(entry) {
-    const name = entry.split('#')[0];
-    const hist = entry.match(/#\d+[A-Z]/g) || [];
-    return {name, history: hist};
+function parseEntry(entry){
+  const name = entry.split('#')[0].trim();
+  const hist = entry.match(/#\d+[A-Z]/g) || [];
+  return {name, history: hist};
+}
+
+function getCurrentRound(entries){
+  let max=0;
+  for(const e of entries) for(const h of e.history) {
+    const m = h.match(/^#(\d+)/);
+    if(m) max=Math.max(max, parseInt(m[1]));
+  }
+  return max+1;
+}
+
+function getCoOccurrenceMap(entries, ignoreLast=true){
+  const map={}, histories={};
+  for(const e of entries) histories[e.name]=ignoreLast?e.history.slice(0,-1):e.history;
+  for(const e of entries) map[e.name]={};
+  for(const a of entries){
+    for(const b of entries){
+      if(a.name===b.name) continue;
+      const overlap=histories[a.name].filter(h=>histories[b.name].includes(h));
+      map[a.name][b.name]=overlap.length;
+    }
+  }
+  return map;
+}
+
+// 共通: グループID(A,B,...)と表示名の決定
+// 変更点: customGroupNames が入力されている場合は groupCount を無視し、customNames.length を優先する
+function buildGroupIdsAndNames(){
+  const inputGroupCount = clampGroupCount(document.getElementById('groupCount').value);
+  const customNames = (document.getElementById('customGroupNames').value || "").split(/[\r\n,]+/).map(n=>n.trim()).filter(Boolean);
+
+  let groupCount;
+  let ids = [];
+  let displayNames = [];
+
+  if(customNames.length > 0){
+    // グループ名入力がある場合は、その数をグループ数として扱う（最大26）
+    groupCount = Math.min(customNames.length, 26);
+    ids = Array.from({length: groupCount}, (_,i)=>String.fromCharCode(65+i));
+    displayNames = customNames.slice(0, groupCount);
+  } else {
+    groupCount = inputGroupCount;
+    ids = Array.from({length: groupCount}, (_,i)=>String.fromCharCode(65+i));
+    displayNames = ids.slice();
   }
 
-  function getCurrentRound(entries){
-    let max=0;
-    for(const e of entries) for(const h of e.history) max=Math.max(max, parseInt(h.slice(1)));
-    return max+1;
+  // map id -> display
+  const idToName = {};
+  ids.forEach((id, idx) => idToName[id] = displayNames[idx] || id);
+  return { ids, displayNames, idToName, groupCount };
+}
+
+function assignGroups(){
+  const input=document.getElementById('membersInput');
+  let raw=input.value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+  let entries=raw.map(parseEntry);
+  const round=getCurrentRound(entries);
+
+  const { ids: groupIds, idToName, groupCount } = buildGroupIdsAndNames();
+  const groups=Object.fromEntries(groupIds.map(g=>[g,[]]));
+  const coMap=getCoOccurrenceMap(entries);
+
+  if(document.getElementById('enableOrderShuffle').checked) entries.sort(()=>Math.random()-0.5);
+
+  for(const p of entries){
+    // first try to put one per empty group
+    let emptyGroup=groupIds.find(g=>groups[g].length===0);
+    if(emptyGroup){ groups[emptyGroup].push(p); continue; }
+
+    const minSize=Math.min(...groupIds.map(g=>groups[g].length));
+    const candidates=groupIds.filter(g=>groups[g].length===minSize);
+    let minMK=Infinity, selected=candidates[0];
+    for(const g of candidates){
+      const mk=groups[g].reduce((acc,q)=>acc+(coMap[p.name][q.name]||0),0);
+      if(mk<minMK){minMK=mk; selected=g;}
+    }
+    groups[selected].push(p);
   }
 
-  function getCoOccurrenceMap(entries, ignoreLast=true){
-    const map={}, histories={};
-    for(const e of entries) histories[e.name]=ignoreLast ? e.history.slice(0,-1) : e.history;
-    for(const e of entries) map[e.name]={};
-    for(const a of entries){
-      for(const b of entries){
-        if(a.name===b.name) continue;
-        const overlap=histories[a.name].filter(h => histories[b.name].includes(h));
-        map[a.name][b.name]=overlap.length;
+  if(document.getElementById('enableRoleShuffle').checked){
+    const roles=document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
+    if(roles.length>0){
+      for(const g of groupIds){
+        const members=groups[g];
+        members.forEach((m,i)=>m.role=roles[i%roles.length]);
       }
     }
-    return map;
   }
 
-  function assignGroupsJSON(){
-    const raw=document.getElementById("membersInput").value.trim().split(/\r?\n/).filter(Boolean);
-    let entries=raw.map(parseEntry);
-    const round=getCurrentRound(entries);
-    const groupCount=Math.min(parseInt(document.getElementById("groupCount").value),26);
-    const groupNames=Array.from({length:groupCount},(_,i)=>String.fromCharCode(65+i));
-    const groups=Object.fromEntries(groupNames.map(g=>[g,[]]));
-    const coMap=getCoOccurrenceMap(entries);
-    entries=entries.sort(()=>Math.random()-0.5);
+  // 履歴には ID(A,B,...) を付与する（表示名は別に管理）
+  const updated=groupIds.flatMap(g=>groups[g].map(e=>`${e.name}${e.history.join('')}#${round}${g}`));
+  input.value=updated.join("\n");
 
-    for(const p of entries){
-      const empty=groupNames.find(g=>groups[g].length===0);
-      if(empty){groups[empty].push(p); continue;}
-      const minSize=Math.min(...groupNames.map(g=>groups[g].length));
-      const candidates=groupNames.filter(g=>groups[g].length===minSize);
-      let minMK=Infinity, selected=candidates[0];
-      for(const g of candidates){
-        const mk=groups[g].reduce((acc,q)=>acc+(coMap[p.name][q.name]||0),0);
-        if(mk<minMK){minMK=mk; selected=g;}
+  // 保存用 JSON: entries, groups (by id) and display name mapping
+  try{
+    document.getElementById('membersJsonInput').value = JSON.stringify(entries);
+    document.getElementById('resultsJsonInput').value = JSON.stringify({ groups: groups, group_names: idToName });
+    document.getElementById('settingsJsonInput').value = JSON.stringify({
+      roles: document.getElementById('rolesInput').value,
+      // 実際に使用したグループ数を保存（custom names がある場合はその数）
+      group_count: groupCount,
+      custom_group_names: (document.getElementById('customGroupNames').value || "").split(/[\r\n,]+/).map(n=>n.trim()).filter(Boolean)
+    });
+    if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = JSON.stringify(entries.map(e=>e.name));
+  }catch(e){
+    console.warn("JSON シリアライズ失敗:", e);
+  }
+
+  updateParticipantCount(); showGroups(); showStats(); pushToHistory();
+}
+
+function showGroups(){
+  const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+  const entries=raw.map(parseEntry);
+
+  const { ids: groupIds, idToName } = buildGroupIdsAndNames();
+  const groups=Object.fromEntries(groupIds.map(g=>[g,[]]));
+  for(const e of entries){
+    const last=e.history.at(-1);
+    // capture the ID letter that we append in assignGroups
+    const m = last ? last.match(/#\d+([A-Z])$/) : null;
+    let id = m ? m[1] : null;
+    if(!id || !groupIds.includes(id)) {
+      // 当該メンバーに割り当てられたIDがないか、現在のグループIDリストに存在しない場合は
+      // メンバー分布が均等になるように振り分ける（偏り回避）
+      // empty group があればそこに、なければ最小サイズのグループに入れる
+      let empty = groupIds.find(g=>groups[g].length===0);
+      if(empty) id = empty;
+      else {
+        const minSize = Math.min(...groupIds.map(g=>groups[g].length));
+        id = groupIds.find(g=>groups[g].length===minSize);
       }
-      groups[selected].push(p);
     }
-
-    // JSON文字列に変換して membersInput に戻す
-    const updated=groupNames.flatMap(g=>groups[g].map(e=>`${e.name}${e.history.join('')}#${round}${g}`));
-    document.getElementById("membersInput").value=updated.join("\n");
-
-    updateParticipantCount();
-    renderGroups();
-    renderStats();
-    pushToHistory();
+    groups[id].push(e.name);
   }
 
-  function renderGroups(){
-    const raw=document.getElementById("membersInput").value.trim().split(/\r?\n/).filter(Boolean);
-    const entries=raw.map(parseEntry);
-    const groupCount=parseInt(document.getElementById("groupCount").value);
-    if(!groupCount||groupCount<1) return;
-    const groupNames=Array.from({length:groupCount},(_,i)=>String.fromCharCode(65+i));
-    const groups=Object.fromEntries(groupNames.map(g=>[g,[]]));
-    for(const e of entries){
-      const last=e.history.at(-1);
-      let g=last?.match(/[A-Z]$/)?.[0]||groupNames[0];
-      if(!groupNames.includes(g)) g=groupNames[0];
-      groups[g].push(e.name);
-    }
-
-    const sep=document.getElementById("separatorSelect").value;
-    const showLabel=document.getElementById("showGroupLabel").checked;
-    let display='';
-    for(const g of groupNames){
-      const members=groups[g];
-      if(showLabel) display+=`${g} (${members.length}名):\n`;
-      display+=members.join(sep)+'\n\n';
-    }
-    document.getElementById("groupOutput").value=display.trim();
+  const sep=document.getElementById('separatorSelect').value==='\\t'?'\t':document.getElementById('separatorSelect').value;
+  const showLabel=document.getElementById('showGroupLabel').checked;
+  let display='';
+  for(const id of groupIds){
+    const members=groups[id];
+    const label = idToName[id] || id;
+    if(showLabel) display+=`${label} (${members.length}名):\n`;
+    display+=members.join(sep)+'\n\n';
   }
+  document.getElementById('groupOutput').value=display.trim();
+}
 
-  function renderStats(){
-    const raw=document.getElementById("membersInput").value.trim().split(/\r?\n/).filter(Boolean);
-    const entries=raw.map(parseEntry);
-    const coMap=getCoOccurrenceMap(entries,true);
-    const groupCount=parseInt(document.getElementById("groupCount").value);
-    const groupNames=Array.from({length:groupCount},(_,i)=>String.fromCharCode(65+i));
-    const groupMap=Object.fromEntries(groupNames.map(g=>[g,[]]));
-    for(const e of entries){
-      const last=e.history.at(-1)?.match(/[A-Z]$/);
-      let g=last?.[0]||groupNames[0];
-      if(!groupNames.includes(g)) g=groupNames[0];
-      groupMap[g].push(e.name);
-    }
-    const lines=[];
-    for(const g of groupNames){
-      const members=groupMap[g];
-      let total=0;
-      for(const m of members){
-        const mk=members.reduce((sum,other)=>sum+(m!==other?(coMap[m][other]||0):0),0);
-        lines.push(`${m}: MK=${mk}`);
-        total+=mk;
+function showStats(){
+  const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+  const entries=raw.map(parseEntry);
+  const coMap=getCoOccurrenceMap(entries,true);
+
+  const { ids: groupIds, idToName } = buildGroupIdsAndNames();
+  const groupMap=Object.fromEntries(groupIds.map(g=>[g,[]]));
+  for(const e of entries){
+    const last=e.history.at(-1);
+    const m = last ? last.match(/#\d+([A-Z])$/) : null;
+    let id = m ? m[1] : null;
+    if(!id || !groupIds.includes(id)){
+      let empty = groupIds.find(g=>groupMap[g].length===0);
+      if(empty) id = empty;
+      else {
+        const minSize = Math.min(...groupIds.map(g=>groupMap[g].length));
+        id = groupIds.find(g=>groupMap[g].length===minSize);
       }
-      lines.push(`Group ${g}: MA=${members.length? (total/members.length).toFixed(2):0}`);
-      lines.push('');
     }
-    document.getElementById("statsOutput").value=lines.join("\n");
+    groupMap[id].push(e.name);
   }
 
-  function updateParticipantCount(){
-    const count=document.getElementById("membersInput").value.trim().split(/\r?\n/).filter(Boolean).length;
-    const span=document.getElementById("groupSizeHint");
-    const groupCount=parseInt(document.getElementById("groupCount").value);
-    if(!groupCount||groupCount<1){span.textContent=''; return;}
-    const min=Math.floor(count/groupCount), max=Math.ceil(count/groupCount);
-    span.textContent=min===max?`（1グループあたり${min}人）`:`（1グループあたり${min}〜${max}人）`;
+  const lines=[];
+  for(const id of groupIds){
+    const members=groupMap[id];
+    let total=0;
+    for(const m of members){
+      const mk=members.reduce((sum,other)=>sum+(m!==other?(coMap[m][other]||0):0),0);
+      lines.push(`${m}: MK=${mk}`);
+      total+=mk;
+    }
+    lines.push(`${idToName[id] ? `Group ${idToName[id]}` : `Group ${id}`}: MA=${members.length? (total/members.length).toFixed(2):0}`);
+    lines.push('');
   }
+  document.getElementById('statsOutput').value=lines.join("\n");
+}
 
-  function copyGroupOutput(){
-    const textarea=document.getElementById("groupOutput");
-    navigator.clipboard.writeText(textarea.value).then(()=>showToast("コピーしました！")).catch(()=>showToast("コピーに失敗"));
-  }
+function updateParticipantCount(){
+  const count=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean).length;
+  const span=document.getElementById('groupSizeHint');
+  // 実際に使われるグループ数（custom names がある場合はそちらを優先）
+  const { groupCount } = buildGroupIdsAndNames();
+  if(!groupCount||count===0){span.textContent=''; return;}
+  const min=Math.floor(count/groupCount), max=Math.ceil(count/groupCount);
+  span.textContent=min===max?`（1グループあたり${min}人）`:`（1グループあたり${min}〜${max}人）`;
+}
 
-  function showToast(msg){
-    const toast=document.getElementById("toast");
-    toast.textContent=msg;
-    toast.classList.remove("opacity-0");
-    setTimeout(()=>toast.classList.add("opacity-0"),1200);
-  }
+function copyGroupOutput(){
+  const textarea=document.getElementById('groupOutput');
+  navigator.clipboard.writeText(textarea.value).then(()=>showToast("コピーしました！")).catch(()=>showToast("コピーに失敗しました"));
+}
 
-  function pushToHistory(){
-    const text=document.getElementById("membersInput").value;
-    if(history[currentHistoryIndex]===text) return;
-    history=history.slice(0,currentHistoryIndex+1);
-    history.push(text);
+function showToast(msg){
+  const toast=document.getElementById('toast');
+  toast.textContent=msg;
+  toast.classList.remove("opacity-0");
+  setTimeout(()=>toast.classList.add("opacity-0"),1200);
+}
+
+function pushToHistory(){
+  const text=document.getElementById('membersInput').value;
+  if(currentHistoryIndex>=0 && history[currentHistoryIndex]===text) return;
+  history=history.slice(0,currentHistoryIndex+1);
+  history.push(text);
+  currentHistoryIndex++;
+  const histField = document.getElementById('historyJsonInput');
+  if(histField) histField.value=JSON.stringify(history);
+}
+
+function undoHistory(){
+  if(currentHistoryIndex>0){
+    currentHistoryIndex--;
+    document.getElementById('membersInput').value=history[currentHistoryIndex];
+    updateParticipantCount(); showGroups(); showStats(); showToast("1ステップ戻しました");
+  } else showToast("これ以上戻れません");
+}
+
+function redoHistory(){
+  if(currentHistoryIndex<history.length-1){
     currentHistoryIndex++;
-  }
+    document.getElementById('membersInput').value=history[currentHistoryIndex];
+    updateParticipantCount(); showGroups(); showStats(); showToast("1ステップ進めました");
+  } else showToast("これ以上進めません");
+}
 
-  function undoHistory(){
-    if(currentHistoryIndex>0){
-      currentHistoryIndex--;
-      document.getElementById("membersInput").value=history[currentHistoryIndex];
-      updateParticipantCount(); renderGroups(); renderStats(); showToast("1ステップ戻しました");
-    }else showToast("これ以上戻れません");
+window.onload = () => {
+  const histField = document.getElementById('historyJsonInput');
+  if(histField && histField.value){
+    try {
+      history = JSON.parse(histField.value);
+      currentHistoryIndex = history.length - 1;
+      if (currentHistoryIndex >= 0) {
+        document.getElementById('membersInput').value = history[currentHistoryIndex];
+      }
+    } catch(e) {
+      history=[]; currentHistoryIndex=-1;
+    }
   }
+  updateParticipantCount();
+  // 初期履歴が無ければ現在値を履歴に追加する
+  if(history.length === 0) pushToHistory();
+  showGroups(); showStats();
+};
 
-  function redoHistory(){
-    if(currentHistoryIndex<history.length-1){
-      currentHistoryIndex++;
-      document.getElementById("membersInput").value=history[currentHistoryIndex];
-      updateParticipantCount(); renderGroups(); renderStats(); showToast("1ステップ進めました");
-    }else showToast("これ以上進めません");
-  }
-
-  document.getElementById('membersInput').addEventListener('input', ()=>{ updateParticipantCount(); pushToHistory(); renderGroups(); renderStats(); });
-  document.getElementById('groupCount').addEventListener('input', ()=>{ updateParticipantCount(); renderGroups(); renderStats(); });
+document.getElementById('membersInput').addEventListener('input',()=>{ updateParticipantCount(); pushToHistory(); showGroups(); showStats(); });
+document.getElementById('groupCount').addEventListener('input',()=>{ updateParticipantCount(); showGroups(); showStats(); });
+document.getElementById('rolesInput').addEventListener('input',()=>{
+  const settingsField = document.getElementById('settingsJsonInput');
+  if(settingsField) settingsField.value=JSON.stringify({
+    roles:document.getElementById('rolesInput').value,
+    group_count: buildGroupIdsAndNames().groupCount
+  });
+});
 </script>

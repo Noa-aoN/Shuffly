@@ -10,17 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_12_02_020324) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_02_023759) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "events", force: :cascade do |t|
     t.bigint "user_id"
     t.string "title"
-    t.text "config_json"
-    t.text "members_json"
+    t.jsonb "config_json", default: {}
+    t.jsonb "members_json", default: []
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "member_results_json", default: []
+    t.jsonb "member_order_json", default: []
+    t.jsonb "setting_json", default: {}
+    t.jsonb "history_json", default: []
     t.index ["user_id"], name: "index_events_on_user_id"
   end
 
