@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_11_28_082359) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_02_020324) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -22,35 +22,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_28_082359) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_events_on_user_id"
-  end
-
-  create_table "members", force: :cascade do |t|
-    t.bigint "event_id", null: false
-    t.string "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["event_id"], name: "index_members_on_event_id"
-  end
-
-  create_table "result_members", force: :cascade do |t|
-    t.bigint "result_id", null: false
-    t.bigint "member_id", null: false
-    t.string "group_name"
-    t.string "role"
-    t.integer "order_index"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["member_id"], name: "index_result_members_on_member_id"
-    t.index ["result_id"], name: "index_result_members_on_result_id"
-  end
-
-  create_table "results", force: :cascade do |t|
-    t.bigint "event_id", null: false
-    t.text "result_json"
-    t.bigint "seed"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["event_id"], name: "index_results_on_event_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -67,8 +38,4 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_28_082359) do
   end
 
   add_foreign_key "events", "users"
-  add_foreign_key "members", "events"
-  add_foreign_key "result_members", "members"
-  add_foreign_key "result_members", "results"
-  add_foreign_key "results", "events"
 end
