@@ -1,3 +1,4 @@
+<%# filepath: /Users/n/workspace/Shuffly/app/views/events/new.html.erb %>
 <div class="max-w-6xl mx-auto p-6">
   <h1 class="text-3xl font-bold mb-6"><%= @event.title.presence || "イベント作成" %></h1>
 
@@ -761,19 +762,19 @@ window.onload = () => {
   const gAct = document.getElementById('settings-action-groups');
   if (gAct) {
     const btns = gAct.querySelectorAll('button');
-    if (btns[0]) btns[0].addEventListener('click', assignGroups);   // グループ分け実行
-    if (btns[1]) btns[1].addEventListener('click', undoHistory);    // 前のグループへ
-    if (btns[2]) btns[2].addEventListener('click', redoHistory);    // 後ろのグループへ
+    if (btns[0]) btns[0].addEventListener('click', ()=>{ assignGroups(); switchResultTab('groups'); });   // グループ分け実行
+    if (btns[1]) btns[1].addEventListener('click', ()=>{ undoHistory(); switchResultTab('groups'); });    // 前のグループへ
+    if (btns[2]) btns[2].addEventListener('click', ()=>{ redoHistory(); switchResultTab('groups'); });    // 後ろのグループへ
   }
   const oAct = document.getElementById('settings-action-order');
   if (oAct) {
     const b = oAct.querySelector('button');
-    if (b) b.addEventListener('click', assignOrder);
+    if (b) b.addEventListener('click', ()=>{ assignOrder(); switchResultTab('order'); });
   }
   const rAct = document.getElementById('settings-action-roles');
   if (rAct) {
     const b = rAct.querySelector('button');
-    if (b) b.addEventListener('click', assignRoles);
+    if (b) b.addEventListener('click', ()=>{ assignRoles(); switchResultTab('roles'); });
   }
 })();
 </script>
