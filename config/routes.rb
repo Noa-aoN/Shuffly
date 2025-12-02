@@ -7,6 +7,10 @@ Rails.application.routes.draw do
 
   # イベント管理（JSON保存やSPA向け更新含む）
   resources :events do
+    collection do
+      get :presentation
+    end
+
     member do
       patch :save  # SPA向け保存API
       get :export_result

@@ -14,7 +14,7 @@
         </div>
 
         <label class="block text-sm font-medium mb-2">メンバー名リスト（改行またはカンマ区切り）</label>
-        <textarea id="membersInput" rows="8" class="w-full border rounded-md px-3 py-2 mb-3"><%= begin
+        <textarea id="membersInput" rows="8" class="w-full border rounded-md px-3 py-2 mb-3" placeholder="田中 太郎, 山田 花子"><%= begin
           members = @event.members_json.present? ? JSON.parse(@event.members_json) : []
           members.map do |m|
             if m.is_a?(Hash)
@@ -41,7 +41,7 @@
           <input id="importFile" type="file" accept=".txt,.csv" class="hidden">
           <%= render 'shared/button',
                 f: nil,
-                button_text: 'クリップボード貼り付け',
+                button_text: 'クリップボードから貼り付け',
                 id: 'btn-paste-clipboard',
                 path: '#',
                 variant: 'secondary',
@@ -190,7 +190,6 @@
             <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
             <h2 class="text-lg font-semibold">結果</h2>
           </div>
-          <!-- タブはカード名の下・中央に表示するためここでは非表示に -->
         </div>
 
         <!-- タブボタン（カード名の下・中央配置） -->
@@ -235,7 +234,7 @@
                   path: '#',
                   variant: 'secondary',
                   full_mobile: false,
-                  extra_class: 'px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600' %>
+                  extra_class: 'px-4 py-2 border rounded hover:bg-gray-200' %>
           </div>
         </div>
 
@@ -676,10 +675,26 @@ function pasteFromClipboard(){
 // 共有機能
 function togglePresentationMode(){
   // プレゼンテーションモード切替（簡易: 新しいウィンドウでグループ表示を開く）
-  const html = document.getElementById('groupOutput').value;
-  const w = window.open('','_blank','noopener,noreferrer');
-  w.document.write(`<pre style="font-family:inherit;white-space:pre-wrap">${html.replace(/</g,'&lt;')}</pre>`);
-  w.document.title = (document.getElementById('shareEventTitle').value || 'プレゼンテーション');
+  try{
+    const payload = {
+      members_json: (()=>{ try { return JSON.parse(document.getElementById('membersJsonInput')?.value || '[]'); } catch(e){ return document.getElementById('membersInput')?.value || ""; } })(),
+      results_json: (()=>{ try { return JSON.parse(document.getElementById('resultsJsonInput')?.value || '{}'); } catch(e){ return document.getElementById('resultsJsonInput')?.value || ""; } })(),
+      order_json: (()=>{ try { return JSON.parse(document.getElementById('orderJsonInput')?.value || '[]'); } catch(e){ return document.getElementById('orderOutput')?.value || ""; } })(),
+      settings_json: (()=>{ try { return JSON.parse(document.getElementById('settingsJsonInput')?.value || '{}'); } catch(e){ return document.getElementById('settingsJsonInput')?.value || ""; } })(),
+      history_json: document.getElementById('historyJsonInput')?.value || "",
+      title: document.getElementById('shareEventTitle')?.value || document.title || ''
+    };
+    // store under a dedicated key for presentation page to read
+    localStorage.setItem('presentation_shuffly_event', JSON.stringify(payload));
+  }catch(e){
+    console.warn('presentation payload store failed', e);
+  }
+
+  // open presentation page in a new tab — use a fixed URL that serves the presentation (adjust if route differs)
+  // prefer an explicit path to avoid about:blank + document.write issues
+  const presentationPath = '/events/show'; // adjust if you have a dedicated route like '/events/presentation'
+  const w = window.open(presentationPath, '_blank', 'noopener');
+  if(!w) showToast("ポップアップがブロックされました。ポップアップを許可してください");
 }
 
 function exportResults(){

@@ -1,5 +1,6 @@
 class EventsController < ApplicationController
   before_action :set_event, only: [:show, :edit, :update]
+  skip_before_action :set_event, only: [:presentation]
 
   def index
     @events = current_user ? current_user.events : Event.none
@@ -38,11 +39,31 @@ class EventsController < ApplicationController
     end
   end
 
+  def presentation
+    render :presentation
+  end
 
   private
 
+  # set_event を厳密化して、誤って "show" 等が id として渡された場合に
+  # ActiveRecord::RecordNotFound を発生させないようにする。
   def set_event
-    @event = Event.find(params[:id])
+    id = params[:id].to_s
+
+    # common mistaken paths like /events/show -> redirect to presentation
+    if id == 'show' || id == 'presentation'
+      redirect_to presentation_events_path and return
+    end
+
+    # require a numeric id to avoid treating non-id segments as record ids
+    unless id =~ /\A\d+\z/
+      redirect_to root_path, alert: '無効なイベントIDです' and return
+    end
+
+    @event = Event.find_by(id: id)
+    unless @event
+      redirect_to root_path, alert: '指定のイベントが見つかりません' and return
+    end
   end
 
   def event_params
