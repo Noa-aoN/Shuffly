@@ -1,7 +1,50 @@
-<div class="mt-6">
-  <% if f.present? %>
-    <%= f.submit button_text, class: "bg-blue-500 text-white px-4 py-2 rounded" %>
+<% f = local_assigns.fetch(:f, nil) %>
+<% button_text = local_assigns.fetch(:button_text, '') %>
+<% path = local_assigns.fetch(:path, '#') %>
+<% variant = local_assigns.fetch(:variant, 'primary') %>
+<% size = local_assigns.fetch(:size, 'md') %>
+<% full_mobile = local_assigns.fetch(:full_mobile, true) %>
+<% disabled = local_assigns.fetch(:disabled, false) %>
+<% extra_class = local_assigns.fetch(:extra_class, '') %>
+<% id = local_assigns.key?(:id) ? local_assigns[:id] : nil %>
+<% data_action = local_assigns.key?(:data_action) ? local_assigns[:data_action] : nil %>
+<% icon_html = local_assigns.fetch(:icon_html, nil) %>
+
+<% base = "inline-flex items-center justify-center rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition" %>
+
+<% size_classes = {
+  'sm' => 'px-3 py-1 text-sm min-h-[40px]',
+  'md' => 'px-4 py-2 text-sm min-h-[44px]',
+  'lg' => 'px-5 py-3 text-base min-h-[48px]'
+} %>
+
+<% variant_classes = {
+  'primary' => 'bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500',
+  'secondary' => 'bg-gray-100 text-gray-800 hover:bg-gray-200 focus:ring-gray-400',
+  'ghost' => 'bg-transparent text-gray-700 hover:bg-gray-50 focus:ring-gray-300',
+  'danger' => 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500'
+} %>
+
+<% size_class = size_classes[size] || size_classes['md'] %>
+<% var_class = variant_classes[variant] || variant_classes['primary'] %>
+<% responsive_class = full_mobile ? 'w-full sm:w-auto' : 'inline-block' %>
+<% classes = [base, size_class, var_class, responsive_class, extra_class].join(' ').squeeze(' ').strip %>
+
+<div class="mt-2">
+  <% if f %>
+    <% opts = { class: classes, id: id, disabled: disabled } %>
+    <% if data_action.present? %>
+      <% opts[:data] = { action: data_action } %>
+    <% end %>
+    <% opts.delete_if { |_, v| v.nil? } %>
+    <%= f.submit button_text, opts %>
   <% else %>
-    <%= link_to button_text, path, class: "bg-blue-500 text-white px-4 py-2 rounded" %>
+    <% link_opts = { class: classes, role: 'button', id: id, 'aria-disabled' => disabled ? 'true' : nil } %>
+    <% if data_action.present? %>
+      <% link_opts[:data] = { action: data_action } %>
+    <% end %>
+    <% link_opts.delete_if { |_, v| v.nil? } %>
+    <% inner = (icon_html.to_s + (icon_html.present? ? ' ' : '') + button_text).html_safe %>
+    <%= link_to inner, path, link_opts %>
   <% end %>
 </div>

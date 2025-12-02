@@ -1,27 +1,258 @@
-<h1 class="text-2xl font-bold mb-2">イベント結果</h1>
-<h2 class="text-xl mb-2"><%= @event.title %></h2>
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-6xl mx-auto px-6 py-6">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-2xl font-bold"><%= @event&.title.presence || "イベント" %></h1>
+      <div class="flex items-center gap-2">
+        <button id="btn-presentation" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">プレゼン表示</button>
+        <button id="btn-back-to-settings" class="px-3 py-1 bg-white border rounded hover:bg-gray-100">イベント設定に戻る</button>
+        <a href="<%= edit_event_path(@event) if @event %>" class="px-3 py-1 border rounded bg-white hover:bg-gray-100">編集</a>
+      </div>
+    </div>
 
-<% all_members = JSON.parse(@event.members_json || "[]") %>
-<p class="mb-4">入力されたメンバー数: <%= all_members.size %>人</p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section class="col-span-2 bg-white p-4 rounded shadow-sm">
+        <h2 class="text-lg font-semibold mb-2">グループ表示</h2>
+        <div id="pres-groups" class="whitespace-pre-wrap text-lg text-gray-800 bg-gray-50 p-3 rounded min-h-[120px]"></div>
 
-<h3 class="text-lg font-semibold mb-2">グループ分け結果</h3>
+        <div class="flex items-center gap-2 mt-3">
+          <button id="btn-copy-groups" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">コピー</button>
+          <span id="copy-status" class="text-sm text-gray-500"></span>
+        </div>
 
-<% if @result %>
-  <% JSON.parse(@result.result_json).each do |group_name, members| %>
-    <h4 class="font-semibold mt-2"><%= group_name %>（メンバー数: <%= members.size %>人）</h4>
-    <ul class="list-disc ml-6 mb-2">
-      <% members.each do |m| %>
-        <li>
-          <%= m["name"] %>
-          <% if m["role"].present? %>(役割: <%= m["role"] %>)<% end %>
-          <% if m["order_index"].present? %>[順番: <%= m["order_index"] %>]<% end %>
-        </li>
-      <% end %>
-    </ul>
-  <% end %>
-<% else %>
-  <p>結果はまだ生成されていません。</p>
-<% end %>
+        <h3 class="text-sm font-medium mt-6 mb-2">履歴スナップショット（生データ）</h3>
+        <pre id="pres-snapshot" class="bg-gray-100 p-3 rounded text-sm whitespace-pre-wrap max-h-48 overflow-auto"></pre>
+      </section>
 
-<!-- 新しいイベント作成ボタンを部分テンプレート化 -->
-<%= render 'shared/button', f: nil, button_text: "新しいイベントを作る", path: new_event_path %>
+      <aside class="bg-white p-4 rounded shadow-sm">
+        <h3 class="font-medium mb-2">順番</h3>
+        <pre id="pres-order" class="whitespace-pre-wrap text-gray-800 bg-gray-50 p-2 rounded min-h-[80px]"></pre>
+
+        <h3 class="font-medium mt-4 mb-2">役職</h3>
+        <pre id="pres-roles" class="whitespace-pre-wrap text-gray-800 bg-gray-50 p-2 rounded min-h-[80px]"></pre>
+
+        <div class="mt-4 flex gap-2">
+          <button id="btn-prev-snapshot" class="px-3 py-1 bg-white border rounded disabled:opacity-50">前へ</button>
+          <button id="btn-next-snapshot" class="px-3 py-1 bg-white border rounded disabled:opacity-50">次へ</button>
+          <span id="snapshot-index" class="ml-2 text-sm text-gray-500"></span>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  function safeParse(v){
+    if(!v) return null;
+    if (typeof v === 'object') return v;
+    try { return JSON.parse(v); } catch(e) {
+      try { return JSON.parse(decodeURIComponent(v)); } catch(e){ return null; }
+    }
+  }
+
+  // server-provided payload (if @event exists, controller may have populated these)
+  const serverPayload = {
+    members_json: <%= raw((defined?(@members) && @members) ? @members.to_json : 'null') %>,
+    results_json: <%= raw((defined?(@results) && @results) ? @results.to_json : 'null') %>,
+    order_json:   <%= raw((defined?(@order)   && @order)   ? @order.to_json   : 'null') %>,
+    settings_json:<%= raw((defined?(@settings)&& @settings)? @settings.to_json: 'null') %>,
+    history_json: <%= raw((defined?(@history) && @history) ? @history.to_json : 'null') %>,
+    title:        <%= raw((defined?(@event) && @event&.title) ? @event.title.to_json : '""') %>
+  };
+
+  // try query/localStorage first, then fallback to serverPayload
+  function loadPayload(){
+    function getParam(name){
+      try{
+        const p = new URLSearchParams(window.location.search);
+        return p.has(name) ? p.get(name) : null;
+      }catch(e){ return null; }
+    }
+
+    let payload = null;
+    try {
+      const members_raw = getParam('members_json') || getParam('membersJson') || null;
+      const results_raw = getParam('results_json') || getParam('resultsJson') || null;
+      const order_raw   = getParam('order_json') || getParam('orderJson') || null;
+      const settings_raw= getParam('settings_json') || getParam('settingsJson') || null;
+      const history_raw = getParam('history_json') || getParam('historyJson') || null;
+      const title_raw   = (new URLSearchParams(window.location.search)).get('title') || null;
+
+      if(members_raw || results_raw || order_raw || settings_raw || history_raw || title_raw){
+        payload = {
+          members_json: safeParse(members_raw),
+          results_json: safeParse(results_raw),
+          order_json: safeParse(order_raw),
+          settings_json: safeParse(settings_raw),
+          history_json: safeParse(history_raw),
+          title: title_raw || ''
+        };
+      }
+    } catch(e){ payload = null; }
+
+    if(!payload){
+      try {
+        const raw = localStorage.getItem('presentation_shuffly_event') || localStorage.getItem('pending_shuffly_event');
+        if(raw){
+          const p = safeParse(raw) || JSON.parse(raw);
+          payload = {
+            members_json: safeParse(p.members_json) || p.members_json || null,
+            results_json: safeParse(p.results_json) || p.results_json || null,
+            order_json:   safeParse(p.order_json)   || p.order_json   || null,
+            settings_json:safeParse(p.settings_json)|| p.settings_json|| null,
+            history_json: safeParse(p.history_json) || p.history_json || null,
+            title: p.title || ''
+          };
+        }
+      } catch(e){ /* ignore */ }
+    }
+
+    if(!payload) payload = serverPayload;
+    return payload;
+  }
+
+  const payload = loadPayload();
+
+  // rendering helpers
+  function renderGroups(results){
+    const el = document.getElementById('pres-groups');
+    if(!results || !results.groups){ el.textContent = '結果データがありません'; return; }
+    const groups = results.groups;
+    const groupNames = results.group_names || results.groupNames || {};
+    let out = '';
+    Object.keys(groups).forEach(k=>{
+      const members = groups[k] || [];
+      const label = groupNames[k] || k;
+      out += label + ' (' + members.length + '名):\n';
+      members.forEach(m=>{
+        if(typeof m === 'string') out += '  - ' + m + '\n';
+        else if(m && (m.name || m.full_name)) out += '  - ' + (m.name || m.full_name) + (m.role ? (' — ' + m.role) : '') + '\n';
+        else out += '  - ' + JSON.stringify(m) + '\n';
+      });
+      out += '\n';
+    });
+    el.textContent = out.trim();
+  }
+
+  function renderOrder(orderData){
+    const el = document.getElementById('pres-order');
+    if(!orderData){ el.textContent = ''; return; }
+    const ord = Array.isArray(orderData) ? orderData : (typeof orderData === 'string' ? safeParse(orderData) : orderData);
+    if(!ord){ el.textContent = ''; return; }
+    const lines = ord.map((o,i)=> ((o.order || o.order_index || (i+1)) + '. ' + (o.name || o)));
+    el.textContent = lines.join('\n');
+  }
+
+  function renderRoles(settings){
+    const el = document.getElementById('pres-roles');
+    if(!settings){ el.textContent = ''; return; }
+    try{
+      const s = (typeof settings === 'string') ? safeParse(settings) : settings;
+      if(s && s.role_assignments && Array.isArray(s.role_assignments)){
+        el.textContent = s.role_assignments.map(r=> (r.name + ': ' + r.role)).join('\n');
+      } else if(s && s.roles && typeof s.roles === 'string'){
+        el.textContent = '役職: ' + s.roles;
+      } else el.textContent = '';
+    }catch(e){ el.textContent=''; }
+  }
+
+  // initial render
+  document.getElementById('pres-groups').textContent = '';
+  document.getElementById('pres-order').textContent = '';
+  document.getElementById('pres-roles').textContent = '';
+  document.getElementById('pres-snapshot').textContent = '';
+
+  const results = payload.results_json;
+  const order   = payload.order_json;
+  const settings= payload.settings_json;
+  const history = Array.isArray(payload.history_json) ? payload.history_json.slice() : (typeof payload.history_json === 'string' ? (safeParse(payload.history_json) || [payload.history_json]) : []);
+
+  // set title (if any)
+  const titleParam = payload.title || document.title;
+  if(titleParam) document.querySelector('h1') && (document.querySelector('h1').textContent = titleParam);
+
+  renderGroups(results);
+  renderOrder(order);
+  renderRoles(settings);
+
+  // history navigation
+  let idx = history.length > 0 ? history.length - 1 : -1;
+  const prevBtn = document.getElementById('btn-prev-snapshot');
+  const nextBtn = document.getElementById('btn-next-snapshot');
+  const idxEl = document.getElementById('snapshot-index');
+  const snapEl = document.getElementById('pres-snapshot');
+
+  function updateSnapshotView(){
+    if(idx < 0 || history.length === 0){
+      snapEl.textContent = '(履歴がありません)';
+      idxEl.textContent = '';
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+    } else {
+      const raw = history[idx];
+      try{
+        const parsed = safeParse(raw);
+        snapEl.textContent = parsed ? (typeof parsed === 'string' ? parsed : JSON.stringify(parsed, null, 2)) : String(raw);
+      }catch(e){ snapEl.textContent = String(raw); }
+      idxEl.textContent = ` ${idx+1}/${history.length}`;
+      prevBtn.disabled = (idx <= 0);
+      nextBtn.disabled = (idx >= history.length - 1);
+    }
+  }
+
+  prevBtn.addEventListener('click', ()=>{ if(idx>0){ idx--; updateSnapshotView(); } });
+  nextBtn.addEventListener('click', ()=>{ if(idx < history.length-1){ idx++; updateSnapshotView(); } });
+  updateSnapshotView();
+
+  // copy groups
+  document.getElementById('btn-copy-groups').addEventListener('click', function(){
+    const text = document.getElementById('pres-groups').textContent || '';
+    navigator.clipboard.writeText(text).then(()=> {
+      const st = document.getElementById('copy-status'); st.textContent = 'コピーしました'; setTimeout(()=>st.textContent='',1200);
+    }).catch(()=> {
+      const st = document.getElementById('copy-status'); st.textContent = 'コピーに失敗しました'; setTimeout(()=>st.textContent='',1200);
+    });
+  });
+
+  // presentation: save payload to localStorage then open presentation route
+  document.getElementById('btn-presentation').addEventListener('click', function(){
+    try{
+      const payloadToStore = {
+        members_json: payload.members_json || null,
+        results_json: payload.results_json || null,
+        order_json: payload.order_json || null,
+        settings_json: payload.settings_json || null,
+        history_json: payload.history_json || null,
+        title: titleParam || ''
+      };
+      localStorage.setItem('presentation_shuffly_event', JSON.stringify(payloadToStore));
+    }catch(e){ console.warn('presentation store failed', e); }
+    const w = window.open('/events/presentation', '_blank', 'noopener');
+    if(!w) alert('ポップアップがブロックされました。ポップアップを許可してください');
+  });
+
+  // back to new: store pending_shuffly_event then redirect to new page to restore inputs
+  document.getElementById('btn-back-to-settings').addEventListener('click', function(){
+    try{
+      const preview = {
+        members_json: payload.members_json ? (typeof payload.members_json === 'string' ? payload.members_json : JSON.stringify(payload.members_json)) : '',
+        results_json: payload.results_json ? (typeof payload.results_json === 'string' ? payload.results_json : JSON.stringify(payload.results_json)) : '',
+        order_json: payload.order_json ? (typeof payload.order_json === 'string' ? payload.order_json : JSON.stringify(payload.order_json)) : '',
+        settings_json: payload.settings_json ? (typeof payload.settings_json === 'string' ? payload.settings_json : JSON.stringify(payload.settings_json)) : '',
+        history_json: payload.history_json ? (typeof payload.history_json === 'string' ? payload.history_json : JSON.stringify(payload.history_json)) : '',
+        title: payload.title || ''
+      };
+      localStorage.setItem('pending_shuffly_event', JSON.stringify(preview));
+    }catch(e){ /* ignore */ }
+    window.location.href = "<%= new_event_path %>";
+  });
+
+  // keyboard shortcuts
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowLeft') prevBtn.click();
+    if(e.key === 'ArrowRight') nextBtn.click();
+    if(e.key === 'Escape') document.getElementById('btn-back-to-settings').click();
+  });
+
+})();
+</script>

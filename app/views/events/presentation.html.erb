@@ -1,0 +1,775 @@
+<div class="min-h-screen bg-black text-white">
+  <div class="max-w-6xl mx-auto px-6 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <button id="btn-prev-snapshot" class="px-3 py-1 bg-white text-black rounded disabled:opacity-50">履歴◀</button>
+        <button id="btn-next-snapshot" class="px-3 py-1 bg-white text-black rounded disabled:opacity-50">履歴▶</button>
+        <span id="snapshot-index" class="ml-3 text-sm text-gray-300"></span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <h1 id="pres-title" class="text-3xl font-bold"></h1>
+
+        <div class="ml-4 flex items-center gap-2">
+          <button id="btn-back-to-settings" class="px-4 py-2 bg-white text-black rounded">イベント設定に戻る</button>
+          <button id="btn-close" class="px-3 py-1 border rounded text-white">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- コントロール -->
+    <div class="flex items-center justify-between mb-4 gap-4">
+      <div class="flex items-center gap-2">
+        <button data-mode="groups" class="mode-btn px-3 py-1 bg-gray-800 border border-gray-700 rounded">グループ</button>
+        <button data-mode="order" class="mode-btn px-3 py-1 bg-gray-800 border border-gray-700 rounded">順番</button>
+        <button data-mode="roles" class="mode-btn px-3 py-1 bg-gray-800 border border-gray-700 rounded">役職</button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="btn-reveal" class="px-4 py-2 bg-green-600 rounded">表示開始</button>
+        <button id="btn-hide" class="px-4 py-2 bg-gray-700 rounded hidden">全非表示</button>
+        <div class="flex items-center gap-1 ml-2">
+          <button id="btn-prev-item" class="px-3 py-1 bg-white text-black rounded disabled:opacity-50">前へ</button>
+          <button id="btn-next-item" class="px-3 py-1 bg-white text-black rounded disabled:opacity-50">次へ</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="pres-content" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- 大きな表示領域 -->
+      <section class="col-span-2 bg-gray-900 p-6 rounded flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <h2 id="display-subtitle" class="text-2xl font-semibold"></h2>
+          <div class="text-sm text-gray-400" id="display-counter"></div>
+        </div>
+
+        <div id="display-area" class="flex-1 bg-black rounded border border-gray-700 flex items-center justify-center p-6">
+          <div id="display-item" class="text-4xl text-center leading-snug"></div>
+        </div>
+
+        <div class="mt-6 text-sm text-gray-300">
+          <div id="display-hint">「表示開始」を押すと、選択中のカテゴリを一件ずつ大きく表示します。</div>
+        </div>
+
+        <h3 class="text-lg font-medium mt-6 mb-2 text-gray-200">現在の生データ（スナップショット）</h3>
+        <pre id="pres-snapshot" class="bg-gray-800 p-3 rounded text-sm whitespace-pre-wrap max-h-48 overflow-auto"></pre>
+      </section>
+
+      <!-- 補助表示 -->
+      <aside class="bg-gray-900 p-6 rounded">
+        <h3 class="text-xl font-semibold mb-2">一覧（非表示）</h3>
+        <div id="list-compact" class="text-gray-200 text-sm leading-relaxed space-y-2 max-h-[60vh] overflow-auto">
+          <!-- 小さい一覧：クリックでその項目を即表示 -->
+        </div>
+
+        <div class="mt-4">
+          <button id="btn-copy-groups" class="w-full px-3 py-2 bg-green-600 rounded text-white">表示内容をコピー</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  function safeParse(v){
+    if(!v) return null;
+    if(typeof v === 'object') return v;
+    try { return JSON.parse(v); } catch(e) {
+      try { return JSON.parse(decodeURIComponent(v)); } catch(e){ return null; }
+    }
+  }
+  function getParam(name){
+    try{ const params = new URLSearchParams(window.location.search); return params.has(name) ? params.get(name) : null; }catch(e){ return null; }
+  }
+
+  // load payload (query first, then localStorage)
+  let payload = null;
+  try {
+    const members_raw = getParam('members_json') || getParam('membersJson') || null;
+    const results_raw = getParam('results_json') || getParam('resultsJson') || null;
+    const order_raw = getParam('order_json') || getParam('orderJson') || null;
+    const settings_raw = getParam('settings_json') || getParam('settingsJson') || null;
+    const history_raw = getParam('history_json') || getParam('historyJson') || null;
+    const title_raw = (new URLSearchParams(window.location.search)).get('title') || null;
+
+    if(members_raw || results_raw || order_raw || settings_raw || history_raw || title_raw){
+      payload = {
+        members_json: safeParse(members_raw),
+        results_json: safeParse(results_raw),
+        order_json: safeParse(order_raw),
+        settings_json: safeParse(settings_raw),
+        history_json: safeParse(history_raw),
+        title: title_raw || ''
+      };
+    }
+  } catch(e){ payload = null; }
+
+  if(!payload){
+    try {
+      const raw = localStorage.getItem('presentation_shuffly_event') || localStorage.getItem('pending_shuffly_event');
+      if(raw){
+        const p = safeParse(raw) || JSON.parse(raw);
+        payload = {
+          members_json: safeParse(p.members_json) || p.members_json || null,
+          results_json: safeParse(p.results_json) || p.results_json || null,
+          order_json: safeParse(p.order_json) || p.order_json || null,
+          settings_json: safeParse(p.settings_json) || p.settings_json || null,
+          history_json: safeParse(p.history_json) || p.history_json || null,
+          title: p.title || ''
+        };
+      }
+    } catch(e){ /* ignore */ }
+  }
+
+  if(!payload) payload = { members_json:null, results_json:null, order_json:null, settings_json:null, history_json:null, title:'' };
+
+  // DOM refs
+  const titleEl = document.getElementById('pres-title');
+  const displaySubtitle = document.getElementById('display-subtitle');
+  const displayItem = document.getElementById('display-item');
+  const displayCounter = document.getElementById('display-counter');
+  const presSnapshot = document.getElementById('pres-snapshot');
+  const listCompact = document.getElementById('list-compact');
+  const snapshotIndexEl = document.getElementById('snapshot-index');
+  const prevSnapshotBtn = document.getElementById('btn-prev-snapshot');
+  const nextSnapshotBtn = document.getElementById('btn-next-snapshot');
+
+  titleEl.textContent = payload.title || document.title || 'プレゼンテーション';
+
+  // prepare data structures for modes
+  // groups: array of {label, members: [...]}
+  function normalizeGroups(results){
+    if(!results) return [];
+    // if results has groups key (object)
+    if(results.groups && typeof results.groups === 'object'){
+      const names = results.group_names || results.groupNames || {};
+      const keys = Object.keys(results.groups);
+      return keys.map(k => ({ label: names[k] || k, members: Array.isArray(results.groups[k]) ? results.groups[k] : [] }));
+    }
+    // if results is an array of groups
+    if(Array.isArray(results)){
+      // assume array of groups with name,members or arrays
+      return results.map((g,i) => {
+        if(typeof g === 'string') return { label: `Group ${i+1}`, members: [g] };
+        if(Array.isArray(g)) return { label: `Group ${i+1}`, members: g };
+        if(g && (g.name || g.label)) return { label: g.name || g.label, members: g.members || [] };
+        return { label: `Group ${i+1}`, members: [] };
+      });
+    }
+    return [];
+  }
+
+  const rawResults = payload.results_json;
+  const groupsList = normalizeGroups(rawResults);
+  const orderList = (() => {
+    const o = payload.order_json || payload.orderJson || [];
+    if(Array.isArray(o)) return o.map((it,i) => (typeof it === 'string' ? { name: it } : it));
+    return [];
+  })();
+  const rolesList = (() => {
+    const s = payload.settings_json || payload.settingsJson || {};
+    // try multiple shapes
+    if(s && Array.isArray(s.role_assignments)) return s.role_assignments.map(r => ({ name: r.name, role: r.role }));
+    if(s && s.roles && typeof s.roles === 'object') return Object.keys(s.roles).map(k => ({ name: k, role: s.roles[k] }));
+    return [];
+  })();
+
+  // snapshot/history handling
+  let history = [];
+  if(Array.isArray(payload.history_json)) history = payload.history_json.slice();
+  else if(typeof payload.history_json === 'string'){
+    const parsed = safeParse(payload.history_json);
+    if(Array.isArray(parsed)) history = parsed;
+  }
+  if(history.length === 0 && payload.members_json && Array.isArray(payload.members_json)){
+    history = [ payload.members_json ];
+  }
+  let historyIdx = history.length > 0 ? history.length - 1 : -1;
+  function updateSnapshotUI(){
+    if(historyIdx < 0 || history.length === 0){
+      presSnapshot.textContent = '(履歴がありません)';
+      snapshotIndexEl.textContent = '';
+      prevSnapshotBtn.disabled = true; nextSnapshotBtn.disabled = true;
+    } else {
+      const raw = history[historyIdx];
+      const parsed = safeParse(raw) || raw;
+      presSnapshot.textContent = typeof parsed === 'string' ? parsed : JSON.stringify(parsed, null, 2);
+      snapshotIndexEl.textContent = ` ${historyIdx+1}/${history.length}`;
+      prevSnapshotBtn.disabled = historyIdx <= 0;
+      nextSnapshotBtn.disabled = historyIdx >= history.length - 1;
+    }
+  }
+  prevSnapshotBtn.addEventListener('click', ()=>{ if(historyIdx>0){ historyIdx--; updateSnapshotUI(); }});
+  nextSnapshotBtn.addEventListener('click', ()=>{ if(historyIdx < history.length-1){ historyIdx++; updateSnapshotUI(); }});
+  updateSnapshotUI();
+
+  // mode state and per-mode index
+  let mode = 'groups'; // groups | order | roles
+  const modeBtns = Array.from(document.querySelectorAll('.mode-btn'));
+  const indices = { groups: 0, order: 0, roles: 0 };
+  const counts = { groups: groupsList.length, order: orderList.length, roles: rolesList.length };
+
+  function setMode(m){
+    mode = m;
+    modeBtns.forEach(b => b.classList.toggle('bg-green-600', b.dataset.mode === m));
+    // set subtitle and prepare listCompact
+    if(m === 'groups') displaySubtitle.textContent = 'グループ（1件ずつ表示）';
+    if(m === 'order') displaySubtitle.textContent = '順番（1件ずつ表示）';
+    if(m === 'roles') displaySubtitle.textContent = '役職（1件ずつ表示）';
+    rebuildListCompact();
+    updateDisplay();
+  }
+  modeBtns.forEach(b => b.addEventListener('click', ()=> setMode(b.dataset.mode)));
+
+  // build compact list (hidden by default) but clickable to jump
+  function rebuildListCompact(){
+    listCompact.innerHTML = '';
+    if(mode === 'groups'){
+      groupsList.forEach((g,i) => {
+        const el = document.createElement('div');
+        el.className = 'p-2 bg-gray-800 rounded cursor-pointer hover:bg-gray-700';
+        el.textContent = `${i+1}. ${g.label} (${g.members.length})`;
+        el.addEventListener('click', () => { indices.groups = i; revealCurrent(); });
+        listCompact.appendChild(el);
+      });
+      if(groupsList.length === 0) listCompact.textContent = '(グループデータなし)';
+    } else if(mode === 'order'){
+      orderList.forEach((o,i) => {
+        const el = document.createElement('div');
+        el.className = 'p-2 bg-gray-800 rounded cursor-pointer hover:bg-gray-700';
+        el.textContent = `${i+1}. ${o.name || JSON.stringify(o)}`;
+        el.addEventListener('click', () => { indices.order = i; revealCurrent(); });
+        listCompact.appendChild(el);
+      });
+      if(orderList.length === 0) listCompact.textContent = '(順番データなし)';
+    } else if(mode === 'roles'){
+      rolesList.forEach((r,i) => {
+        const el = document.createElement('div');
+        el.className = 'p-2 bg-gray-800 rounded cursor-pointer hover:bg-gray-700';
+        el.textContent = `${i+1}. ${r.name || ''} ${r.role ? '– ' + r.role : ''}`;
+        el.addEventListener('click', () => { indices.roles = i; revealCurrent(); });
+        listCompact.appendChild(el);
+      });
+      if(rolesList.length === 0) listCompact.textContent = '(役職データなし)';
+    }
+    // update counters
+    counts.groups = groupsList.length; counts.order = orderList.length; counts.roles = rolesList.length;
+  }
+
+  // display control: reveal/hide, next/prev item, and update according to mode
+  let revealed = false;
+  const btnReveal = document.getElementById('btn-reveal');
+  const btnHide = document.getElementById('btn-hide');
+  const btnPrevItem = document.getElementById('btn-prev-item');
+  const btnNextItem = document.getElementById('btn-next-item');
+
+  function updateControls(){
+    const len = counts[mode] || 0;
+    const idx = indices[mode] || 0;
+    btnPrevItem.disabled = !revealed || idx <= 0;
+    btnNextItem.disabled = !revealed || idx >= len - 1;
+    displayCounter.textContent = len > 0 && revealed ? `${idx+1}/${len}` : (len ? `0/${len}` : '');
+    btnHide.classList.toggle('hidden', !revealed);
+    btnReveal.classList.toggle('hidden', revealed);
+  }
+
+  function formatGroupForDisplay(g){
+    // show label and members vertically
+    const members = Array.isArray(g.members) ? g.members : [];
+    const lines = [`${g.label}（${members.length}名）`, ''];
+    members.forEach(m => {
+      if(typeof m === 'string') lines.push(m);
+      else if(m && (m.name || m.full_name)) lines.push(m.name || m.full_name);
+      else lines.push(JSON.stringify(m));
+    });
+    return lines.join('\n');
+  }
+
+  function formatOrderForDisplay(o){
+    if(!o) return '';
+    if(typeof o === 'string') return o;
+    if(o.name) return o.name;
+    return JSON.stringify(o);
+  }
+
+  function formatRoleForDisplay(r){
+    if(!r) return '';
+    return (r.name || '') + (r.role ? ` — ${r.role}` : '');
+  }
+
+  function updateDisplay(){
+    const len = counts[mode] || 0;
+    const idx = indices[mode] || 0;
+    if(!revealed){
+      displayItem.textContent = ''; displaySubtitle.classList.remove('opacity-60');
+    } else {
+      if(mode === 'groups'){
+        if(len === 0){ displayItem.textContent = '(グループデータなし)'; }
+        else displayItem.textContent = formatGroupForDisplay(groupsList[idx]);
+      } else if(mode === 'order'){
+        if(len === 0){ displayItem.textContent = '(順番データなし)'; }
+        else displayItem.textContent = formatOrderForDisplay(orderList[idx]);
+      } else if(mode === 'roles'){
+        if(len === 0){ displayItem.textContent = '(役職データなし)'; }
+        else displayItem.textContent = formatRoleForDisplay(rolesList[idx]);
+      }
+    }
+    updateControls();
+  }
+
+  function revealCurrent(){
+    revealed = true;
+    btnReveal.classList.add('hidden');
+    btnHide.classList.remove('hidden');
+    updateDisplay();
+  }
+  function hideAll(){
+    revealed = false;
+    displayItem.textContent = '';
+    btnHide.classList.add('hidden');
+    btnReveal.classList.remove('hidden');
+    updateControls();
+  }
+
+  btnReveal.addEventListener('click', () => revealCurrent());
+  btnHide.addEventListener('click', () => hideAll());
+
+  btnPrevItem.addEventListener('click', () => {
+    if(indices[mode] > 0){ indices[mode]--; revealCurrent(); }
+  });
+  btnNextItem.addEventListener('click', () => {
+    if(indices[mode] < (counts[mode]-1)){ indices[mode]++; revealCurrent(); }
+  });
+
+  // click copy button copies current large display text (or full groups text if mode groups)
+  document.getElementById('btn-copy-groups').addEventListener('click', function(){
+    const text = displayItem.textContent || '';
+    navigator.clipboard.writeText(text).then(()=> {
+      this.textContent = 'コピーしました'; setTimeout(()=> this.textContent = '表示内容をコピー', 1200);
+    }).catch(()=> { this.textContent = 'コピー失敗'; setTimeout(()=> this.textContent = '表示内容をコピー', 1200); });
+  });
+
+  // initialize
+  setMode('groups');
+  rebuildListCompact();
+  updateDisplay();
+
+  // back -> restore pending inputs and go to new
+  document.getElementById('btn-back-to-settings').addEventListener('click', function(){
+    try{
+      const preview = {
+        members_json: (typeof payload.members_json === 'string') ? payload.members_json : (payload.members_json ? JSON.stringify(payload.members_json) : ''),
+        results_json: (typeof payload.results_json === 'string') ? payload.results_json : (payload.results_json ? JSON.stringify(payload.results_json) : ''),
+        order_json: (typeof payload.order_json === 'string') ? payload.order_json : (payload.order_json ? JSON.stringify(payload.order_json) : ''),
+        settings_json: (typeof payload.settings_json === 'string') ? payload.settings_json : (payload.settings_json ? JSON.stringify(payload.settings_json) : ''),
+        history_json: (typeof payload.history_json === 'string') ? payload.history_json : (payload.history_json ? JSON.stringify(payload.history_json) : ''),
+        title: payload.title || ''
+      };
+      localStorage.setItem('pending_shuffly_event', JSON.stringify(preview));
+    }catch(e){}
+    window.location.href = "<%= new_event_path %>";
+  });
+
+  document.getElementById('btn-close').addEventListener('click', function(){
+    if(window.opener) window.close(); else window.location.href = "<%= root_path %>";
+  });
+
+  // keyboard bindings
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') document.getElementById('btn-back-to-settings').click();
+    if(e.key === 'ArrowLeft') document.getElementById('btn-prev-item').click();
+    if(e.key === 'ArrowRight') document.getElementById('btn-next-item').click();
+    if(e.key === ' '){ e.preventDefault(); revealed ? hideAll() : revealCurrent(); }
+  });
+
+})();
+</script>
+```// filepath: /Users/n/workspace/Shuffly/app/views/events/presentation.html.erb
+<div class="min-h-screen bg-black text-white">
+  <div class="max-w-6xl mx-auto px-6 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <button id="btn-prev-snapshot" class="px-3 py-1 bg-white text-black rounded disabled:opacity-50">履歴◀</button>
+        <button id="btn-next-snapshot" class="px-3 py-1 bg-white text-black rounded disabled:opacity-50">履歴▶</button>
+        <span id="snapshot-index" class="ml-3 text-sm text-gray-300"></span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <h1 id="pres-title" class="text-3xl font-bold"></h1>
+
+        <div class="ml-4 flex items-center gap-2">
+          <button id="btn-back-to-settings" class="px-4 py-2 bg-white text-black rounded">イベント設定に戻る</button>
+          <button id="btn-close" class="px-3 py-1 border rounded text-white">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- コントロール -->
+    <div class="flex items-center justify-between mb-4 gap-4">
+      <div class="flex items-center gap-2">
+        <button data-mode="groups" class="mode-btn px-3 py-1 bg-gray-800 border border-gray-700 rounded">グループ</button>
+        <button data-mode="order" class="mode-btn px-3 py-1 bg-gray-800 border border-gray-700 rounded">順番</button>
+        <button data-mode="roles" class="mode-btn px-3 py-1 bg-gray-800 border border-gray-700 rounded">役職</button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="btn-reveal" class="px-4 py-2 bg-green-600 rounded">表示開始</button>
+        <button id="btn-hide" class="px-4 py-2 bg-gray-700 rounded hidden">全非表示</button>
+        <div class="flex items-center gap-1 ml-2">
+          <button id="btn-prev-item" class="px-3 py-1 bg-white text-black rounded disabled:opacity-50">前へ</button>
+          <button id="btn-next-item" class="px-3 py-1 bg-white text-black rounded disabled:opacity-50">次へ</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="pres-content" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- 大きな表示領域 -->
+      <section class="col-span-2 bg-gray-900 p-6 rounded flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <h2 id="display-subtitle" class="text-2xl font-semibold"></h2>
+          <div class="text-sm text-gray-400" id="display-counter"></div>
+        </div>
+
+        <div id="display-area" class="flex-1 bg-black rounded border border-gray-700 flex items-center justify-center p-6">
+          <div id="display-item" class="text-4xl text-center leading-snug"></div>
+        </div>
+
+        <div class="mt-6 text-sm text-gray-300">
+          <div id="display-hint">「表示開始」を押すと、選択中のカテゴリを一件ずつ大きく表示します。</div>
+        </div>
+
+        <h3 class="text-lg font-medium mt-6 mb-2 text-gray-200">現在の生データ（スナップショット）</h3>
+        <pre id="pres-snapshot" class="bg-gray-800 p-3 rounded text-sm whitespace-pre-wrap max-h-48 overflow-auto"></pre>
+      </section>
+
+      <!-- 補助表示 -->
+      <aside class="bg-gray-900 p-6 rounded">
+        <h3 class="text-xl font-semibold mb-2">一覧（非表示）</h3>
+        <div id="list-compact" class="text-gray-200 text-sm leading-relaxed space-y-2 max-h-[60vh] overflow-auto">
+          <!-- 小さい一覧：クリックでその項目を即表示 -->
+        </div>
+
+        <div class="mt-4">
+          <button id="btn-copy-groups" class="w-full px-3 py-2 bg-green-600 rounded text-white">表示内容をコピー</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  function safeParse(v){
+    if(!v) return null;
+    if(typeof v === 'object') return v;
+    try { return JSON.parse(v); } catch(e) {
+      try { return JSON.parse(decodeURIComponent(v)); } catch(e){ return null; }
+    }
+  }
+  function getParam(name){
+    try{ const params = new URLSearchParams(window.location.search); return params.has(name) ? params.get(name) : null; }catch(e){ return null; }
+  }
+
+  // load payload (query first, then localStorage)
+  let payload = null;
+  try {
+    const members_raw = getParam('members_json') || getParam('membersJson') || null;
+    const results_raw = getParam('results_json') || getParam('resultsJson') || null;
+    const order_raw = getParam('order_json') || getParam('orderJson') || null;
+    const settings_raw = getParam('settings_json') || getParam('settingsJson') || null;
+    const history_raw = getParam('history_json') || getParam('historyJson') || null;
+    const title_raw = (new URLSearchParams(window.location.search)).get('title') || null;
+
+    if(members_raw || results_raw || order_raw || settings_raw || history_raw || title_raw){
+      payload = {
+        members_json: safeParse(members_raw),
+        results_json: safeParse(results_raw),
+        order_json: safeParse(order_raw),
+        settings_json: safeParse(settings_raw),
+        history_json: safeParse(history_raw),
+        title: title_raw || ''
+      };
+    }
+  } catch(e){ payload = null; }
+
+  if(!payload){
+    try {
+      const raw = localStorage.getItem('presentation_shuffly_event') || localStorage.getItem('pending_shuffly_event');
+      if(raw){
+        const p = safeParse(raw) || JSON.parse(raw);
+        payload = {
+          members_json: safeParse(p.members_json) || p.members_json || null,
+          results_json: safeParse(p.results_json) || p.results_json || null,
+          order_json: safeParse(p.order_json) || p.order_json || null,
+          settings_json: safeParse(p.settings_json) || p.settings_json || null,
+          history_json: safeParse(p.history_json) || p.history_json || null,
+          title: p.title || ''
+        };
+      }
+    } catch(e){ /* ignore */ }
+  }
+
+  if(!payload) payload = { members_json:null, results_json:null, order_json:null, settings_json:null, history_json:null, title:'' };
+
+  // DOM refs
+  const titleEl = document.getElementById('pres-title');
+  const displaySubtitle = document.getElementById('display-subtitle');
+  const displayItem = document.getElementById('display-item');
+  const displayCounter = document.getElementById('display-counter');
+  const presSnapshot = document.getElementById('pres-snapshot');
+  const listCompact = document.getElementById('list-compact');
+  const snapshotIndexEl = document.getElementById('snapshot-index');
+  const prevSnapshotBtn = document.getElementById('btn-prev-snapshot');
+  const nextSnapshotBtn = document.getElementById('btn-next-snapshot');
+
+  titleEl.textContent = payload.title || document.title || 'プレゼンテーション';
+
+  // prepare data structures for modes
+  // groups: array of {label, members: [...]}
+  function normalizeGroups(results){
+    if(!results) return [];
+    // if results has groups key (object)
+    if(results.groups && typeof results.groups === 'object'){
+      const names = results.group_names || results.groupNames || {};
+      const keys = Object.keys(results.groups);
+      return keys.map(k => ({ label: names[k] || k, members: Array.isArray(results.groups[k]) ? results.groups[k] : [] }));
+    }
+    // if results is an array of groups
+    if(Array.isArray(results)){
+      // assume array of groups with name,members or arrays
+      return results.map((g,i) => {
+        if(typeof g === 'string') return { label: `Group ${i+1}`, members: [g] };
+        if(Array.isArray(g)) return { label: `Group ${i+1}`, members: g };
+        if(g && (g.name || g.label)) return { label: g.name || g.label, members: g.members || [] };
+        return { label: `Group ${i+1}`, members: [] };
+      });
+    }
+    return [];
+  }
+
+  const rawResults = payload.results_json;
+  const groupsList = normalizeGroups(rawResults);
+  const orderList = (() => {
+    const o = payload.order_json || payload.orderJson || [];
+    if(Array.isArray(o)) return o.map((it,i) => (typeof it === 'string' ? { name: it } : it));
+    return [];
+  })();
+  const rolesList = (() => {
+    const s = payload.settings_json || payload.settingsJson || {};
+    // try multiple shapes
+    if(s && Array.isArray(s.role_assignments)) return s.role_assignments.map(r => ({ name: r.name, role: r.role }));
+    if(s && s.roles && typeof s.roles === 'object') return Object.keys(s.roles).map(k => ({ name: k, role: s.roles[k] }));
+    return [];
+  })();
+
+  // snapshot/history handling
+  let history = [];
+  if(Array.isArray(payload.history_json)) history = payload.history_json.slice();
+  else if(typeof payload.history_json === 'string'){
+    const parsed = safeParse(payload.history_json);
+    if(Array.isArray(parsed)) history = parsed;
+  }
+  if(history.length === 0 && payload.members_json && Array.isArray(payload.members_json)){
+    history = [ payload.members_json ];
+  }
+  let historyIdx = history.length > 0 ? history.length - 1 : -1;
+  function updateSnapshotUI(){
+    if(historyIdx < 0 || history.length === 0){
+      presSnapshot.textContent = '(履歴がありません)';
+      snapshotIndexEl.textContent = '';
+      prevSnapshotBtn.disabled = true; nextSnapshotBtn.disabled = true;
+    } else {
+      const raw = history[historyIdx];
+      const parsed = safeParse(raw) || raw;
+      presSnapshot.textContent = typeof parsed === 'string' ? parsed : JSON.stringify(parsed, null, 2);
+      snapshotIndexEl.textContent = ` ${historyIdx+1}/${history.length}`;
+      prevSnapshotBtn.disabled = historyIdx <= 0;
+      nextSnapshotBtn.disabled = historyIdx >= history.length - 1;
+    }
+  }
+  prevSnapshotBtn.addEventListener('click', ()=>{ if(historyIdx>0){ historyIdx--; updateSnapshotUI(); }});
+  nextSnapshotBtn.addEventListener('click', ()=>{ if(historyIdx < history.length-1){ historyIdx++; updateSnapshotUI(); }});
+  updateSnapshotUI();
+
+  // mode state and per-mode index
+  let mode = 'groups'; // groups | order | roles
+  const modeBtns = Array.from(document.querySelectorAll('.mode-btn'));
+  const indices = { groups: 0, order: 0, roles: 0 };
+  const counts = { groups: groupsList.length, order: orderList.length, roles: rolesList.length };
+
+  function setMode(m){
+    mode = m;
+    modeBtns.forEach(b => b.classList.toggle('bg-green-600', b.dataset.mode === m));
+    // set subtitle and prepare listCompact
+    if(m === 'groups') displaySubtitle.textContent = 'グループ（1件ずつ表示）';
+    if(m === 'order') displaySubtitle.textContent = '順番（1件ずつ表示）';
+    if(m === 'roles') displaySubtitle.textContent = '役職（1件ずつ表示）';
+    rebuildListCompact();
+    updateDisplay();
+  }
+  modeBtns.forEach(b => b.addEventListener('click', ()=> setMode(b.dataset.mode)));
+
+  // build compact list (hidden by default) but clickable to jump
+  function rebuildListCompact(){
+    listCompact.innerHTML = '';
+    if(mode === 'groups'){
+      groupsList.forEach((g,i) => {
+        const el = document.createElement('div');
+        el.className = 'p-2 bg-gray-800 rounded cursor-pointer hover:bg-gray-700';
+        el.textContent = `${i+1}. ${g.label} (${g.members.length})`;
+        el.addEventListener('click', () => { indices.groups = i; revealCurrent(); });
+        listCompact.appendChild(el);
+      });
+      if(groupsList.length === 0) listCompact.textContent = '(グループデータなし)';
+    } else if(mode === 'order'){
+      orderList.forEach((o,i) => {
+        const el = document.createElement('div');
+        el.className = 'p-2 bg-gray-800 rounded cursor-pointer hover:bg-gray-700';
+        el.textContent = `${i+1}. ${o.name || JSON.stringify(o)}`;
+        el.addEventListener('click', () => { indices.order = i; revealCurrent(); });
+        listCompact.appendChild(el);
+      });
+      if(orderList.length === 0) listCompact.textContent = '(順番データなし)';
+    } else if(mode === 'roles'){
+      rolesList.forEach((r,i) => {
+        const el = document.createElement('div');
+        el.className = 'p-2 bg-gray-800 rounded cursor-pointer hover:bg-gray-700';
+        el.textContent = `${i+1}. ${r.name || ''} ${r.role ? '– ' + r.role : ''}`;
+        el.addEventListener('click', () => { indices.roles = i; revealCurrent(); });
+        listCompact.appendChild(el);
+      });
+      if(rolesList.length === 0) listCompact.textContent = '(役職データなし)';
+    }
+    // update counters
+    counts.groups = groupsList.length; counts.order = orderList.length; counts.roles = rolesList.length;
+  }
+
+  // display control: reveal/hide, next/prev item, and update according to mode
+  let revealed = false;
+  const btnReveal = document.getElementById('btn-reveal');
+  const btnHide = document.getElementById('btn-hide');
+  const btnPrevItem = document.getElementById('btn-prev-item');
+  const btnNextItem = document.getElementById('btn-next-item');
+
+  function updateControls(){
+    const len = counts[mode] || 0;
+    const idx = indices[mode] || 0;
+    btnPrevItem.disabled = !revealed || idx <= 0;
+    btnNextItem.disabled = !revealed || idx >= len - 1;
+    displayCounter.textContent = len > 0 && revealed ? `${idx+1}/${len}` : (len ? `0/${len}` : '');
+    btnHide.classList.toggle('hidden', !revealed);
+    btnReveal.classList.toggle('hidden', revealed);
+  }
+
+  function formatGroupForDisplay(g){
+    // show label and members vertically
+    const members = Array.isArray(g.members) ? g.members : [];
+    const lines = [`${g.label}（${members.length}名）`, ''];
+    members.forEach(m => {
+      if(typeof m === 'string') lines.push(m);
+      else if(m && (m.name || m.full_name)) lines.push(m.name || m.full_name);
+      else lines.push(JSON.stringify(m));
+    });
+    return lines.join('\n');
+  }
+
+  function formatOrderForDisplay(o){
+    if(!o) return '';
+    if(typeof o === 'string') return o;
+    if(o.name) return o.name;
+    return JSON.stringify(o);
+  }
+
+  function formatRoleForDisplay(r){
+    if(!r) return '';
+    return (r.name || '') + (r.role ? ` — ${r.role}` : '');
+  }
+
+  function updateDisplay(){
+    const len = counts[mode] || 0;
+    const idx = indices[mode] || 0;
+    if(!revealed){
+      displayItem.textContent = ''; displaySubtitle.classList.remove('opacity-60');
+    } else {
+      if(mode === 'groups'){
+        if(len === 0){ displayItem.textContent = '(グループデータなし)'; }
+        else displayItem.textContent = formatGroupForDisplay(groupsList[idx]);
+      } else if(mode === 'order'){
+        if(len === 0){ displayItem.textContent = '(順番データなし)'; }
+        else displayItem.textContent = formatOrderForDisplay(orderList[idx]);
+      } else if(mode === 'roles'){
+        if(len === 0){ displayItem.textContent = '(役職データなし)'; }
+        else displayItem.textContent = formatRoleForDisplay(rolesList[idx]);
+      }
+    }
+    updateControls();
+  }
+
+  function revealCurrent(){
+    revealed = true;
+    btnReveal.classList.add('hidden');
+    btnHide.classList.remove('hidden');
+    updateDisplay();
+  }
+  function hideAll(){
+    revealed = false;
+    displayItem.textContent = '';
+    btnHide.classList.add('hidden');
+    btnReveal.classList.remove('hidden');
+    updateControls();
+  }
+
+  btnReveal.addEventListener('click', () => revealCurrent());
+  btnHide.addEventListener('click', () => hideAll());
+
+  btnPrevItem.addEventListener('click', () => {
+    if(indices[mode] > 0){ indices[mode]--; revealCurrent(); }
+  });
+  btnNextItem.addEventListener('click', () => {
+    if(indices[mode] < (counts[mode]-1)){ indices[mode]++; revealCurrent(); }
+  });
+
+  // click copy button copies current large display text (or full groups text if mode groups)
+  document.getElementById('btn-copy-groups').addEventListener('click', function(){
+    const text = displayItem.textContent || '';
+    navigator.clipboard.writeText(text).then(()=> {
+      this.textContent = 'コピーしました'; setTimeout(()=> this.textContent = '表示内容をコピー', 1200);
+    }).catch(()=> { this.textContent = 'コピー失敗'; setTimeout(()=> this.textContent = '表示内容をコピー', 1200); });
+  });
+
+  // initialize
+  setMode('groups');
+  rebuildListCompact();
+  updateDisplay();
+
+  // back -> restore pending inputs and go to new
+  document.getElementById('btn-back-to-settings').addEventListener('click', function(){
+    try{
+      const preview = {
+        members_json: (typeof payload.members_json === 'string') ? payload.members_json : (payload.members_json ? JSON.stringify(payload.members_json) : ''),
+        results_json: (typeof payload.results_json === 'string') ? payload.results_json : (payload.results_json ? JSON.stringify(payload.results_json) : ''),
+        order_json: (typeof payload.order_json === 'string') ? payload.order_json : (payload.order_json ? JSON.stringify(payload.order_json) : ''),
+        settings_json: (typeof payload.settings_json === 'string') ? payload.settings_json : (payload.settings_json ? JSON.stringify(payload.settings_json) : ''),
+        history_json: (typeof payload.history_json === 'string') ? payload.history_json : (payload.history_json ? JSON.stringify(payload.history_json) : ''),
+        title: payload.title || ''
+      };
+      localStorage.setItem('pending_shuffly_event', JSON.stringify(preview));
+    }catch(e){}
+    window.location.href = "<%= new_event_path %>";
+  });
+
+  document.getElementById('btn-close').addEventListener('click', function(){
+    if(window.opener) window.close(); else window.location.href = "<%= root_path %>";
+  });
+
+  // keyboard bindings
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') document.getElementById('btn-back-to-settings').click();
+    if(e.key === 'ArrowLeft') document.getElementById('btn-prev-item').click();
+    if(e.key === 'ArrowRight') document.getElementById('btn-next-item').click();
+    if(e.key === ' '){ e.preventDefault(); revealed ? hideAll() : revealCurrent(); }
+  });
+
+})();
+</script>
