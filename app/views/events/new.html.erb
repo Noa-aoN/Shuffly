@@ -58,11 +58,24 @@
         </div>
       </div>
 
+      <!-- メンバー順ランダム（オプション） -->
+      <div>
+        <label class="inline-flex items-center space-x-2">
+          <input type="checkbox" id="enableOrderShuffle" class="rounded border-gray-300">
+          <span>順番付けでランダムにする</span>
+        </label>
+      </div>
+
       <!-- 操作ボタン -->
       <div class="flex flex-wrap gap-2 mt-4">
         <button onclick="assignGroups()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">グループ分け実行</button>
         <button onclick="undoHistory()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md">⬅️ 1ステップ戻る</button>
         <button onclick="redoHistory()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md">➡️ 1ステップ進む</button>
+      </div>
+
+      <!-- 順番付け実行ボタン（新規） -->
+      <div class="mt-2">
+        <button type="button" onclick="assignOrder()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md">順番付け実行</button>
       </div>
 
       <!-- 保存フォーム -->
@@ -104,6 +117,12 @@
       <div>
         <h2 class="text-xl font-semibold mb-2">統計情報</h2>
         <textarea id="statsOutput" rows="10" readonly class="border rounded-md px-3 py-2 w-full text-lg"></textarea>
+      </div>
+
+      <!-- 順番表示（新規） -->
+      <div>
+        <h2 class="text-xl font-semibold mb-2">順番表示</h2>
+        <textarea id="orderOutput" rows="6" readonly class="border rounded-md px-3 py-2 w-full text-lg"></textarea>
       </div>
     </div>
   </div>
@@ -184,7 +203,7 @@ function assignGroups(){
   const groups=Object.fromEntries(groupIds.map(g=>[g,[]]));
   const coMap=getCoOccurrenceMap(entries);
 
-  if(document.getElementById('enableOrderShuffle').checked) entries.sort(()=>Math.random()-0.5);
+  if(document.getElementById('enableOrderShuffle')?.checked) entries.sort(()=>Math.random()-0.5);
 
   for(const p of entries){
     // first try to put one per empty group
@@ -231,6 +250,34 @@ function assignGroups(){
   }
 
   updateParticipantCount(); showGroups(); showStats(); pushToHistory();
+}
+
+function assignOrder(){
+  // 現在の参加者テキストから順番を決めて表示・保存する
+  const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+  let entries=raw.map(parseEntry).map(e=>e.name);
+  if(entries.length === 0){
+    document.getElementById('orderOutput').value = "";
+    if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = "[]";
+    showToast("参加者がいません");
+    return;
+  }
+
+  // 仕様: 順番付け実行は常にランダムに順番を割り当てる
+  for(let i=entries.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [entries[i], entries[j]]=[entries[j], entries[i]];
+  }
+
+  // 表示用: "1. 名前" の形で出す
+  const lines = entries.map((name, idx) => `${idx+1}. ${name}`);
+  document.getElementById('orderOutput').value = lines.join("\n");
+
+  // 保存用 JSON: [{name, order}, ...]
+  const orderJson = entries.map((name, idx) => ({ name, order: idx+1 }));
+  if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = JSON.stringify(orderJson);
+
+  showToast("順番を割り当てました");
 }
 
 function showGroups(){
