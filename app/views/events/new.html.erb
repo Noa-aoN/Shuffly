@@ -1,5 +1,4 @@
-<%# filepath: /Users/n/workspace/Shuffly/app/views/events/new.html.erb %>
-<div class="max-w-6xl mx-auto p-6">
+<div class="max-w-6xl mx-auto px-6 pt-3 pb-6">
   <h1 class="text-3xl font-bold mb-6"><%= @event.title.presence || "イベント作成" %></h1>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -221,19 +220,23 @@
                 <option value="\t">タブ</option>
               </select>
             </label>
-            <%= render 'shared/button',
-                  f: nil,
-                  button_text: 'コピー',
-                  id: 'btn-copy-groupoutput',
-                  path: '#',
-                  variant: 'secondary',
-                  full_mobile: false,
-                  extra_class: 'ml-auto px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600' %>
           </div>
           <textarea id="groupOutput" rows="8" readonly class="border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
 
           <h3 class="font-medium mb-2">統計情報</h3>
           <textarea id="statsOutput" rows="6" readonly class="border rounded-md px-3 py-2 w-full text-sm"></textarea>
+
+          <!-- コピーボタンを統計情報の下に移動 -->
+          <div class="flex justify-left mt-2">
+            <%= render 'shared/button',
+                  f: nil,
+                  button_text: 'クリップボードにコピー',
+                  id: 'btn-copy-groupoutput',
+                  path: '#',
+                  variant: 'secondary',
+                  full_mobile: false,
+                  extra_class: 'px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600' %>
+          </div>
         </div>
 
         <!-- 順番表示パネル -->
@@ -270,7 +273,7 @@
                 extra_class: 'px-4 py-2 bg-yellow-400 rounded hover:bg-yellow-500' %>
           <%= render 'shared/button',
                 f: nil,
-                button_text: '結果出力',
+                button_text: 'テキスト出力',
                 id: 'btn-export-results',
                 path: '#',
                 variant: 'secondary',
@@ -278,7 +281,7 @@
                 extra_class: 'px-4 py-2 border rounded hover:bg-gray-200' %>
           <%= render 'shared/button',
                 f: nil,
-                button_text: '結果保存',
+                button_text: 'イベント保存',
                 id: 'btn-save-results',
                 path: '#',
                 variant: 'primary',
