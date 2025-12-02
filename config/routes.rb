@@ -1,23 +1,22 @@
 Rails.application.routes.draw do
-  # Devise でユーザー認証
+  # Devise 認証
   devise_for :users
 
-  # ホーム
-  root "home#index"
+  # メイン画面をイベントページに統一 (SPA)
+  root "events#index"
 
-  # イベント関連
+  # イベント管理（JSON保存やSPA向け更新含む）
   resources :events do
-    post :save_result, on: :member
-    get  :export_result, on: :member
+    member do
+      patch :save  # SPA向け保存API
+      get :export_result
+    end
   end
 
   # マイページ
   get "mypage", to: "users#mypage", as: :mypage
 
-  # 設定ページ（オプション）
-  resource :settings, only: [:edit, :update]
-
-  # 健康チェック・PWA関連
+  # ---- 以下、システム関連 ----
   get "up" => "rails/health#show", as: :rails_health_check
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

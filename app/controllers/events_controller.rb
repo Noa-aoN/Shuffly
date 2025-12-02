@@ -1,6 +1,9 @@
 class EventsController < ApplicationController
   before_action :set_event, only: [:show]
 
+  def index
+  end
+
   # GET /events/new
   def new
     @event = Event.new
@@ -8,16 +11,14 @@ class EventsController < ApplicationController
 
   # POST /events
   def create
-    # ゲストでも動くように user_id は nil でOK
     @event = current_user ? current_user.events.build(event_params) : Event.new(event_params)
 
-    # 入力されたメンバーを配列化して JSON に保存
     members_input = params.dig(:event, :members_input).to_s
     members_array = members_input.split(/[\r\n,]+/).map(&:strip).reject(&:blank?)
     @event.members_json = members_array.map { |name| { "name" => name } }.to_json
 
     if @event.save
-      # グループ名の取得、なければ group_count で生成（デフォルト1）
+      # グループ分け
       group_names = if params.dig(:event, :group_names).present?
                       params[:event][:group_names].split(/[\r\n,]+/).map(&:strip).reject(&:blank?)
                     else
@@ -26,7 +27,6 @@ class EventsController < ApplicationController
                       (1..count).map { |i| "Group #{i}" }
                     end
 
-      # メンバーをグループ分け（重複なし）
       grouped = group_names.map { |g| [g, []] }.to_h
       members_array.shuffle.each_with_index do |name, i|
         grouped[group_names[i % group_names.size]] << { "name" => name }
@@ -49,16 +49,17 @@ class EventsController < ApplicationController
         end
       end
 
-      # 結果保存（seed を 64ビット整数に収める）
       seed = Random.new_seed % (2**63 - 1)
-      @result = @event.results.create!(
-        result_json: grouped.to_json,
-        seed: seed
-      )
+      result = @event.results.create!(result_json: grouped.to_json, seed: seed)
 
-      redirect_to @event
+      # SPA 用: JSON を返す
+      render json: {
+        event: @event,
+        result: result,
+        grouped: grouped
+      }
     else
-      render :new
+      render json: { errors: @event.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
