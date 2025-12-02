@@ -1,19 +1,21 @@
+<%# filepath: /Users/n/workspace/Shuffly/app/views/events/new.html.erb %>
 <div class="max-w-6xl mx-auto p-6">
   <h1 class="text-3xl font-bold mb-6"><%= @event.title.presence || "イベント作成" %></h1>
-  <div class="flex flex-col md:flex-row gap-6">
 
-    <!-- 左カラム: 入力 -->
-    <div class="md:w-1/2 space-y-4">
-      <!-- イベント名 -->
-      <div>
-        <label class="block font-semibold mb-1">イベント名</label>
-        <input type="text" id="eventTitle" value="<%= @event.title %>" class="border rounded-md px-3 py-2 w-full">
-      </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-      <!-- 参加者入力 -->
-      <div>
-        <label class="block font-semibold mb-1">参加者（履歴付き）</label>
-        <textarea id="membersInput" rows="10" class="border rounded-md px-3 py-2 w-full"><%= begin
+    <!-- 左カラム：①メンバーを追加カード と ②設定を選択カード -->
+    <div class="space-y-6">
+
+      <!-- ① メンバーを追加 -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-start gap-3 mb-4">
+          <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">1</div>
+          <h2 class="text-lg font-semibold">メンバーを追加</h2>
+        </div>
+
+        <label class="block text-sm font-medium mb-2">メンバー名リスト</label>
+        <textarea id="membersInput" rows="8" class="w-full border rounded-md px-3 py-2 mb-3"><%= begin
           members = @event.members_json.present? ? JSON.parse(@event.members_json) : []
           members.map do |m|
             if m.is_a?(Hash)
@@ -27,103 +29,191 @@
         rescue JSON::ParserError
           ""
         end %></textarea>
-        <p class="text-sm text-gray-500 mt-1">例: Alice#1A#2B (カンマまたは改行で区切れます)</p>
-      </div>
 
-      <!-- グループ数 -->
-      <div class="flex items-center gap-4">
-        <div>
-          <label class="block font-semibold mb-1">グループ数</label>
-          <input type="number" id="groupCount" value="<%= @event.group_count.presence || 3 %>" min="1" max="26" class="border rounded-md px-2 py-1 w-20" oninput="updateParticipantCount(); showGroups(); showStats();">
-        </div>
-        <span id="groupSizeHint" class="text-gray-600 mt-6"></span>
-      </div>
-
-      <!-- グループ名 -->
-      <div class="mt-2">
-        <label class="block font-semibold mb-1">グループ名（任意・改行またはカンマで区切り）</label>
-        <textarea id="customGroupNames" rows="2" placeholder="Team Alpha, Team Beta" class="border rounded-md px-3 py-2 w-full" oninput="showGroups()"></textarea>
-        <p class="text-sm text-gray-500 mt-1">入力がある場合は、こちらの名前がグループ表示に使用されます。入力数がグループ数を上書きします。ただし内部履歴は常に A,B,C... のIDで管理します。</p>
-      </div>
-
-      <!-- 役割 -->
-      <div>
-        <label class="block font-semibold mb-1">役割（任意）</label>
-        <textarea id="rolesInput" rows="3" placeholder="リーダー, サブリーダー, ..." class="border rounded-md px-3 py-2 w-full"><%= @event.setting_json["roles"] rescue "" %></textarea>
-        <div class="mt-1">
-          <label class="inline-flex items-center space-x-2">
-            <input type="checkbox" id="enableRoleShuffle" class="rounded border-gray-300">
-            <span>ランダムに割り当て</span>
-          </label>
+        <div class="flex gap-2 items-center">
+          <button type="button" onclick="triggerImport()" class="px-4 py-2 bg-gray-100 border rounded hover:bg-gray-200">メンバーリストからインポート</button>
+          <input id="importFile" type="file" accept=".txt,.csv" class="hidden" onchange="handleImportFile(event)">
+          <button type="button" onclick="pasteFromClipboard()" class="px-4 py-2 bg-gray-50 border rounded hover:bg-gray-100">クリップボード貼り付け</button>
         </div>
       </div>
 
-      <!-- メンバー順ランダム（オプション） -->
-      <div>
-        <label class="inline-flex items-center space-x-2">
-          <input type="checkbox" id="enableOrderShuffle" class="rounded border-gray-300">
-          <span>順番付けでランダムにする</span>
-        </label>
+      <!-- ② 設定を選択（タブ切替: グループ / 順番 / 役職） -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-start gap-3 mb-4">
+          <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">2</div>
+          <h2 class="text-lg font-semibold">設定を選択</h2>
+        </div>
+
+        <!-- タブボタン -->
+        <div class="flex gap-2 mb-4">
+          <button type="button" id="tab-settings-groups" class="px-3 py-1 text-sm border rounded bg-blue-100" onclick="switchSettingsTab('groups')">グループ</button>
+          <button type="button" id="tab-settings-order" class="px-3 py-1 text-sm border rounded" onclick="switchSettingsTab('order')">順番</button>
+          <button type="button" id="tab-settings-roles" class="px-3 py-1 text-sm border rounded" onclick="switchSettingsTab('roles')">役職</button>
+        </div>
+
+        <!-- グループパネル -->
+        <div id="panel-settings-groups" class="settings-panel">
+          <div class="mb-4">
+            <label class="block font-medium mb-1">グループ分けオプション</label>
+            <div class="flex items-center gap-3 mb-2">
+              <div>
+                <label class="text-xs text-gray-600">グループ数</label>
+                <input id="groupCount" type="number" min="1" max="26" value="<%= @event.group_count.presence || 3 %>" class="mt-1 w-24 border rounded px-2 py-1" oninput="updateParticipantCount(); showGroups(); showStats();">
+              </div>
+              <div class="flex-1">
+                <label class="text-xs text-gray-600">グループ名（任意・改行/カンマ区切り）</label>
+                <textarea id="customGroupNames" rows="1" class="w-full border rounded px-2 py-1" placeholder="Team A, Team B" oninput="showGroups()"></textarea>
+              </div>
+            </div>
+
+            <div>
+              <label class="text-xs text-gray-600">固定メンバー（任意、1行に1名）</label>
+              <textarea id="fixedMembersInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="固定したいメンバー名を1行ずつ入力"></textarea>
+              <p class="text-xs text-gray-500 mt-1">固定メンバーはグループ分け実行時に可能な限り指定グループに残します（自動振り分けとの兼ね合いにより完全固定にならない場合があります）。</p>
+            </div>
+
+            <div id="groupSizeHint" class="text-xs text-gray-500 mt-2"></div>
+          </div>
+        </div>
+
+        <!-- 順番パネル -->
+        <div id="panel-settings-order" class="settings-panel hidden">
+          <div class="mb-4">
+            <label class="block font-medium mb-1">順番決めオプション</label>
+            <label class="inline-flex items-center gap-2">
+              <input id="enableOrderShuffle" type="checkbox" class="rounded border-gray-300">
+              <span class="text-sm">順番をランダム化する</span>
+            </label>
+            <p class="text-xs text-gray-500 mt-2">順番に関する追加オプションが入ります（現状はランダム化のチェックのみ）。</p>
+          </div>
+        </div>
+
+        <!-- 役職パネル -->
+        <div id="panel-settings-roles" class="settings-panel hidden">
+          <div class="mb-4">
+            <label class="block font-medium mb-1">役割決めオプション</label>
+            <textarea id="rolesInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="リーダー, サブリーダー, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
+            <label class="inline-flex items-center gap-2 mt-2">
+              <input id="enableRoleShuffle" type="checkbox" class="rounded border-gray-300">
+              <span class="text-sm">ランダムに割り当て</span>
+            </label>
+            <p class="text-xs text-gray-500 mt-2">複数の役職をカンマ区切りで入力してください。</p>
+          </div>
+        </div>
+
+        <!-- ボタン群（パネル毎に表示） -->
+        <!-- グループ用アクション -->
+        <div id="settings-action-groups" class="mt-4">
+          <div class="flex gap-2 mb-3">
+            <button type="button" onclick="assignGroups()" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">グループ分け実行</button>
+            <button type="button" onclick="undoHistory()" class="px-4 py-2 bg-gray-100 border rounded hover:bg-gray-200">前のグループへ</button>
+            <button type="button" onclick="redoHistory()" class="px-4 py-2 bg-gray-100 border rounded hover:bg-gray-200">後ろのグループへ</button>
+          </div>
+        </div>
+
+        <!-- 順番用アクション -->
+        <div id="settings-action-order" class="mt-4 hidden">
+          <div class="flex gap-2">
+            <button type="button" onclick="assignOrder()" class="flex-1 px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600">順番決め実行</button>
+          </div>
+        </div>
+
+        <!-- 役職用アクション -->
+        <div id="settings-action-roles" class="mt-4 hidden">
+          <div class="flex gap-2">
+            <button type="button" onclick="assignRoles()" class="px-4 py-2 bg-indigo-100 border rounded hover:bg-indigo-200">役職決め実行</button>
+          </div>
+        </div>
       </div>
 
-      <!-- 操作ボタン -->
-      <div class="flex flex-wrap gap-2 mt-4">
-        <button onclick="assignGroups()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">グループ分け実行</button>
-        <button onclick="undoHistory()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md">⬅️ 1ステップ戻る</button>
-        <button onclick="redoHistory()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md">➡️ 1ステップ進む</button>
+    </div>
+
+    <!-- 右カラム：③結果 と ④共有 -->
+    <div class="space-y-6">
+
+      <!-- ③ 結果 -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
+            <h2 class="text-lg font-semibold">結果</h2>
+          </div>
+
+          <!-- 切替タブ（ページネーション的切替） -->
+          <div class="flex gap-2">
+            <button type="button" class="px-3 py-1 text-sm border rounded" onclick="switchResultTab('groups')" id="tab-groups">グループ／統計</button>
+            <button type="button" class="px-3 py-1 text-sm border rounded" onclick="switchResultTab('order')" id="tab-order">順番表示</button>
+            <button type="button" class="px-3 py-1 text-sm border rounded" onclick="switchResultTab('roles')" id="tab-roles">役職表示</button>
+          </div>
+        </div>
+
+        <!-- グループ表示＋統計（デフォルト表示） -->
+        <div id="panel-groups" class="result-panel">
+          <h3 class="font-medium mb-2">グループ表示</h3>
+          <div class="flex items-center mb-2 gap-2">
+            <label class="inline-flex items-center gap-1">
+              <input type="checkbox" id="showGroupLabel" checked onchange="showGroups()" class="rounded border-gray-300">
+              <span class="text-sm">グループ名表示</span>
+            </label>
+            <label class="inline-flex items-center gap-1">
+              <span class="text-sm">セパレータ:</span>
+              <select id="separatorSelect" onchange="showGroups()" class="border rounded-md px-2 py-1">
+                <option value=" ">スペース</option>
+                <option value=",">カンマ</option>
+                <option value="  ">ダブルスペース</option>
+                <option value="\t">タブ</option>
+              </select>
+            </label>
+            <button onclick="copyGroupOutput()" class="ml-auto px-3 py-1 bg-green-500 text-white rounded">コピー</button>
+          </div>
+          <textarea id="groupOutput" rows="8" readonly class="border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
+
+          <h3 class="font-medium mb-2">統計情報</h3>
+          <textarea id="statsOutput" rows="6" readonly class="border rounded-md px-3 py-2 w-full text-sm"></textarea>
+        </div>
+
+        <!-- 順番表示パネル -->
+        <div id="panel-order" class="result-panel hidden">
+          <h3 class="font-medium mb-2">順番表示</h3>
+          <textarea id="orderOutput" rows="10" readonly class="border rounded-md px-3 py-2 w-full text-lg"></textarea>
+        </div>
+
+        <!-- 役職表示パネル -->
+        <div id="panel-roles" class="result-panel hidden">
+          <h3 class="font-medium mb-2">役職表示</h3>
+          <textarea id="rolesOutput" rows="8" readonly class="border rounded-md px-3 py-2 w-full text-lg"></textarea>
+        </div>
       </div>
 
-      <!-- 順番付け実行ボタン（新規） -->
-      <div class="mt-2">
-        <button type="button" onclick="assignOrder()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md">順番付け実行</button>
-      </div>
+      <!-- ④ 共有 -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-start gap-3 mb-4">
+          <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">4</div>
+          <h2 class="text-lg font-semibold">共有</h2>
+        </div>
 
-      <!-- 保存フォーム -->
-      <div class="mt-4">
-        <%= f = form_with(model: @event, local: true) do |f| %>
+        <label class="block text-sm font-medium mb-2">イベントタイトル</label>
+        <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-3">
+
+        <div class="flex gap-2 mb-3">
+          <button type="button" onclick="togglePresentationMode()" class="px-4 py-2 bg-yellow-400 rounded hover:bg-yellow-500">プレゼン表示</button>
+          <button type="button" onclick="exportResults()" class="px-4 py-2 bg-gray-100 border rounded hover:bg-gray-200">結果出力</button>
+          <button type="button" onclick="saveResults()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">結果保存</button>
+        </div>
+
+        <p class="text-xs text-gray-500">保存ボタンは、現在の設定・グループ・順番・役職を hidden fields にセットしてフォームを submit します。</p>
+
+        <!-- hidden 保存フォーム（submit は saveResults() が制御） -->
+        <%= form_with(model: @event, local: true, html: { id: 'saveForm', style: 'display:none' }) do |f| %>
           <%= f.hidden_field :members_json, id: 'membersJsonInput' %>
           <%= f.hidden_field :member_results_json, id: 'resultsJsonInput' %>
           <%= f.hidden_field :member_order_json, id: 'orderJsonInput' %>
           <%= f.hidden_field :setting_json, id: 'settingsJsonInput' %>
           <%= f.hidden_field :history_json, id: 'historyJsonInput' %>
-          <%= f.submit "イベント保存", class: "bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md" %>
+          <%= f.hidden_field :title, value: @event.title, name: 'event[title]', id: 'hiddenEventTitle' %>
         <% end %>
       </div>
-    </div>
 
-    <!-- 右カラム: 結果表示 -->
-    <div class="md:w-1/2 space-y-4">
-      <div>
-        <h2 class="text-xl font-semibold mb-2">グループ表示</h2>
-        <div class="flex items-center mb-2 gap-4">
-          <label class="inline-flex items-center gap-1">
-            <input type="checkbox" id="showGroupLabel" checked onchange="showGroups()" class="rounded border-gray-300">
-            <span>グループ名表示</span>
-          </label>
-          <label class="inline-flex items-center gap-1">
-            <span>セパレータ:</span>
-            <select id="separatorSelect" onchange="showGroups()" class="border rounded-md px-2 py-1">
-              <option value=" ">スペース</option>
-              <option value=",">カンマ</option>
-              <option value="  ">ダブルスペース</option>
-              <option value="\t">タブ</option>
-            </select>
-          </label>
-          <button onclick="copyGroupOutput()" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md">コピー</button>
-        </div>
-        <textarea id="groupOutput" rows="10" readonly class="border rounded-md px-3 py-2 w-full text-lg"></textarea>
-      </div>
-
-      <div>
-        <h2 class="text-xl font-semibold mb-2">統計情報</h2>
-        <textarea id="statsOutput" rows="10" readonly class="border rounded-md px-3 py-2 w-full text-lg"></textarea>
-      </div>
-
-      <!-- 順番表示（新規） -->
-      <div>
-        <h2 class="text-xl font-semibold mb-2">順番表示</h2>
-        <textarea id="orderOutput" rows="6" readonly class="border rounded-md px-3 py-2 w-full text-lg"></textarea>
-      </div>
     </div>
   </div>
 
@@ -132,17 +222,17 @@
 
 <script>
 let history = [], currentHistoryIndex = -1;
+const IS_SIGNED_IN = <%= user_signed_in? ? 'true' : 'false' %>;
 
+// --- helper functions (existing) ---
 function clampGroupCount(v){
   return Math.min(Math.max(parseInt(v) || 1, 1), 26);
 }
-
 function parseEntry(entry){
   const name = entry.split('#')[0].trim();
   const hist = entry.match(/#\d+[A-Z]/g) || [];
   return {name, history: hist};
 }
-
 function getCurrentRound(entries){
   let max=0;
   for(const e of entries) for(const h of e.history) {
@@ -151,7 +241,6 @@ function getCurrentRound(entries){
   }
   return max+1;
 }
-
 function getCoOccurrenceMap(entries, ignoreLast=true){
   const map={}, histories={};
   for(const e of entries) histories[e.name]=ignoreLast?e.history.slice(0,-1):e.history;
@@ -167,7 +256,6 @@ function getCoOccurrenceMap(entries, ignoreLast=true){
 }
 
 // 共通: グループID(A,B,...)と表示名の決定
-// 変更点: customGroupNames が入力されている場合は groupCount を無視し、customNames.length を優先する
 function buildGroupIdsAndNames(){
   const inputGroupCount = clampGroupCount(document.getElementById('groupCount').value);
   const customNames = (document.getElementById('customGroupNames').value || "").split(/[\r\n,]+/).map(n=>n.trim()).filter(Boolean);
@@ -177,7 +265,6 @@ function buildGroupIdsAndNames(){
   let displayNames = [];
 
   if(customNames.length > 0){
-    // グループ名入力がある場合は、その数をグループ数として扱う（最大26）
     groupCount = Math.min(customNames.length, 26);
     ids = Array.from({length: groupCount}, (_,i)=>String.fromCharCode(65+i));
     displayNames = customNames.slice(0, groupCount);
@@ -187,7 +274,6 @@ function buildGroupIdsAndNames(){
     displayNames = ids.slice();
   }
 
-  // map id -> display
   const idToName = {};
   ids.forEach((id, idx) => idToName[id] = displayNames[idx] || id);
   return { ids, displayNames, idToName, groupCount };
@@ -203,10 +289,28 @@ function assignGroups(){
   const groups=Object.fromEntries(groupIds.map(g=>[g,[]]));
   const coMap=getCoOccurrenceMap(entries);
 
-  if(document.getElementById('enableOrderShuffle')?.checked) entries.sort(()=>Math.random()-0.5);
+  // 固定メンバーを考慮（簡易実装: 固定メンバーは先にグループの先頭に配置）
+  const fixedRaw = (document.getElementById('fixedMembersInput').value || "").split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+  const fixedSet = new Set(fixedRaw);
+  const fixedEntries = entries.filter(e=>fixedSet.has(e.name));
+  const otherEntries = entries.filter(e=>!fixedSet.has(e.name));
 
-  for(const p of entries){
-    // first try to put one per empty group
+  // まず固定を一人ずつ空のグループに割り当て（存在すれば）
+  for(const p of fixedEntries){
+    let emptyGroup = groupIds.find(g=>groups[g].length===0);
+    if(emptyGroup){ groups[emptyGroup].push(p); }
+    else {
+      // 最小サイズグループへ（単純）
+      const minSize=Math.min(...groupIds.map(g=>groups[g].length));
+      const candidates=groupIds.filter(g=>groups[g].length===minSize);
+      groups[candidates[0]].push(p);
+    }
+  }
+
+  // その他を通常ロジックで割り当て
+  if(document.getElementById('enableOrderShuffle')?.checked) otherEntries.sort(()=>Math.random()-0.5);
+
+  for(const p of otherEntries){
     let emptyGroup=groupIds.find(g=>groups[g].length===0);
     if(emptyGroup){ groups[emptyGroup].push(p); continue; }
 
@@ -230,21 +334,17 @@ function assignGroups(){
     }
   }
 
-  // 履歴には ID(A,B,...) を付与する（表示名は別に管理）
   const updated=groupIds.flatMap(g=>groups[g].map(e=>`${e.name}${e.history.join('')}#${round}${g}`));
   input.value=updated.join("\n");
 
-  // 保存用 JSON: entries, groups (by id) and display name mapping
   try{
     document.getElementById('membersJsonInput').value = JSON.stringify(entries);
-    document.getElementById('resultsJsonInput').value = JSON.stringify({ groups: groups, group_names: idToName });
+    document.getElementById('resultsJsonInput').value = JSON.stringify({ groups: groups, group_names: buildGroupIdsAndNames().idToName });
     document.getElementById('settingsJsonInput').value = JSON.stringify({
       roles: document.getElementById('rolesInput').value,
-      // 実際に使用したグループ数を保存（custom names がある場合はその数）
       group_count: groupCount,
       custom_group_names: (document.getElementById('customGroupNames').value || "").split(/[\r\n,]+/).map(n=>n.trim()).filter(Boolean)
     });
-    if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = JSON.stringify(entries.map(e=>e.name));
   }catch(e){
     console.warn("JSON シリアライズ失敗:", e);
   }
@@ -253,7 +353,6 @@ function assignGroups(){
 }
 
 function assignOrder(){
-  // 現在の参加者テキストから順番を決めて表示・保存する
   const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
   let entries=raw.map(parseEntry).map(e=>e.name);
   if(entries.length === 0){
@@ -263,21 +362,51 @@ function assignOrder(){
     return;
   }
 
-  // 仕様: 順番付け実行は常にランダムに順番を割り当てる
+  // 常にランダムで順番を付与
   for(let i=entries.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
     [entries[i], entries[j]]=[entries[j], entries[i]];
   }
 
-  // 表示用: "1. 名前" の形で出す
   const lines = entries.map((name, idx) => `${idx+1}. ${name}`);
   document.getElementById('orderOutput').value = lines.join("\n");
 
-  // 保存用 JSON: [{name, order}, ...]
   const orderJson = entries.map((name, idx) => ({ name, order: idx+1 }));
   if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = JSON.stringify(orderJson);
 
   showToast("順番を割り当てました");
+}
+
+function assignRoles(){
+  // 役職を割り当てて rolesOutput に表示し、hidden に保存
+  const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+  let names=raw.map(s=>s.split('#')[0].trim());
+  if(names.length===0){ showToast("参加者がいません"); return; }
+
+  const roles = document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
+  if(roles.length===0){ showToast("役職が未入力です"); return; }
+
+  // もしランダムオプションが有効ならシャッフルしてから割り当て
+  if(document.getElementById('enableRoleShuffle')?.checked){
+    for(let i=names.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [names[i], names[j]]=[names[j], names[i]];
+    }
+  }
+
+  const assignments = names.map((n,i)=> `${n}: ${roles[i % roles.length]}`);
+  document.getElementById('rolesOutput').value = assignments.join("\n");
+
+  // 保存: メンバー毎の役職配列を hidden に追加 to settingsJsonInput
+  try {
+    const settings = JSON.parse(document.getElementById('settingsJsonInput').value || '{}');
+    settings.role_assignments = names.map((n,i)=>({ name:n, role: roles[i % roles.length] }));
+    document.getElementById('settingsJsonInput').value = JSON.stringify(settings);
+  } catch(e){
+    document.getElementById('settingsJsonInput').value = JSON.stringify({ role_assignments: names.map((n,i)=>({ name:n, role: roles[i % roles.length] })) });
+  }
+
+  showToast("役職を割り当てました");
 }
 
 function showGroups(){
@@ -288,13 +417,9 @@ function showGroups(){
   const groups=Object.fromEntries(groupIds.map(g=>[g,[]]));
   for(const e of entries){
     const last=e.history.at(-1);
-    // capture the ID letter that we append in assignGroups
     const m = last ? last.match(/#\d+([A-Z])$/) : null;
     let id = m ? m[1] : null;
     if(!id || !groupIds.includes(id)) {
-      // 当該メンバーに割り当てられたIDがないか、現在のグループIDリストに存在しない場合は
-      // メンバー分布が均等になるように振り分ける（偏り回避）
-      // empty group があればそこに、なければ最小サイズのグループに入れる
       let empty = groupIds.find(g=>groups[g].length===0);
       if(empty) id = empty;
       else {
@@ -357,11 +482,10 @@ function showStats(){
 function updateParticipantCount(){
   const count=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean).length;
   const span=document.getElementById('groupSizeHint');
-  // 実際に使われるグループ数（custom names がある場合はそちらを優先）
   const { groupCount } = buildGroupIdsAndNames();
-  if(!groupCount||count===0){span.textContent=''; return;}
+  if(!groupCount||count===0){ if(span) span.textContent=''; return;}
   const min=Math.floor(count/groupCount), max=Math.ceil(count/groupCount);
-  span.textContent=min===max?`（1グループあたり${min}人）`:`（1グループあたり${min}〜${max}人）`;
+  if(span) span.textContent=min===max?`（1グループあたり${min}人）`:`（1グループあたり${min}〜${max}人）`;
 }
 
 function copyGroupOutput(){
@@ -402,6 +526,150 @@ function redoHistory(){
   } else showToast("これ以上進めません");
 }
 
+// 結果タブ切替
+function switchResultTab(name){
+  document.querySelectorAll('.result-panel').forEach(el=>el.classList.add('hidden'));
+  document.querySelectorAll('#tab-groups, #tab-order, #tab-roles').forEach(b=>b.classList.remove('bg-blue-100'));
+  if(name==='groups'){ document.getElementById('panel-groups').classList.remove('hidden'); document.getElementById('tab-groups').classList.add('bg-blue-100'); }
+  if(name==='order'){ document.getElementById('panel-order').classList.remove('hidden'); document.getElementById('tab-order').classList.add('bg-blue-100'); }
+  if(name==='roles'){ document.getElementById('panel-roles').classList.remove('hidden'); document.getElementById('tab-roles').classList.add('bg-blue-100'); }
+}
+
+// 設定タブ切替（新規）
+function switchSettingsTab(name){
+  // パネル切替
+  document.querySelectorAll('.settings-panel').forEach(el=>el.classList.add('hidden'));
+  document.querySelectorAll('#tab-settings-groups, #tab-settings-order, #tab-settings-roles').forEach(b=>b.classList.remove('bg-blue-100'));
+  if(name==='groups'){ document.getElementById('panel-settings-groups').classList.remove('hidden'); document.getElementById('tab-settings-groups').classList.add('bg-blue-100'); }
+  if(name==='order'){ document.getElementById('panel-settings-order').classList.remove('hidden'); document.getElementById('tab-settings-order').classList.add('bg-blue-100'); }
+  if(name==='roles'){ document.getElementById('panel-settings-roles').classList.remove('hidden'); document.getElementById('tab-settings-roles').classList.add('bg-blue-100'); }
+
+  // アクションボタン切替（グループ/順番/役職でのみ表示）
+  const gAct = document.getElementById('settings-action-groups');
+  const oAct = document.getElementById('settings-action-order');
+  const rAct = document.getElementById('settings-action-roles');
+  if(gAct) gAct.classList.add('hidden');
+  if(oAct) oAct.classList.add('hidden');
+  if(rAct) rAct.classList.add('hidden');
+  if(name==='groups' && gAct) gAct.classList.remove('hidden');
+  if(name==='order' && oAct) oAct.classList.remove('hidden');
+  if(name==='roles' && rAct) rAct.classList.remove('hidden');
+}
+
+// インポート補助
+function triggerImport(){ document.getElementById('importFile').click(); }
+function handleImportFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const text = ev.target.result;
+    // 改行で分割して textarea にセット（既存のリストに追加する）
+    const cur = document.getElementById('membersInput').value.trim();
+    const merged = (cur?cur + "\n":"") + text.replace(/\r/g,'').trim();
+    document.getElementById('membersInput').value = merged;
+    updateParticipantCount(); pushToHistory(); showGroups(); showStats();
+    showToast("ファイルをインポートしました");
+  };
+  reader.readAsText(file, 'utf-8');
+}
+function pasteFromClipboard(){
+  navigator.clipboard.readText().then(txt=>{
+    const cur = document.getElementById('membersInput').value.trim();
+    const merged = (cur?cur + "\n":"") + txt.replace(/\r/g,'').trim();
+    document.getElementById('membersInput').value = merged;
+    updateParticipantCount(); pushToHistory(); showGroups(); showStats();
+    showToast("クリップボードから貼り付けました");
+  }).catch(()=>showToast("クリップボードにアクセスできません"));
+}
+
+// 共有機能
+function togglePresentationMode(){
+  // プレゼンテーションモード切替（簡易: 新しいウィンドウでグループ表示を開く）
+  const html = document.getElementById('groupOutput').value;
+  const w = window.open('','_blank','noopener,noreferrer');
+  w.document.write(`<pre style="font-family:inherit;white-space:pre-wrap">${html.replace(/</g,'&lt;')}</pre>`);
+  w.document.title = (document.getElementById('shareEventTitle').value || 'プレゼンテーション');
+}
+
+function exportResults(){
+  // 結果をテキストでダウンロード（グループ表示 + 順番 + 役職）
+  const groups = document.getElementById('groupOutput').value;
+  const order = document.getElementById('orderOutput').value;
+  const roles = document.getElementById('rolesOutput').value;
+  const blob = new Blob([`Groups:\n${groups}\n\nOrder:\n${order}\n\nRoles:\n${roles}`], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = (document.getElementById('shareEventTitle').value || 'shuffly_result') + '.txt';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  showToast("結果を出力しました");
+}
+
+function saveResults(){
+  // hidden fields を更新してフォーム送信
+  try{
+    const membersRaw = document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+    const entries = membersRaw.map(m=> parseEntry(m) );
+    document.getElementById('membersJsonInput').value = JSON.stringify(entries);
+  }catch(e){}
+
+  if(!document.getElementById('resultsJsonInput').value){
+    try {
+      document.getElementById('resultsJsonInput').value = JSON.stringify({ groups: {}, group_names: {} });
+    } catch(e){}
+  }
+  if(!document.getElementById('settingsJsonInput').value){
+    try {
+      document.getElementById('settingsJsonInput').value = JSON.stringify({
+        roles: document.getElementById('rolesInput') ? document.getElementById('rolesInput').value : '',
+        group_count: (document.getElementById('groupCount') ? document.getElementById('groupCount').value : '')
+      });
+    } catch(e){}
+  }
+  if(!document.getElementById('orderJsonInput').value){
+    try {
+      const orderText = document.getElementById('orderOutput').value || '';
+      const names = orderText.split(/\r?\n/).map(l=>l.replace(/^\d+\.\s*/,'')).filter(Boolean);
+      document.getElementById('orderJsonInput').value = JSON.stringify(names.map((n,i)=>({name:n, order:i+1})));
+    }catch(e){}
+  }
+  if(!document.getElementById('historyJsonInput').value){
+    try{ document.getElementById('historyJsonInput').value = JSON.stringify(history); }catch(e){}
+  }
+
+  // set title
+  const titleField = document.getElementById('hiddenEventTitle');
+  if(titleField) titleField.value = document.getElementById('shareEventTitle').value;
+
+  const payloadPreview = {
+    members_json: document.getElementById('membersJsonInput').value,
+    results_json: document.getElementById('resultsJsonInput').value,
+    order_json: document.getElementById('orderJsonInput').value,
+    settings_json: document.getElementById('settingsJsonInput').value,
+    history_json: document.getElementById('historyJsonInput').value,
+    title: document.getElementById('hiddenEventTitle') ? document.getElementById('hiddenEventTitle').value : ''
+  };
+
+  if(IS_SIGNED_IN){
+    const form = document.getElementById('saveForm');
+    if(form) {
+      form.submit();
+    } else {
+      showToast("フォームが見つかりません");
+    }
+  } else {
+    try {
+      localStorage.setItem('pending_shuffly_event', JSON.stringify(payloadPreview));
+      const loginUrl = "<%= new_user_session_path %>?redirect_to=" + encodeURIComponent(window.location.href);
+      window.location.href = loginUrl;
+    } catch(e){
+      showToast("保存処理に失敗しました");
+    }
+  }
+}
+
+// 初期化 / イベントバインド
 window.onload = () => {
   const histField = document.getElementById('historyJsonInput');
   if(histField && histField.value){
@@ -416,9 +684,33 @@ window.onload = () => {
     }
   }
   updateParticipantCount();
-  // 初期履歴が無ければ現在値を履歴に追加する
   if(history.length === 0) pushToHistory();
   showGroups(); showStats();
+  switchResultTab('groups');
+  switchSettingsTab('groups');
+
+  // auto-submit pending saved payload if user just logged in
+  if(IS_SIGNED_IN){
+    const pending = localStorage.getItem('pending_shuffly_event');
+    if(pending){
+      try {
+        const p = JSON.parse(pending);
+        if(p.members_json) document.getElementById('membersJsonInput').value = p.members_json;
+        if(p.results_json) document.getElementById('resultsJsonInput').value = p.results_json;
+        if(p.order_json) document.getElementById('orderJsonInput').value = p.order_json;
+        if(p.settings_json) document.getElementById('settingsJsonInput').value = p.settings_json;
+        if(p.history_json) document.getElementById('historyJsonInput').value = p.history_json;
+        if(p.title && document.getElementById('hiddenEventTitle')) document.getElementById('hiddenEventTitle').value = p.title;
+        const form = document.getElementById('saveForm');
+        if(form){
+          localStorage.removeItem('pending_shuffly_event');
+          form.submit();
+        }
+      } catch(e){
+        // ignore
+      }
+    }
+  }
 };
 
 document.getElementById('membersInput').addEventListener('input',()=>{ updateParticipantCount(); pushToHistory(); showGroups(); showStats(); });

@@ -1,31 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <title>Shuffly</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title><%= content_for?(:title) ? yield(:title) : "Shuffly" %></title>
+
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
 
+  <%# Tailwind を asset pipeline / webpacker / jsbundling-rails で入れている想定 %>
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
 </head>
 
-<body class="flex flex-col min-h-screen">
-  <!-- ヘッダー -->
+<body class="antialiased text-gray-800 bg-gray-50 min-h-screen flex flex-col">
+  <%# ヘッダー（部分テンプレート） %>
   <%= render 'shared/header' %>
 
-  <!-- メインコンテンツ -->
-  <main class="flex-grow mx-auto w-full max-w-[1200px] px-4 py-8">
-    <% if notice %>
-      <p class="text-green-600 mb-4"><%= notice %></p>
-    <% end %>
-    <% if alert %>
-      <p class="text-red-600 mb-4"><%= alert %></p>
-    <% end %>
+  <main class="flex-grow">
+    <%# フラッシュ通知エリア（簡易） %>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+      <% if notice %>
+        <div class="mb-4 p-3 rounded-md bg-green-50 border border-green-100 text-green-800"><%= notice %></div>
+      <% end %>
+      <% if alert %>
+        <div class="mb-4 p-3 rounded-md bg-red-50 border border-red-100 text-red-800"><%= alert %></div>
+      <% end %>
+    </div>
 
-    <%= yield %>
+    <%# ページ固有コンテンツ %>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <%= yield %>
+    </div>
   </main>
 
-  <!-- フッター -->
+  <%# フッター（部分テンプレート） %>
   <%= render 'shared/footer' %>
 </body>
 </html>
