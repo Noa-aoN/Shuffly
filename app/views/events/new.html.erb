@@ -1,4 +1,3 @@
-<%# filepath: /Users/n/workspace/Shuffly/app/views/events/new.html.erb %>
 <div class="max-w-6xl mx-auto px-6 pt-3 pb-6">
   <h1 class="text-3xl font-bold mb-6"><%= @event.title.presence || "イベント作成" %></h1>
 
@@ -12,7 +11,7 @@
       </div>
 
       <label class="block text-sm font-medium mb-2">メンバー名リスト（改行またはカンマ区切り）</label>
-      <textarea id="membersInput" rows="8" class="w-full border rounded-md px-3 py-2 mb-3" placeholder="田中 太郎, 山田 花子"><%= begin
+      <textarea id="membersInput" rows="8" class="w-full border rounded-md px-3 py-2 mb-3" placeholder="例：メンバー1, メンバー2, ..."><%= begin
         members = @event.members_json.present? ? JSON.parse(@event.members_json) : []
         members.map do |m|
           if m.is_a?(Hash)
@@ -34,7 +33,7 @@
       </div>
     </div>
 
-    <!-- ② 設定を選択（タブ切替: グループ / 順番 / 役職） -->
+    <!-- ② 設定を選択（タブ切替: グループ / 順番 / 役割） -->
     <div class="bg-white rounded-lg shadow-sm p-6">
       <div class="flex items-start gap-3 mb-4">
         <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">2</div>
@@ -45,7 +44,7 @@
       <div class="flex justify-center gap-4 mb-4 border-b border-gray-200">
         <button id="tab-settings-groups" class="px-3 py-2 -mb-px border-b-2 border-blue-500 text-sm font-medium">グループ設定</button>
         <button id="tab-settings-order"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">順番設定</button>
-        <button id="tab-settings-roles"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">役職設定</button>
+        <button id="tab-settings-roles"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">役割設定</button>
       </div>
 
       <!-- グループパネル -->
@@ -59,13 +58,14 @@
             </div>
             <div>
               <label class="text-xs text-gray-600">グループ名（任意・改行/カンマ区切り）</label>
-              <textarea id="customGroupNames" rows="3" class="w-full border rounded px-2 py-1" placeholder="Team A, Team B"></textarea>
+              <textarea id="customGroupNames" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
+              <p class="text-xs text-gray-500 mt-1">グループ名を入力すると、その数が優先してグループ数に反映されます。</p>
             </div>
           </div>
 
           <div>
-            <label class="text-xs text-gray-600">固定メンバー（任意、1行に1名）</label>
-            <textarea id="fixedMembersInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="固定したいメンバー名を1行ずつ入力"></textarea>
+            <label class="text-xs text-gray-600">固定メンバー（任意・改行/カンマ区切り）</label>
+            <textarea id="fixedMembersInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
             <p class="text-xs text-gray-500 mt-1">固定メンバーはグループ分け実行時に可能な限り指定グループに残します（自動振り分けとの兼ね合いにより完全固定にならない場合があります）。</p>
           </div>
 
@@ -77,21 +77,24 @@
       <div id="panel-settings-order" class="settings-panel hidden">
         <div class="mb-4">
           <label class="block font-medium mb-1">順番決めオプション</label>
-          <label class="inline-flex items-center gap-2">
-            <input id="enableOrderShuffle" type="checkbox" class="rounded border-gray-300">
-            <span class="text-sm">順番をランダム化する</span>
-          </label>
-          <p class="text-xs text-gray-500 mt-2">順番に関する追加オプションが入ります（現状はランダム化のチェックのみ）。</p>
+
+          <div class="mb-2">
+            <label class="text-xs text-gray-600">特定メンバーの順番を固定（任意・改行/カンマ区切り）</label>
+            <textarea id="fixedOrderInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：1:メンバー3, 5:メンバー1, ..."></textarea>
+            <p class="text-xs text-gray-500 mt-1">「番号:メンバー名」を入力してください。順番決め実行時にその番号に対応するメンバーが固定され、残りのメンバーはランダムに割り当てられます。</p>
+          </div>
+
+          <p class="text-xs text-gray-500 mt-2">固定を使わない場合は空欄のまま「順番決め実行」を押すと全員の順番がランダムに決まります。</p>
         </div>
       </div>
 
-      <!-- 役職パネル（オプションは除去。役職は常にランダムかつ一意に割り当てられます） -->
+      <!-- 役割パネル（オプションは除去。役割は常にランダムかつ一意に割り当てられます） -->
       <div id="panel-settings-roles" class="settings-panel hidden">
         <div class="mb-4">
           <label class="block font-medium mb-1">役割決めオプション</label>
-          <textarea id="rolesInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="リーダー, サブリーダー, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
+          <textarea id="rolesInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
 
-          <p class="text-xs text-gray-500 mt-2">複数の役職をカンマ区切りで入力してください。役職の割り当ては常にランダムに行われ、各役割は可能な限り異なるメンバーに一意に割り当てられます。</p>
+          <p class="text-xs text-gray-500 mt-2">複数の役割をカンマ区切りで入力してください。役割の割り当ては常にランダムに行われ、各役割は可能な限り異なるメンバーに一意に割り当てられます。</p>
         </div>
       </div>
 
@@ -140,12 +143,12 @@
         </div>
       </div>
 
-      <!-- 役職用アクション -->
+      <!-- 役割用アクション -->
       <div id="settings-action-roles" class="mt-4 hidden">
         <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
           <%= render 'shared/button',
                 f: nil,
-                button_text: '役職決め実行',
+                button_text: '役割決め実行',
                 id: nil,
                 path: '#',
                 variant: 'secondary',
@@ -168,7 +171,7 @@
       <div class="flex justify-center gap-4 mb-4 border-b border-gray-200">
         <button id="tab-groups" class="px-3 py-2 -mb-px border-b-2 border-blue-500 text-sm font-medium">グループ表示</button>
         <button id="tab-order"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">順番表示</button>
-        <button id="tab-roles"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">役職表示</button>
+        <button id="tab-roles"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">役割表示</button>
       </div>
 
       <!-- グループ表示＋統計（デフォルト表示） -->
@@ -214,9 +217,9 @@
         </div>
       </div>
 
-      <!-- 役職表示パネル -->
+      <!-- 役割表示パネル -->
       <div id="panel-roles" class="result-panel hidden">
-        <h3 class="font-medium mb-2">役職表示</h3>
+        <h3 class="font-medium mb-2">役割表示</h3>
         <textarea id="rolesOutput" rows="8" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-lg"></textarea>
 
         <div class="flex justify-center mt-2 w-full">
@@ -229,17 +232,17 @@
     <div class="bg-blue-50 rounded-lg shadow-sm p-6">
       <div class="flex items-start gap-3 mb-4">
         <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">4</div>
-        <h2 class="text-lg font-semibold">出力 / 共有 / 保存</h2>
+        <h2 class="text-lg font-semibold">共有 / 出力 / 保存</h2>
       </div>
 
-      <label class="block text-sm font-medium mb-2">イベントタイトル</label>
+      <label class="block text-sm font-medium mb-2">イベントタイトル（任意）</label>
       <!-- イベントタイトルフォームの色を白系に戻す -->
-      <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-3 bg-white">
+      <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-3 bg-white" placeholder="例：〇〇イベント">
 
       <div class="flex flex-col md:flex-row gap-2 mb-3 items-center justify-center w-full">
         <%= render 'shared/button',
               f: nil,
-              button_text: 'プレゼン表示',
+              button_text: '画面共有表示',
               id: 'btn-toggle-presentation',
               path: '#',
               variant: 'secondary',
@@ -369,8 +372,7 @@ function assignGroups(){
     }
   }
 
-  if(document.getElementById('enableOrderShuffle')?.checked) otherEntries.sort(()=>Math.random()-0.5);
-
+  // ランダム化オプションは順番パネルから削除されたため、ここでは常にランダム配置せずに最小被り優先で割当
   for(const p of otherEntries){
     let emptyGroup=groupIds.find(g=>groups[g].length===0);
     if(emptyGroup){ groups[emptyGroup].push(p); continue; }
@@ -385,7 +387,7 @@ function assignGroups(){
     groups[selected].push(p);
   }
 
-  // グループ内での役職付与（入力があれば、循環割当てで付与）
+  // グループ内での役割付与（入力があれば、循環割当てで付与）
   const rolesForGroups = document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
   if(rolesForGroups.length>0){
     for(const g of groupIds){
@@ -416,27 +418,88 @@ function assignGroups(){
 
 function assignOrder(){
   const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  let entries=raw.map(parseEntry).map(e=>e.name);
-  if(entries.length === 0){
+  let members=raw.map(s=>s.split('#')[0].trim());
+  if(members.length === 0){
     document.getElementById('orderOutput').value = "";
     if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = "[]";
     showToast("参加者がいません");
     return;
   }
 
-  for(let i=entries.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [entries[i], entries[j]]=[entries[j], entries[i]];
+  // 固定順のパース（例: "1: 田中 太郎" を1ベースで解釈）
+  const fixedRaw = (document.getElementById('fixedOrderInput')?.value || "").split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+  const fixedMap = {}; // pos (1-based) -> name
+  const invalids = [];
+  for(const line of fixedRaw){
+    if(!line) continue;
+    const m = line.match(/^(\d+)\s*[:=]\s*(.+)$/) || line.match(/^(\d+)\s+(.+)$/);
+    if(m){
+      const pos = parseInt(m[1],10);
+      const name = m[2].trim();
+      if(pos >= 1 && pos <= members.length){
+        fixedMap[pos] = name;
+      } else {
+        invalids.push(line);
+      }
+    } else {
+      invalids.push(line);
+    }
   }
 
-  const lines = entries.map((name, idx) => `${idx+1}. ${name}`);
+  // 検証: 固定指定の名前が参加者に存在するか確認
+  const namesSet = new Set(members);
+  const assignedFixedNames = new Set();
+  const invalidNameEntries = [];
+  for(const posStr in fixedMap){
+    const pos = parseInt(posStr,10);
+    const name = fixedMap[pos];
+    if(!namesSet.has(name)){
+      invalidNameEntries.push(`${pos}: ${name}`);
+      delete fixedMap[pos];
+    } else {
+      assignedFixedNames.add(name);
+    }
+  }
+
+  if(invalids.length>0 || invalidNameEntries.length>0){
+    const msgs = [];
+    if(invalids.length>0) msgs.push("固定指定の書式が不正な行があります");
+    if(invalidNameEntries.length>0) msgs.push("参加者に存在しない名前の固定指定があります");
+    showToast(msgs.join('、') + "（無視されます）");
+  }
+
+  // プールを作成してシャッフル
+  const pool = members.filter(m=>!assignedFixedNames.has(m));
+  for(let i=pool.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [pool[i], pool[j]]=[pool[j], pool[i]];
+  }
+
+  // 結果配列を作る（null で初期化）
+  const result = Array(members.length).fill(null);
+
+  // 固定を反映（posは1ベース）
+  for(const posStr in fixedMap){
+    const pos = parseInt(posStr,10);
+    result[pos-1] = fixedMap[pos];
+  }
+
+  // 残りスロットをプールで埋める
+  let poolIdx = 0;
+  for(let i=0;i<result.length;i++){
+    if(result[i] === null){
+      result[i] = pool[poolIdx++] || "";
+    }
+  }
+
+  // 表示と保存
+  const lines = result.map((name, idx) => `${idx+1}. ${name}`);
   document.getElementById('orderOutput').value = lines.join("\n");
 
-  const orderJson = entries.map((name, idx) => ({ name, order: idx+1 }));
+  const orderJson = result.map((name, idx) => ({ name, order: idx+1 }));
   if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = JSON.stringify(orderJson);
 
   showToast("順番を割り当てました");
-  // SPA reflect
   switchResultTab('order');
 }
 
@@ -446,7 +509,7 @@ function assignRoles(){
   if(members.length===0){ showToast("参加者がいません"); return; }
 
   const roles = document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
-  if(roles.length===0){ showToast("役職が未入力です"); return; }
+  if(roles.length===0){ showToast("役割が未入力です"); return; }
 
   // 常にランダムかつ一意に割り当てる（役割数 <= メンバー数 の場合は全て一意）
   function shuffleArray(arr){
@@ -470,7 +533,7 @@ function assignRoles(){
     if(!assignedNames.has(m)) assignments.push({ name: m, role: null });
   }
 
-  // 表示: 役職つき → 役職なし の順で出す
+  // 表示: 役割つき → 役割なし の順で出す
   const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
   document.getElementById('rolesOutput').value = displayLines.join("\n");
 
@@ -488,7 +551,7 @@ function assignRoles(){
     if(settingsField) settingsField.value = JSON.stringify({ role_assignments: assignments.map(a=>({ name:a.name, role: a.role })) });
   }
 
-  showToast("役職を割り当てました");
+  showToast("役割を割り当てました");
   // SPA reflect
   switchResultTab('roles');
 }
@@ -557,7 +620,7 @@ function showStats(){
       lines.push(`${m}: 被り数=${mk}`);
       total+=mk;
     }
-    lines.push(`${idToName[id] ? `Group ${idToName[id]}` : `Group ${id}`}: 被り平均=${members.length? (total/members.length).toFixed(2):0}`);
+    lines.push(`${idToName[id] ? `グループ ${idToName[id]}` : `グループ ${id}`}: 被り平均=${members.length? (total/members.length).toFixed(2):0}`);
     lines.push('');
   }
   document.getElementById('statsOutput').value=lines.join("\n");
@@ -699,7 +762,7 @@ function exportResults(){
   const groups = document.getElementById('groupOutput').value;
   const order = document.getElementById('orderOutput').value;
   const roles = document.getElementById('rolesOutput').value;
-  const blob = new Blob([`Groups:\n${groups}\n\nOrder:\n${order}\n\nRoles:\n${roles}`], {type:'text/plain'});
+  const blob = new Blob([`グループ:\n${groups}\n\n順番:\n${order}\n\n役割:\n${roles}`], {type:'text/plain'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = (document.getElementById('shareEventTitle').value || 'shuffly_result') + '.txt';
