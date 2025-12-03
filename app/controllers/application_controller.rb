@@ -5,8 +5,19 @@ class ApplicationController < ActionController::Base
 
   protected
 
+  # def configure_permitted_parameters
+  #   # /users/sign_up
+  #   devise_parameter_sanitizer.permit(:sign_up, keys: [:username, :phone_number, :full_name])
+  # end
+
   def configure_permitted_parameters
-    # /users/sign_up
-    devise_parameter_sanitizer.permit(:sign_up, keys: [:username, :phone_number, :full_name])
+    added_attrs = [:name, :nickname] # 必要なカラムを追加
+    devise_parameter_sanitizer.permit(:sign_up, keys: added_attrs)
+    devise_parameter_sanitizer.permit(:account_update, keys: added_attrs)
+  end
+
+  # option: サインイン後の遷移先
+  def after_sign_in_path_for(resource)
+    stored_location_for(resource) || mypage_path
   end
 end

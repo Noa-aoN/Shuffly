@@ -1,12 +1,10 @@
-<h1>マイページ</h1>
+<h1 class="text-2xl font-bold mb-4">マイページ</h1>
 
-<h2>過去のイベント一覧</h2>
+<p>ようこそ、<%= @user.name || @user.email %></p>
+
+<h2 class="mt-6 text-lg font-semibold">あなたの作成したイベント</h2>
 <ul>
-  <% @user.events.each do |event| %>
-    <li>
-      <%= event.title %> - <%= event.created_at.strftime("%Y/%m/%d") %>
-      <%= link_to "詳細を見る", event_path(event) %>
-      <%= link_to "再利用", new_event_path(event_id: event.id) %>
-    </li>
+  <% @events.each do |ev| %>
+    <li><%= link_to ev.title.presence || "イベント #{ev.id}", event_path(ev) %> — <%= ev.created_at.to_date %></li>
   <% end %>
 </ul>
