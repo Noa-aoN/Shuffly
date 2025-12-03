@@ -1,40 +1,54 @@
-<div class="min-h-screen">
+<div class="min-h-screen pb-10">
 
-  <!-- Main hero content（上下の余白を少し減らし均等に）-->
-  <section class="py-10 pb-20">
-    <div class="max-w-5xl mx-auto text-center px-6">
-      <h2 class="text-4xl font-extrabold mb-4">Shuffly</h2>
-      <p class="text-gray-600 mb-8">メンバーのグループ分けや順番決めが、驚くほど簡単かつスピーディに。</p>
+  <!-- Main hero content -->
+  <section class="py-8 pb-20 w-full">
+    <div class="max-w-5xl mx-auto text-center px-6 py-16">
+      <h2 class="text-5xl font-extrabold mb-4">Shuffly</h2>
+      <p class="text-gray-600 mb-8">グループ・順番・役割決めが、驚くほど簡単かつスピーディに。</p>
 
-      <div class="flex items-center justify-center gap-4">
-        <%= link_to "ゲストで使う", new_event_path, class: "px-6 py-3 bg-blue-500 text-white rounded shadow hover:bg-blue-600" %>
-        <% if user_signed_in? %>
-          <%= link_to "イベントを作成・確認する", new_event_path, class: "px-6 py-3 bg-white border rounded text-blue-600 hover:bg-gray-50" %>
-        <% else %>
-          <%= link_to "ログインして使う", new_user_session_path, class: "px-6 py-3 bg-white border rounded text-blue-600 hover:bg-gray-50" %>
-        <% end %>
+      <div class="flex items-center justify-center">
+        <div class="w-full max-w-md flex flex-col sm:flex-row gap-4 items-center">
+          <%= link_to "ゲストで使う", new_event_path, class: "w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600" %>
+
+          <% if user_signed_in? %>
+            <%= link_to "イベントを作成・確認する", new_event_path, class: "w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50" %>
+
+            <div class="hidden sm:flex items-center gap-2 ml-2">
+              <%= link_to "マイページ", mypage_path, class: "px-4 py-2 bg-gray-100 rounded-lg text-sm text-gray-700 hover:bg-gray-200" %>
+              <%= link_to "ログアウト", destroy_user_session_path, method: :delete, data: { confirm: "ログアウトしますか？" }, class: "px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600" %>
+            </div>
+          <% else %>
+            <%= link_to "ログインして使う", new_user_session_path, class: "w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50" %>
+          <% end %>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Features (グラデーション1) -->
-  <section class="py-12 bg-gradient-to-b from-white to-blue-50">
-    <div class="max-w-6xl mx-auto px-6">
-      <h3 class="text-2xl font-bold text-center text-blue-600 mb-8">できること</h3>
+  <!-- Features (白系) -->
+  <section class="py-12 bg-white w-full">
+    <div class="max-w-6xl mx-auto px-6 py-1">
+      <h3 class="text-3xl text-center text-blue-600 mb-3">できること</h3>
+      <p class="text-gray-600 mb-8 text-center">Shufflyで、あらゆる「分ける」「決める」を瞬時に解決。</p>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="p-6 bg-white/80 rounded shadow-sm flex flex-col items-center text-center">
-          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 text-2xl">📦</div>
-          <h4 class="font-semibold mb-2">グループ分け</h4>
-          <p class="text-sm text-gray-600">メンバーリストから指定した数や人数のグループを自動で作成します。</p>
+        <!-- グループ分けカード -->
+        <div>
+          <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center text-center">
+            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 text-2xl">📦</div>
+            <h4 class="font-semibold mb-2">グループ分け</h4>
+            <p class="text-sm text-gray-600">メンバーリストから指定した数や人数のグループを自動で作成します。</p>
+          </div>
         </div>
 
-        <div class="p-6 bg-white/80 rounded shadow-sm flex flex-col items-center text-center">
+        <!-- 順番決めカード -->
+        <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center text-center">
           <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 text-2xl">🔀</div>
           <h4 class="font-semibold mb-2">順番決め</h4>
           <p class="text-sm text-gray-600">発表や作業の順番を、ワンクリックでランダムに決定します。</p>
         </div>
 
-        <div class="p-6 bg-white/80 rounded shadow-sm flex flex-col items-center text-center">
+        <!-- 役割決めカード -->
+        <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center text-center">
           <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 text-2xl">🧑‍🤝‍🧑</div>
           <h4 class="font-semibold mb-2">役割分担</h4>
           <p class="text-sm text-gray-600">リーダー等の役割を公平に振り分けます。</p>
@@ -43,20 +57,21 @@
     </div>
   </section>
 
-  <!-- Logged-in benefits (グラデーション2、交互に) -->
-  <section class="py-12 bg-gradient-to-b from-blue-50 to-white">
-    <div class="max-w-6xl mx-auto px-6">
-      <h3 class="text-2xl font-bold text-center text-blue-600 mb-8">ログインしたらできること</h3>
+  <!-- Logged-in benefits (グレー系) -->
+  <section class="py-16 bg-gray-50 w-full">
+    <div class="max-w-6xl mx-auto px-6 py-1">
+      <h3 class="text-3xl text-center text-blue-600 mb-3">ログインしたらできること</h3>
+      <p class="text-gray-600 mb-8 text-center">アカウントを作成して、さらに便利な機能を活用しましょう。</p>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="p-6 bg-white rounded shadow flex flex-col items-center text-center">
+        <div class="p-6 bg-white rounded-lg shadow-sm flex flex-col items-center text-center">
           <h4 class="font-semibold mb-2">メンバーリストの保存</h4>
           <p class="text-sm text-gray-600">よく使うメンバーリストを保存して、いつでも呼び出せます。</p>
         </div>
-        <div class="p-6 bg-white rounded shadow flex flex-col items-center text-center">
+        <div class="p-6 bg-white rounded-lg shadow-sm flex flex-col items-center text-center">
           <h4 class="font-semibold mb-2">シャッフル履歴の確認</h4>
           <p class="text-sm text-gray-600">過去のグループ分けや順番決めの結果を保存・確認できます。</p>
         </div>
-        <div class="p-6 bg-white rounded shadow flex flex-col items-center text-center">
+        <div class="p-6 bg-white rounded-lg shadow-sm flex flex-col items-center text-center">
           <h4 class="font-semibold mb-2">画面スタイルの変更</h4>
           <p class="text-sm text-gray-600">テーマや表示スタイルを切り替えられます。</p>
         </div>
@@ -64,22 +79,23 @@
     </div>
   </section>
 
-  <!-- How to use (グラデーション1 に戻す) -->
-  <section class="py-12 bg-gradient-to-b from-white to-blue-50">
-    <div class="max-w-6xl mx-auto px-6 text-center">
-      <h3 class="text-2xl font-bold text-center text-blue-600 mb-8">使い方</h3>
+  <!-- How to use (白系) -->
+  <section class="py-12 bg-white w-full">
+    <div class="max-w-6xl mx-auto px-6 text-center py-1">
+      <h3 class="text-3xl text-center text-blue-600 mb-3">使い方</h3>
+      <p class="text-gray-600 mb-8 text-center">たった3ステップで、面倒な作業はすべて完了。</p>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="p-6 bg-white rounded shadow flex flex-col items-center">
+        <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center">
           <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mb-3 font-bold">1</div>
           <h4 class="font-semibold mb-2">メンバーを入力</h4>
           <p class="text-sm text-gray-600">名前を一人ずつ入力するか、リストを貼り付けます。</p>
         </div>
-        <div class="p-6 bg-white rounded shadow flex flex-col items-center">
+        <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center">
           <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mb-3 font-bold">2</div>
           <h4 class="font-semibold mb-2">条件を設定</h4>
           <p class="text-sm text-gray-600">グループ数やグループ名、役割や順番設定を選びます。</p>
         </div>
-        <div class="p-6 bg-white rounded shadow flex flex-col items-center">
+        <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center">
           <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mb-3 font-bold">3</div>
           <h4 class="font-semibold mb-2">シャッフル！</h4>
           <p class="text-sm text-gray-600">ボタンを押すだけで結果がすぐに表示されます。</p>
