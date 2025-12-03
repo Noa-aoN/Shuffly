@@ -29,7 +29,8 @@
       <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
         <a href="#" id="btn-trigger-import" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">メンバーリストから入力</a>
         <input id="importFile" type="file" accept=".txt,.csv" class="hidden">
-        <a href="#" id="btn-paste-clipboard" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">クリップボードから貼り付け</a>
+        <a href="#" id="btn-paste-clipboard" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">クリップボードから入力</a>
+        <a href="#" id="btn-clear-history" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">履歴をクリア</a>
       </div>
     </div>
 
@@ -738,6 +739,21 @@ function pasteFromClipboard(){
   }).catch(()=>showToast("クリップボードにアクセスできません"));
 }
 
+// 履歴クリア（メンバー名の「#」以降を一括削除）
+function clearMemberHistories(){
+  if(!document.getElementById('membersInput')) return;
+  const confirmed = window.confirm("メンバー名リストに含まれる全メンバーの履歴（「#」以降）を一括で削除します。よろしいですか？");
+  if(!confirmed) return;
+
+  const cur = document.getElementById('membersInput').value || "";
+  // 分割して各エントリの「#」以降を削除し、空でないものだけ残す（出力は改行区切り）
+  const cleaned = cur.split(/[\r\n,]+/).map(s=>s.split('#')[0].trim()).filter(Boolean);
+  document.getElementById('membersInput').value = cleaned.join("\n");
+  updateParticipantCount();
+  pushToHistory();
+  showToast("履歴をクリアしました");
+}
+
 function togglePresentationMode(){
   try{
     const payload = {
@@ -896,6 +912,7 @@ window.onload = () => {
   bindIf('btn-trigger-import', 'click', (e)=>{ e.preventDefault(); triggerImport(); });
   bindIf('importFile', 'change', handleImportFile);
   bindIf('btn-paste-clipboard', 'click', (e)=>{ e.preventDefault(); pasteFromClipboard(); });
+  bindIf('btn-clear-history', 'click', (e)=>{ e.preventDefault(); clearMemberHistories(); });
 
   // Settings tabs
   bindIf('tab-settings-groups', 'click', ()=>switchSettingsTab('groups'));
