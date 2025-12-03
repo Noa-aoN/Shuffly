@@ -584,7 +584,7 @@ function showGroups(){
   for(const id of groupIds){
     const members=groups[id];
     const label = idToName[id] || id;
-    if(showLabel) display+=`${label} (${members.length}名):\n`;
+    if(showLabel) display+=`${label}（${members.length}人）：\n`;
     display+=members.join(sep)+'\n\n';
   }
   document.getElementById('groupOutput').value=display.trim();
@@ -618,10 +618,10 @@ function showStats(){
     let total=0;
     for(const m of members){
       const mk=members.reduce((sum,other)=>sum+(m!==other?(coMap[m][other]||0):0),0);
-      lines.push(`${m}: 被り数=${mk}`);
+      lines.push(`${m}：被り数＝${mk}`);
       total+=mk;
     }
-    lines.push(`${idToName[id] ? `グループ ${idToName[id]}` : `グループ ${id}`}: 被り平均=${members.length? (total/members.length).toFixed(2):0}`);
+    lines.push(`${idToName[id] ? `グループ ${idToName[id]}` : `グループ ${id}`}（被り平均値＝${members.length? (total/members.length).toFixed(2):0}）`);
     lines.push('');
   }
   document.getElementById('statsOutput').value=lines.join("\n");
