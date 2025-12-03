@@ -1,3 +1,4 @@
+<%# filepath: /Users/n/workspace/Shuffly/app/views/events/new.html.erb %>
 <div class="max-w-6xl mx-auto px-6 pt-3 pb-6">
   <h1 class="text-3xl font-bold mb-6"><%= @event.title.presence || "イベント作成" %></h1>
 
@@ -84,16 +85,13 @@
         </div>
       </div>
 
-      <!-- 役職パネル -->
+      <!-- 役職パネル（オプションは除去。役職は常にランダムかつ一意に割り当てられます） -->
       <div id="panel-settings-roles" class="settings-panel hidden">
         <div class="mb-4">
           <label class="block font-medium mb-1">役割決めオプション</label>
           <textarea id="rolesInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="リーダー, サブリーダー, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
-          <label class="inline-flex items-center gap-2 mt-2">
-            <input id="enableRoleShuffle" type="checkbox" class="rounded border-gray-300">
-            <span class="text-sm">ランダムに割り当て</span>
-          </label>
-          <p class="text-xs text-gray-500 mt-2">複数の役職をカンマ区切りで入力してください。</p>
+
+          <p class="text-xs text-gray-500 mt-2">複数の役職をカンマ区切りで入力してください。役職の割り当ては常にランダムに行われ、各役割は可能な限り異なるメンバーに一意に割り当てられます。</p>
         </div>
       </div>
 
@@ -119,7 +117,7 @@
                 extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
           <%= render 'shared/button',
                 f: nil,
-                button_text: '後のグループへ',
+                button_text: '後ろのグループへ',
                 id: nil,
                 path: '#',
                 variant: 'secondary',
@@ -158,7 +156,7 @@
     </div>
 
     <!-- ③ 結果 -->
-    <div class="bg-blue-50 rounded-lg shadow-sm p-6">
+    <div id="resultsCard" class="bg-blue-50 rounded-lg shadow-sm p-6">
       <div class="flex items-start justify-between mb-4">
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
@@ -193,10 +191,12 @@
           </div>
         </div>
 
-        <textarea id="groupOutput" rows="8" readonly class="border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
+        <!-- 結果表示フォーム色を薄いグレー系に変更 -->
+        <!-- 初期は空。グループ分け実行ボタン押下後に初回表示される -->
+        <textarea id="groupOutput" rows="8" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
 
         <h3 class="font-medium mb-2">統計情報</h3>
-        <textarea id="statsOutput" rows="6" readonly class="border rounded-md px-3 py-2 w-full text-sm"></textarea>
+        <textarea id="statsOutput" rows="6" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-sm"></textarea>
 
         <!-- クリップボードコピー（リンクスタイル） -->
         <div class="flex justify-center mt-2 w-full">
@@ -207,7 +207,7 @@
       <!-- 順番表示パネル -->
       <div id="panel-order" class="result-panel hidden">
         <h3 class="font-medium mb-2">順番表示</h3>
-        <textarea id="orderOutput" rows="10" readonly class="border rounded-md px-3 py-2 w-full text-lg"></textarea>
+        <textarea id="orderOutput" rows="10" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-lg"></textarea>
 
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-orderoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
@@ -217,7 +217,7 @@
       <!-- 役職表示パネル -->
       <div id="panel-roles" class="result-panel hidden">
         <h3 class="font-medium mb-2">役職表示</h3>
-        <textarea id="rolesOutput" rows="8" readonly class="border rounded-md px-3 py-2 w-full text-lg"></textarea>
+        <textarea id="rolesOutput" rows="8" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-lg"></textarea>
 
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-rolesoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
@@ -233,7 +233,8 @@
       </div>
 
       <label class="block text-sm font-medium mb-2">イベントタイトル</label>
-      <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-3">
+      <!-- イベントタイトルフォームの色を白系に戻す -->
+      <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-3 bg-white">
 
       <div class="flex flex-col md:flex-row gap-2 mb-3 items-center justify-center w-full">
         <%= render 'shared/button',
@@ -384,13 +385,12 @@ function assignGroups(){
     groups[selected].push(p);
   }
 
-  if(document.getElementById('enableRoleShuffle')?.checked){
-    const roles=document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
-    if(roles.length>0){
-      for(const g of groupIds){
-        const members=groups[g];
-        members.forEach((m,i)=>m.role=roles[i%roles.length]);
-      }
+  // グループ内での役職付与（入力があれば、循環割当てで付与）
+  const rolesForGroups = document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
+  if(rolesForGroups.length>0){
+    for(const g of groupIds){
+      const members=groups[g];
+      members.forEach((m,i)=>m.role=rolesForGroups[i%rolesForGroups.length]);
     }
   }
 
@@ -410,6 +410,8 @@ function assignGroups(){
   }
 
   updateParticipantCount(); showGroups(); showStats(); pushToHistory();
+  // SPA behavior: reflect results immediately without reload
+  switchResultTab('groups');
 }
 
 function assignOrder(){
@@ -434,35 +436,61 @@ function assignOrder(){
   if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = JSON.stringify(orderJson);
 
   showToast("順番を割り当てました");
+  // SPA reflect
+  switchResultTab('order');
 }
 
 function assignRoles(){
   const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  let names=raw.map(s=>s.split('#')[0].trim());
-  if(names.length===0){ showToast("参加者がいません"); return; }
+  let members=raw.map(s=>s.split('#')[0].trim());
+  if(members.length===0){ showToast("参加者がいません"); return; }
 
   const roles = document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
   if(roles.length===0){ showToast("役職が未入力です"); return; }
 
-  if(document.getElementById('enableRoleShuffle')?.checked){
-    for(let i=names.length-1;i>0;i--){
+  // 常にランダムかつ一意に割り当てる（役割数 <= メンバー数 の場合は全て一意）
+  function shuffleArray(arr){
+    for(let i=arr.length-1;i>0;i--){
       const j=Math.floor(Math.random()*(i+1));
-      [names[i], names[j]]=[names[j], names[i]];
+      [arr[i], arr[j]]=[arr[j], arr[i]];
     }
   }
 
-  const assignments = names.map((n,i)=> `${n}: ${roles[i % roles.length]}`);
-  document.getElementById('rolesOutput').value = assignments.join("\n");
+  const pool = members.slice();
+  shuffleArray(pool);
 
+  const assignments = [];
+  // 各役割を一意に割り当てる（役割がメンバー数を上回る場合はトランケート）
+  for(let i=0;i<roles.length && i<pool.length;i++){
+    assignments.push({ name: pool[i], role: roles[i] });
+  }
+  // 残りメンバーはrole=null
+  const assignedNames = new Set(assignments.map(a=>a.name));
+  for(const m of members){
+    if(!assignedNames.has(m)) assignments.push({ name: m, role: null });
+  }
+
+  // 表示: 役職つき → 役職なし の順で出す
+  const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+  document.getElementById('rolesOutput').value = displayLines.join("\n");
+
+  // persist role_assignments in settingsJsonInput
   try {
-    const settings = JSON.parse(document.getElementById('settingsJsonInput').value || '{}');
-    settings.role_assignments = names.map((n,i)=>({ name:n, role: roles[i % roles.length] }));
-    document.getElementById('settingsJsonInput').value = JSON.stringify(settings);
+    const settingsField = document.getElementById('settingsJsonInput');
+    let settings = {};
+    if(settingsField && settingsField.value) {
+      try { settings = JSON.parse(settingsField.value); } catch(e){ settings = {}; }
+    }
+    settings.role_assignments = assignments.map(a => ({ name: a.name, role: a.role }));
+    if(settingsField) settingsField.value = JSON.stringify(settings);
   } catch(e){
-    document.getElementById('settingsJsonInput').value = JSON.stringify({ role_assignments: names.map((n,i)=>({ name:n, role: roles[i % roles.length] })) });
+    const settingsField = document.getElementById('settingsJsonInput');
+    if(settingsField) settingsField.value = JSON.stringify({ role_assignments: assignments.map(a=>({ name:a.name, role: a.role })) });
   }
 
   showToast("役職を割り当てました");
+  // SPA reflect
+  switchResultTab('roles');
 }
 
 function showGroups(){
@@ -569,7 +597,7 @@ function undoHistory(){
   if(currentHistoryIndex>0){
     currentHistoryIndex--;
     document.getElementById('membersInput').value=shufflyHistory[currentHistoryIndex];
-    updateParticipantCount(); showGroups(); showStats(); showToast("1ステップ戻しました");
+    updateParticipantCount(); /* do not auto-show groups/stats until assignGroups() */ showToast("1ステップ戻しました");
   } else showToast("これ以上戻れません");
 }
 
@@ -577,7 +605,7 @@ function redoHistory(){
   if(currentHistoryIndex<shufflyHistory.length-1){
     currentHistoryIndex++;
     document.getElementById('membersInput').value=shufflyHistory[currentHistoryIndex];
-    updateParticipantCount(); showGroups(); showStats(); showToast("1ステップ進めました");
+    updateParticipantCount(); /* do not auto-show groups/stats until assignGroups() */ showToast("1ステップ進めました");
   } else showToast("これ以上進めません");
 }
 
@@ -630,8 +658,9 @@ function handleImportFile(e){
     const cur = document.getElementById('membersInput').value.trim();
     const merged = (cur?cur + "\n":"") + text.replace(/\r/g,'').trim();
     document.getElementById('membersInput').value = merged;
-    updateParticipantCount(); pushToHistory(); showGroups(); showStats();
+    updateParticipantCount(); pushToHistory();
     showToast("ファイルをインポートしました");
+    // do not auto-show groups/stats — user must press グループ分け実行
   };
   reader.readAsText(file, 'utf-8');
 }
@@ -640,8 +669,9 @@ function pasteFromClipboard(){
     const cur = document.getElementById('membersInput').value.trim();
     const merged = (cur?cur + "\n":"") + txt.replace(/\r/g,'').trim();
     document.getElementById('membersInput').value = merged;
-    updateParticipantCount(); pushToHistory(); showGroups(); showStats();
+    updateParticipantCount(); pushToHistory();
     showToast("クリップボードから貼り付けました");
+    // do not auto-show groups/stats
   }).catch(()=>showToast("クリップボードにアクセスできません"));
 }
 
@@ -754,7 +784,7 @@ window.onload = () => {
   }
   updateParticipantCount();
   if(shufflyHistory.length === 0) pushToHistory();
-  showGroups(); showStats();
+  // 初回読み込みではグループ表示/統計は自動表示しない（グループ分け実行後に表示される）
   switchResultTab('groups');
   switchSettingsTab('groups');
 
@@ -787,9 +817,10 @@ window.onload = () => {
     if(el) el.addEventListener(evt, handler);
   }
 
-  bindIf('membersInput', 'input', ()=>{ updateParticipantCount(); pushToHistory(); showGroups(); showStats(); });
-  bindIf('groupCount', 'input', ()=>{ updateParticipantCount(); showGroups(); showStats(); });
-  bindIf('customGroupNames', 'input', ()=>{ showGroups(); });
+  // メンバー編集時は表示の自動更新を行わない（グループ表示は「グループ分け実行」で反映）
+  bindIf('membersInput', 'input', ()=>{ updateParticipantCount(); pushToHistory(); });
+  bindIf('groupCount', 'input', ()=>{ updateParticipantCount(); /* do not auto-show groups/stats */ });
+  bindIf('customGroupNames', 'input', ()=>{ /* no automatic group display */ });
   bindIf('rolesInput', 'input', ()=>{
     const settingsField = document.getElementById('settingsJsonInput');
     if(settingsField) settingsField.value=JSON.stringify({
@@ -814,34 +845,34 @@ window.onload = () => {
   bindIf('tab-roles', 'click', ()=>switchResultTab('roles'));
 
   // Group view controls
-  bindIf('showGroupLabel', 'change', showGroups);
-  bindIf('separatorSelect', 'change', showGroups);
+  bindIf('showGroupLabel', 'change', ()=>{ /* no auto-refresh; group view updated after assignGroups */ });
+  bindIf('separatorSelect', 'change', ()=>{ /* no auto-refresh; group view updated after assignGroups */ });
   bindIf('btn-copy-groupoutput', 'click', (e)=>{ e.preventDefault(); copyGroupOutput(); });
   bindIf('btn-copy-orderoutput', 'click', (e)=>{ e.preventDefault(); copyOrderOutput(); });
   bindIf('btn-copy-rolesoutput', 'click', (e)=>{ e.preventDefault(); copyRolesOutput(); });
 
   // Share controls
-  bindIf('btn-toggle-presentation', 'click', togglePresentationMode);
-  bindIf('btn-export-results', 'click', exportResults);
-  bindIf('btn-save-results', 'click', saveResults);
+  bindIf('btn-toggle-presentation', 'click', (e)=>{ if(e) e.preventDefault(); togglePresentationMode(); });
+  bindIf('btn-export-results', 'click', (e)=>{ if(e) e.preventDefault(); exportResults(); });
+  bindIf('btn-save-results', 'click', (e)=>{ if(e) e.preventDefault(); saveResults(); });
 
   // Settings action buttons (find within containers and attach in order)
   const gAct = document.getElementById('settings-action-groups');
   if (gAct) {
-    const btns = gAct.querySelectorAll('button, a[role="button"]');
-    if (btns[0]) btns[0].addEventListener('click', ()=>{ assignGroups(); switchResultTab('groups'); });
-    if (btns[1]) btns[1].addEventListener('click', ()=>{ undoHistory(); switchResultTab('groups'); });
-    if (btns[2]) btns[2].addEventListener('click', ()=>{ redoHistory(); switchResultTab('groups'); });
+    const btns = gAct.querySelectorAll('button, a[role="button"], a');
+    if (btns[0]) btns[0].addEventListener('click', (e)=>{ if(e) e.preventDefault(); assignGroups(); /* SPA: update panels without reload */ });
+    if (btns[1]) btns[1].addEventListener('click', (e)=>{ if(e) e.preventDefault(); undoHistory(); /* keep on groups tab */ });
+    if (btns[2]) btns[2].addEventListener('click', (e)=>{ if(e) e.preventDefault(); redoHistory(); /* keep on groups tab */ });
   }
   const oAct = document.getElementById('settings-action-order');
   if (oAct) {
-    const b = oAct.querySelector('button, a[role="button"]');
-    if (b) b.addEventListener('click', ()=>{ assignOrder(); switchResultTab('order'); });
+    const b = oAct.querySelector('button, a[role="button"], a');
+    if (b) b.addEventListener('click', (e)=>{ if(e) e.preventDefault(); assignOrder(); /* SPA: show order panel */ });
   }
   const rAct = document.getElementById('settings-action-roles');
   if (rAct) {
-    const b = rAct.querySelector('button, a[role="button"]');
-    if (b) b.addEventListener('click', ()=>{ assignRoles(); switchResultTab('roles'); });
+    const b = rAct.querySelector('button, a[role="button"], a');
+    if (b) b.addEventListener('click', (e)=>{ if(e) e.preventDefault(); assignRoles(); /* SPA: show roles panel */ });
   }
 })();
 </script>

@@ -1,72 +1,73 @@
-<div class="min-h-screen bg-black text-white">
-  <div class="max-w-6xl mx-auto px-6 py-8">
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-3">
-        <button id="btn-prev-snapshot" class="px-3 py-1 bg-white text-black rounded disabled:opacity-50">履歴◀</button>
-        <button id="btn-next-snapshot" class="px-3 py-1 bg-white text-black rounded disabled:opacity-50">履歴▶</button>
-        <span id="snapshot-index" class="ml-3 text-sm text-gray-300"></span>
-      </div>
+<%# filepath: /Users/n/workspace/Shuffly/app/views/events/presentation.html.erb %>
+<div class="min-h-screen bg-gray-50 text-gray-900">
+  <div class="max-w-6xl mx-auto px-6 py-12">
+    <header class="mb-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div>
+            <h1 class="text-4xl font-extrabold">プレゼンテーションモード</h1>
+            <p class="text-sm text-gray-600 mt-1">準備が完了したら、下のボタンで結果を表示します</p>
+          </div>
+        </div>
 
-      <div class="flex items-center gap-3">
-        <h1 id="pres-title" class="text-3xl font-bold"></h1>
-
-        <div class="ml-4 flex items-center gap-2">
-          <button id="btn-back-to-settings" class="px-4 py-2 bg-white text-black rounded">イベント設定に戻る</button>
-          <button id="btn-close" class="px-3 py-1 border rounded text-white">閉じる</button>
+        <div class="flex items-center gap-3">
+          <button id="btn-back-to-settings" class="px-4 py-2 bg-white border border-gray-200 rounded text-sm shadow-sm">イベント設定に戻る</button>
+          <button id="btn-close" class="px-3 py-2 text-sm text-gray-600">閉じる</button>
         </div>
       </div>
-    </div>
 
-    <!-- コントロール -->
-    <div class="flex items-center justify-between mb-4 gap-4">
-      <div class="flex items-center gap-2">
-        <button data-mode="groups" class="mode-btn px-3 py-1 bg-gray-800 border border-gray-700 rounded">グループ</button>
-        <button data-mode="order" class="mode-btn px-3 py-1 bg-gray-800 border border-gray-700 rounded">順番</button>
-        <button data-mode="roles" class="mode-btn px-3 py-1 bg-gray-800 border border-gray-700 rounded">役職</button>
+      <!-- tabs (centered) -->
+      <nav class="mt-6 border-b border-gray-200">
+        <div class="flex gap-8 text-sm justify-center w-full">
+          <button data-mode="groups" class="mode-btn pb-3 text-blue-600 border-b-2 border-blue-600">グループ分け</button>
+          <button data-mode="order" class="mode-btn pb-3 text-gray-600 hover:text-gray-800">順番決め</button>
+          <button data-mode="roles" class="mode-btn pb-3 text-gray-600 hover:text-gray-800">役割決め</button>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <div id="pres-content" class="grid grid-cols-1 gap-6">
+        <!-- large visible area (white rounded dashed box) -->
+        <section class="bg-white rounded-lg border-2 border-dashed border-gray-300 p-10 flex flex-col items-center justify-center min-h-[360px]">
+          <div class="text-center max-w-3xl w-full">
+            <h2 id="display-subtitle" class="text-xl font-semibold mb-2">シャッフル結果</h2>
+            <p id="display-hint" class="text-sm text-gray-500">結果はここに表示されます。「次へ」または「一括表示」ボタンをクリックして開始してください。</p>
+
+            <div id="display-area" class="mt-8 w-full bg-white">
+              <!-- large display used by script — initially empty until reveal -->
+              <div id="display-item" class="text-4xl md:text-5xl font-extrabold text-center leading-relaxed whitespace-pre-wrap"></div>
+            </div>
+
+            <!-- small snapshot (kept hidden by default so nothing shows until reveal) -->
+            <div id="pres-snapshot" class="mt-8 text-sm text-gray-600 whitespace-pre-wrap hidden"></div>
+          </div>
+        </section>
+
+        <!-- controls centered under the big box -->
+        <div class="flex justify-center gap-4 mt-4">
+          <button id="btn-prev-item" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">前へ</button>
+          <button id="btn-next-item" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">次へ</button>
+          <button id="btn-reveal" class="px-6 py-3 bg-blue-600 text-white rounded shadow">一括表示</button>
+        </div>
+
+        <!-- hidden controls / compact list for presenter (kept for functionality) -->
+        <div class="hidden md:flex items-start gap-6 mt-6">
+          <div class="flex items-center gap-2">
+            <button id="btn-prev-snapshot" class="px-3 py-1 bg-white border rounded disabled:opacity-50">履歴◀</button>
+            <button id="btn-next-snapshot" class="px-3 py-1 bg-white border rounded disabled:opacity-50">履歴▶</button>
+            <span id="snapshot-index" class="ml-3 text-sm text-gray-500"></span>
+          </div>
+
+          <div class="ml-auto text-sm text-gray-500">
+            <span id="display-counter"></span>
+          </div>
+        </div>
+
+        <!-- compact list for quick selection (kept but visually subtle) -->
+        <div id="list-compact" class="hidden md:block text-sm text-gray-700"></div>
       </div>
-
-      <div class="flex items-center gap-2">
-        <button id="btn-reveal" class="px-4 py-2 bg-green-600 rounded">表示開始</button>
-        <button id="btn-hide" class="px-4 py-2 bg-gray-700 rounded hidden">全非表示</button>
-        <div class="flex items-center gap-1 ml-2">
-          <button id="btn-prev-item" class="px-3 py-1 bg-white text-black rounded disabled:opacity-50">前へ</button>
-          <button id="btn-next-item" class="px-3 py-1 bg-white text-black rounded disabled:opacity-50">次へ</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="pres-content" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <!-- 大きな表示領域 -->
-      <section class="col-span-2 bg-gray-900 p-6 rounded flex flex-col">
-        <div class="flex items-center justify-between mb-3">
-          <h2 id="display-subtitle" class="text-2xl font-semibold"></h2>
-          <div class="text-sm text-gray-400" id="display-counter"></div>
-        </div>
-
-        <div id="display-area" class="flex-1 bg-black rounded border border-gray-700 flex items-center justify-center p-6">
-          <div id="display-item" class="text-4xl text-center leading-snug"></div>
-        </div>
-
-        <div class="mt-6 text-sm text-gray-300">
-          <div id="display-hint">「表示開始」を押すと、選択中のカテゴリを一件ずつ大きく表示します。</div>
-        </div>
-
-        <h3 class="text-lg font-medium mt-6 mb-2 text-gray-200">現在の生データ（スナップショット）</h3>
-        <pre id="pres-snapshot" class="bg-gray-800 p-3 rounded text-sm whitespace-pre-wrap max-h-48 overflow-auto"></pre>
-      </section>
-
-      <!-- 補助表示 -->
-      <aside class="bg-gray-900 p-6 rounded">
-        <h3 class="text-xl font-semibold mb-2">一覧（非表示）</h3>
-        <div id="list-compact" class="text-gray-200 text-sm leading-relaxed space-y-2 max-h-[60vh] overflow-auto">
-          <!-- 小さい一覧：クリックでその項目を即表示 -->
-        </div>
-
-        <div class="mt-4">
-          <button id="btn-copy-groups" class="w-full px-3 py-2 bg-green-600 rounded text-white">表示内容をコピー</button>
-        </div>
-      </aside>
-    </div>
+    </main>
   </div>
 </div>
 
@@ -125,7 +126,7 @@
   if(!payload) payload = { members_json:null, results_json:null, order_json:null, settings_json:null, history_json:null, title:'' };
 
   // DOM refs
-  const titleEl = document.getElementById('pres-title');
+  const titleEl = document.querySelector('h1') || document.getElementById('pres-title');
   const displaySubtitle = document.getElementById('display-subtitle');
   const displayItem = document.getElementById('display-item');
   const displayCounter = document.getElementById('display-counter');
@@ -135,21 +136,17 @@
   const prevSnapshotBtn = document.getElementById('btn-prev-snapshot');
   const nextSnapshotBtn = document.getElementById('btn-next-snapshot');
 
-  titleEl.textContent = payload.title || document.title || 'プレゼンテーション';
+  if(titleEl) titleEl.textContent = payload.title || document.title || 'プレゼンテーション';
 
   // prepare data structures for modes
-  // groups: array of {label, members: [...]}
   function normalizeGroups(results){
     if(!results) return [];
-    // if results has groups key (object)
     if(results.groups && typeof results.groups === 'object'){
       const names = results.group_names || results.groupNames || {};
       const keys = Object.keys(results.groups);
       return keys.map(k => ({ label: names[k] || k, members: Array.isArray(results.groups[k]) ? results.groups[k] : [] }));
     }
-    // if results is an array of groups
     if(Array.isArray(results)){
-      // assume array of groups with name,members or arrays
       return results.map((g,i) => {
         if(typeof g === 'string') return { label: `Group ${i+1}`, members: [g] };
         if(Array.isArray(g)) return { label: `Group ${i+1}`, members: g };
@@ -169,13 +166,12 @@
   })();
   const rolesList = (() => {
     const s = payload.settings_json || payload.settingsJson || {};
-    // try multiple shapes
     if(s && Array.isArray(s.role_assignments)) return s.role_assignments.map(r => ({ name: r.name, role: r.role }));
     if(s && s.roles && typeof s.roles === 'object') return Object.keys(s.roles).map(k => ({ name: k, role: s.roles[k] }));
     return [];
   })();
 
-  // snapshot/history handling
+  // snapshot/history handling (kept but not shown until reveal)
   let history = [];
   if(Array.isArray(payload.history_json)) history = payload.history_json.slice();
   else if(typeof payload.history_json === 'string'){
@@ -188,20 +184,21 @@
   let historyIdx = history.length > 0 ? history.length - 1 : -1;
   function updateSnapshotUI(){
     if(historyIdx < 0 || history.length === 0){
-      presSnapshot.textContent = '(履歴がありません)';
+      presSnapshot.textContent = '';
       snapshotIndexEl.textContent = '';
-      prevSnapshotBtn.disabled = true; nextSnapshotBtn.disabled = true;
+      if(prevSnapshotBtn) prevSnapshotBtn.disabled = true;
+      if(nextSnapshotBtn) nextSnapshotBtn.disabled = true;
     } else {
       const raw = history[historyIdx];
       const parsed = safeParse(raw) || raw;
       presSnapshot.textContent = typeof parsed === 'string' ? parsed : JSON.stringify(parsed, null, 2);
       snapshotIndexEl.textContent = ` ${historyIdx+1}/${history.length}`;
-      prevSnapshotBtn.disabled = historyIdx <= 0;
-      nextSnapshotBtn.disabled = historyIdx >= history.length - 1;
+      if(prevSnapshotBtn) prevSnapshotBtn.disabled = historyIdx <= 0;
+      if(nextSnapshotBtn) nextSnapshotBtn.disabled = historyIdx >= history.length - 1;
     }
   }
-  prevSnapshotBtn.addEventListener('click', ()=>{ if(historyIdx>0){ historyIdx--; updateSnapshotUI(); }});
-  nextSnapshotBtn.addEventListener('click', ()=>{ if(historyIdx < history.length-1){ historyIdx++; updateSnapshotUI(); }});
+  if(prevSnapshotBtn) prevSnapshotBtn.addEventListener('click', ()=>{ if(historyIdx>0){ historyIdx--; updateSnapshotUI(); }});
+  if(nextSnapshotBtn) nextSnapshotBtn.addEventListener('click', ()=>{ if(historyIdx < history.length-1){ historyIdx++; updateSnapshotUI(); }});
   updateSnapshotUI();
 
   // mode state and per-mode index
@@ -212,72 +209,73 @@
 
   function setMode(m){
     mode = m;
-    modeBtns.forEach(b => b.classList.toggle('bg-green-600', b.dataset.mode === m));
-    // set subtitle and prepare listCompact
-    if(m === 'groups') displaySubtitle.textContent = 'グループ（1件ずつ表示）';
+    modeBtns.forEach(b => {
+      b.classList.toggle('text-blue-600', b.dataset.mode === m);
+      b.classList.toggle('border-b-2', b.dataset.mode === m);
+      b.classList.toggle('border-blue-600', b.dataset.mode === m);
+      b.classList.toggle('text-gray-600', b.dataset.mode !== m);
+    });
+    if(m === 'groups') displaySubtitle.textContent = 'シャッフル結果';
     if(m === 'order') displaySubtitle.textContent = '順番（1件ずつ表示）';
     if(m === 'roles') displaySubtitle.textContent = '役職（1件ずつ表示）';
     rebuildListCompact();
-    updateDisplay();
+    updateDisplay(); // do not auto-reveal; updateDisplay keeps content empty until reveal
   }
   modeBtns.forEach(b => b.addEventListener('click', ()=> setMode(b.dataset.mode)));
 
-  // build compact list (hidden by default) but clickable to jump
   function rebuildListCompact(){
+    if(!listCompact) return;
     listCompact.innerHTML = '';
     if(mode === 'groups'){
       groupsList.forEach((g,i) => {
         const el = document.createElement('div');
-        el.className = 'p-2 bg-gray-800 rounded cursor-pointer hover:bg-gray-700';
+        el.className = 'p-2 bg-white rounded cursor-pointer hover:bg-gray-50';
         el.textContent = `${i+1}. ${g.label} (${g.members.length})`;
         el.addEventListener('click', () => { indices.groups = i; revealCurrent(); });
         listCompact.appendChild(el);
       });
-      if(groupsList.length === 0) listCompact.textContent = '(グループデータなし)';
+      if(groupsList.length === 0) listCompact.textContent = '';
     } else if(mode === 'order'){
       orderList.forEach((o,i) => {
         const el = document.createElement('div');
-        el.className = 'p-2 bg-gray-800 rounded cursor-pointer hover:bg-gray-700';
+        el.className = 'p-2 bg-white rounded cursor-pointer hover:bg-gray-50';
         el.textContent = `${i+1}. ${o.name || JSON.stringify(o)}`;
         el.addEventListener('click', () => { indices.order = i; revealCurrent(); });
         listCompact.appendChild(el);
       });
-      if(orderList.length === 0) listCompact.textContent = '(順番データなし)';
+      if(orderList.length === 0) listCompact.textContent = '';
     } else if(mode === 'roles'){
       rolesList.forEach((r,i) => {
         const el = document.createElement('div');
-        el.className = 'p-2 bg-gray-800 rounded cursor-pointer hover:bg-gray-700';
+        el.className = 'p-2 bg-white rounded cursor-pointer hover:bg-gray-50';
         el.textContent = `${i+1}. ${r.name || ''} ${r.role ? '– ' + r.role : ''}`;
         el.addEventListener('click', () => { indices.roles = i; revealCurrent(); });
         listCompact.appendChild(el);
       });
-      if(rolesList.length === 0) listCompact.textContent = '(役職データなし)';
+      if(rolesList.length === 0) listCompact.textContent = '';
     }
-    // update counters
     counts.groups = groupsList.length; counts.order = orderList.length; counts.roles = rolesList.length;
   }
 
-  // display control: reveal/hide, next/prev item, and update according to mode
+  // display control
   let revealed = false;
   const btnReveal = document.getElementById('btn-reveal');
-  const btnHide = document.getElementById('btn-hide');
   const btnPrevItem = document.getElementById('btn-prev-item');
   const btnNextItem = document.getElementById('btn-next-item');
 
   function updateControls(){
     const len = counts[mode] || 0;
     const idx = indices[mode] || 0;
-    btnPrevItem.disabled = !revealed || idx <= 0;
-    btnNextItem.disabled = !revealed || idx >= len - 1;
-    displayCounter.textContent = len > 0 && revealed ? `${idx+1}/${len}` : (len ? `0/${len}` : '');
-    btnHide.classList.toggle('hidden', !revealed);
-    btnReveal.classList.toggle('hidden', revealed);
+    if(btnPrevItem) btnPrevItem.disabled = !revealed || idx <= 0;
+    if(btnNextItem) btnNextItem.disabled = !revealed || idx >= len - 1;
+    if(displayCounter) displayCounter.textContent = revealed && len > 0 ? `${idx+1}/${len}` : '';
+    if(btnReveal) btnReveal.classList.toggle('hidden', revealed);
   }
 
   function formatGroupForDisplay(g){
-    // show label and members vertically
     const members = Array.isArray(g.members) ? g.members : [];
-    const lines = [`${g.label}（${members.length}名）`, ''];
+    const header = (g.label && g.label !== '') ? `${g.label}（${members.length}名）` : `（${members.length}名）`;
+    const lines = [header, ''];
     members.forEach(m => {
       if(typeof m === 'string') lines.push(m);
       else if(m && (m.name || m.full_name)) lines.push(m.name || m.full_name);
@@ -302,16 +300,16 @@
     const len = counts[mode] || 0;
     const idx = indices[mode] || 0;
     if(!revealed){
-      displayItem.textContent = ''; displaySubtitle.classList.remove('opacity-60');
+      displayItem.textContent = ''; // ensure nothing shown until reveal
     } else {
       if(mode === 'groups'){
-        if(len === 0){ displayItem.textContent = '(グループデータなし)'; }
+        if(len === 0){ displayItem.textContent = ''; }
         else displayItem.textContent = formatGroupForDisplay(groupsList[idx]);
       } else if(mode === 'order'){
-        if(len === 0){ displayItem.textContent = '(順番データなし)'; }
+        if(len === 0){ displayItem.textContent = ''; }
         else displayItem.textContent = formatOrderForDisplay(orderList[idx]);
       } else if(mode === 'roles'){
-        if(len === 0){ displayItem.textContent = '(役職データなし)'; }
+        if(len === 0){ displayItem.textContent = ''; }
         else displayItem.textContent = formatRoleForDisplay(rolesList[idx]);
       }
     }
@@ -320,37 +318,25 @@
 
   function revealCurrent(){
     revealed = true;
-    btnReveal.classList.add('hidden');
-    btnHide.classList.remove('hidden');
+    // show snapshot (if exists) for presenter; otherwise keep it hidden
+    if(presSnapshot && presSnapshot.textContent) presSnapshot.classList.remove('hidden');
     updateDisplay();
   }
   function hideAll(){
     revealed = false;
     displayItem.textContent = '';
-    btnHide.classList.add('hidden');
-    btnReveal.classList.remove('hidden');
     updateControls();
   }
 
-  btnReveal.addEventListener('click', () => revealCurrent());
-  btnHide.addEventListener('click', () => hideAll());
-
-  btnPrevItem.addEventListener('click', () => {
+  if(btnReveal) btnReveal.addEventListener('click', () => revealCurrent());
+  if(btnPrevItem) btnPrevItem.addEventListener('click', () => {
     if(indices[mode] > 0){ indices[mode]--; revealCurrent(); }
   });
-  btnNextItem.addEventListener('click', () => {
+  if(btnNextItem) btnNextItem.addEventListener('click', () => {
     if(indices[mode] < (counts[mode]-1)){ indices[mode]++; revealCurrent(); }
   });
 
-  // click copy button copies current large display text (or full groups text if mode groups)
-  document.getElementById('btn-copy-groups').addEventListener('click', function(){
-    const text = displayItem.textContent || '';
-    navigator.clipboard.writeText(text).then(()=> {
-      this.textContent = 'コピーしました'; setTimeout(()=> this.textContent = '表示内容をコピー', 1200);
-    }).catch(()=> { this.textContent = 'コピー失敗'; setTimeout(()=> this.textContent = '表示内容をコピー', 1200); });
-  });
-
-  // initialize
+  // init (do not reveal anything on load)
   setMode('groups');
   rebuildListCompact();
   updateDisplay();
@@ -375,7 +361,7 @@
     if(window.opener) window.close(); else window.location.href = "<%= root_path %>";
   });
 
-  // keyboard bindings
+  // keyboard
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape') document.getElementById('btn-back-to-settings').click();
     if(e.key === 'ArrowLeft') document.getElementById('btn-prev-item').click();
