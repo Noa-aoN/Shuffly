@@ -187,10 +187,10 @@
             </label>
           </div>
 
-          <div class="mt-2 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div>
-              <label class="text-sm mr-2">メンバーの区切り方:</label>
-              <select id="separatorSelect" class="border rounded-md px-2 py-1 mt-1">
+          <div class="mt-2 flex flex-col sm:flex-row sm:items-start gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full sm:w-auto">
+              <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0">メンバーの区切り方 :</label>
+              <select id="separatorSelect" class="border rounded-md px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto">
                 <option value=" " >スペース</option>
                 <option value="," selected>カンマ</option>
                 <option value="\\n">改行</option>
@@ -199,9 +199,9 @@
               </select>
             </div>
 
-            <div>
-              <label class="text-sm mr-2">グループの区切り方:</label>
-              <select id="groupSeparatorSelect" class="border rounded-md px-2 py-1 mt-1">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full sm:w-auto">
+              <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0">グループの区切り方 :</label>
+              <select id="groupSeparatorSelect" class="border rounded-md px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto">
                 <option value="space">スペース</option>
                 <option value="none" selected>なし</option>
                 <option value="line">線</option>
@@ -465,23 +465,24 @@ function assignGroups(){
   // assign fixed entries but randomize among empty/min candidates to avoid left-bias
   for(const p of fixedEntries){
     const emptyGroups = groupIds.filter(g=>groups[g].length===0);
+    let chosen;
     if(emptyGroups.length>0){
-      const chosen = pickRandom(emptyGroups);
-      groups[chosen].push(p);
+      chosen = pickRandom(emptyGroups);
     } else {
       const minSize = Math.min(...groupIds.map(g=>groups[g].length));
       const candidates = groupIds.filter(g=>groups[g].length===minSize);
-      const chosen = pickRandom(candidates);
-      groups[chosen].push(p);
+      chosen = pickRandom(candidates);
     }
+    groups[chosen].push(p);
+    p.assignedGroup = chosen; // preserve assignment on the original entry object
   }
 
   for(const p of otherEntries){
     const emptyGroups = groupIds.filter(g=>groups[g].length===0);
     if(emptyGroups.length>0){
-      // when there are multiple empty groups, pick randomly among them
       const chosen = pickRandom(emptyGroups);
       groups[chosen].push(p);
+      p.assignedGroup = chosen;
       continue;
     }
 
@@ -499,6 +500,7 @@ function assignGroups(){
     const tied = scores.filter(s=>s.mk===minMK).map(s=>s.g);
     const selected = pickRandom(tied);
     groups[selected].push(p);
+    p.assignedGroup = selected;
   }
 
   const rolesForGroups = document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
@@ -509,7 +511,16 @@ function assignGroups(){
     }
   }
 
-  const updated=groupIds.flatMap(g=>groups[g].map(e=>`${e.name}${e.history.join('')}#${round}${g}`));
+  // Preserve original input order when appending history: build updated lines from entries array order
+  const updated = entries.map(e => {
+    const assigned = e.assignedGroup || (()=>{
+      // fallback: find in groups if assignment missing
+      for(const g of groupIds) if(groups[g].some(x=>x.name===e.name)) return g;
+      return groupIds[0];
+    })();
+    return `${e.name}${e.history.join('')}#${round}${assigned}`;
+  });
+
   setRawAndRefreshDisplay(updated.join("\n"));
 
   try{
