@@ -175,6 +175,10 @@
             <input type="checkbox" id="showGroupLabel" checked class="rounded border-gray-300">
             <span class="text-sm ml-2">グループ名表示</span>
           </label>
+          <label class="inline-flex items-center gap-1 mt-2 ml-4">
+            <input type="checkbox" id="showGroupCount" checked class="rounded border-gray-300">
+            <span class="text-sm ml-2">グループ人数表示</span>
+          </label>
           <div class="mt-1 flex items-center gap-3">
             <div>
               <label class="text-sm mr-2">メンバーの区切り方:</label>
@@ -189,8 +193,8 @@
             <div>
               <label class="text-sm mr-2">グループの区切り方:</label>
               <select id="groupSeparatorSelect" class="border rounded-md px-2 py-1 mt-1">
-                <option value="space" selected>スペース</option>
-                <option value="none">なし</option>
+                <option value="space">スペース</option>
+                <option value="none" selected>なし</option>
                 <option value="line">線</option>
                 <option value="wave">波線</option>
               </select>
@@ -649,6 +653,7 @@ function showGroups(){
 
   const memberSep = document.getElementById('separatorSelect').value==='\\t'?'\t':document.getElementById('separatorSelect').value;
   const showLabel=document.getElementById('showGroupLabel').checked;
+  const showCount=document.getElementById('showGroupCount') ? document.getElementById('showGroupCount').checked : true;
   const groupSepVal = document.getElementById('groupSeparatorSelect') ? document.getElementById('groupSeparatorSelect').value : 'space';
 
   let groupSep = '\n\n'; // default to previous behaviour
@@ -662,7 +667,10 @@ function showGroups(){
     const members=groups[id];
     const label = idToName[id] || id;
     let block = '';
-    if(showLabel) block += `${label}（${members.length}人）：\n`;
+    if(showLabel){
+      const countText = showCount ? `（${members.length}人）` : '';
+      block += `${label}${countText}：\n`;
+    }
     block += members.join(memberSep);
     parts.push(block);
   }
@@ -1048,6 +1056,7 @@ window.onload = () => {
 
   // Group view controls: SPAで即時反映
   bindIf('showGroupLabel', 'change', ()=>{ showGroups(); });
+  bindIf('showGroupCount', 'change', ()=>{ showGroups(); });
   bindIf('separatorSelect', 'change', ()=>{ showGroups(); });
   bindIf('groupSeparatorSelect', 'change', ()=>{ showGroups(); });
 
