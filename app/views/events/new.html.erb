@@ -209,7 +209,7 @@
 
         <!-- 結果表示フォーム色を薄いグレー系に変更 -->
         <!-- 初期は空。グループ分け実行ボタン押下後に初回表示される -->
-        <textarea id="groupOutput" rows="8" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
+        <textarea id="groupOutput" rows="10" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
 
         <!-- 統計情報（折りたたみ可能・デフォルトは折りたたみ） -->
         <div class="flex items-center justify-between mb-3">
@@ -241,7 +241,7 @@
       <!-- 役割表示パネル -->
       <div id="panel-roles" class="result-panel hidden">
         <h3 class="font-medium mb-2">役割表示</h3>
-        <textarea id="rolesOutput" rows="8" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-lg"></textarea>
+        <textarea id="rolesOutput" rows="10" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-lg"></textarea>
 
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-rolesoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
@@ -385,7 +385,7 @@ function formatEntryForDisplay(entry){
     if(m){
       const num=m[1], id=m[2];
       const gname = idToName[id] || id;
-      return ` # ${num}回目：${gname}`;
+      return ` [ ${num}回目：${gname} ]`;
     }
     return h;
   }).join('');
@@ -855,11 +855,11 @@ function pasteFromClipboard(){
   }).catch(()=>showToast("クリップボードにアクセスできません"));
 }
 
-// 履歴クリア（メンバー名の「#」以降を一括削除）
+// 履歴クリア（メンバー名以降を一括削除）
 function clearMemberHistories(){
   const rawEl = getRawValue();
   if(rawEl === undefined) return;
-  const confirmed = window.confirm("メンバー名リストに含まれる全メンバーの履歴（「#」以降）を一括で削除します。よろしいですか？");
+  const confirmed = window.confirm("メンバー名リストに含まれる全メンバーの履歴を一括で削除します。よろしいですか？");
   if(!confirmed) return;
 
   const cur = getRawValue() || "";
