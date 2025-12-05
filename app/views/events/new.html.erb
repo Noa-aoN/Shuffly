@@ -103,7 +103,7 @@
           <label class="text-xs text-gray-600">役割名（改行またはカンマ区切り）</label>
           <textarea id="rolesInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
 
-          <p class="text-xs text-gray-500 mt-2">複数の役割をカンマ区切りで入力してください。役割の割り当ては常にランダムに行われ、各役割は可能な限り異なるメンバーに一意に割り当てられます。</p>
+          <p class="text-xs text-gray-500 mt-2">複数の役割をカンマまたは改行で入力してください。役割の割り当ては常にランダムに行われ、各役割は可能な限り異なるメンバーに一意に割り当てられます。</p>
         </div>
       </div>
 
@@ -503,7 +503,8 @@ function assignGroups(){
     p.assignedGroup = selected;
   }
 
-  const rolesForGroups = document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
+  // Accept roles input separated by comma or newline
+  const rolesForGroups = document.getElementById('rolesInput').value.split(/[\r\n,]+/).map(r=>r.trim()).filter(Boolean);
   if(rolesForGroups.length>0){
     for(const g of groupIds){
       const members=groups[g];
@@ -625,7 +626,8 @@ function assignRoles(){
   let members = rawList.map(s=>s.split('#')[0].trim());
   if(members.length===0){ showToast("参加者がいません"); return; }
 
-  const roles = document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
+  // Accept roles separated by comma or newline
+  const roles = document.getElementById('rolesInput').value.split(/[\r\n,]+/).map(r=>r.trim()).filter(Boolean);
   if(roles.length===0){ showToast("役割が未入力です"); return; }
 
   function shuffleArray(arr){
@@ -899,6 +901,7 @@ function clearMemberHistories(){
   if(!confirmed) return;
 
   const cur = getRawValue() || "";
+  The
   const cleaned = cur.split(/[\r\n,]+/).map(s=>s.split('#')[0].trim()).filter(Boolean);
   setRawAndRefreshDisplay(cleaned.join("\n"));
   updateParticipantCount();
