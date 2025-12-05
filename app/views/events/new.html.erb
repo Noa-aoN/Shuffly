@@ -1,3 +1,4 @@
+<%# filepath: /Users/n/workspace/Shuffly/app/views/events/new.html.erb %>
 <div class="max-w-6xl mx-auto px-6 pt-2 pb-10">
   <h1 class="text-3xl font-bold mb-8"><%= @event.title.presence || "イベント作成" %></h1>
 
@@ -116,22 +117,6 @@
                 variant: 'primary',
                 full_mobile: false,
                 extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
-          <%= render 'shared/button',
-                f: nil,
-                button_text: '前のグループへ',
-                id: nil,
-                path: '#',
-                variant: 'secondary',
-                full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
-          <%= render 'shared/button',
-                f: nil,
-                button_text: '後ろのグループへ',
-                id: nil,
-                path: '#',
-                variant: 'secondary',
-                full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
         </div>
       </div>
 
@@ -206,6 +191,12 @@
 
         <h3 class="font-medium mb-2">統計情報</h3>
         <textarea id="statsOutput" rows="6" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-sm"></textarea>
+
+        <!-- 前回/次回へのリンク（コピーリンクと同様のリンクスタイルで表示） -->
+        <div class="flex justify-center gap-4 mt-2 w-full">
+          <a href="#" id="btn-prev-group" class="text-sm text-blue-600 hover:underline">前回のグループ分けへ</a>
+          <a href="#" id="btn-next-group" class="text-sm text-blue-600 hover:underline">次回のグループ分けへ</a>
+        </div>
 
         <!-- クリップボードコピー（リンクスタイル） -->
         <div class="flex justify-center mt-2 w-full">
@@ -362,7 +353,7 @@ function setRawValue(v){ const el = document.getElementById('membersRaw'); if(el
 function getDisplayValue(){ return (document.getElementById('membersInput') || {value:''}).value || ""; }
 function setDisplayValue(v){ const el = document.getElementById('membersInput'); if(el) el.value = v; }
 
-// format a single raw entry like "太郎 # 1回目：グループA # 2回目：グループB#"
+// format a single raw entry like "太郎#1A#2B" -> "太郎#1巡目：グループA#2巡目：グループB#"
 function formatEntryForDisplay(entry){
   const name = entry.split('#')[0].trim();
   const hist = entry.match(/#\d+[A-Z]/g) || [];
@@ -758,7 +749,16 @@ function undoHistory(){
     const val = shufflyHistory[currentHistoryIndex];
     setRawAndRefreshDisplay(val);
     updateParticipantCount();
+    // refresh result display so ③の表示と①の履歴が整合するようにする
+    showGroups();
+    showStats();
+    // update hidden JSON fields for consistency (non-destructive)
+    try{
+      const entries = val ? val.split(/[\r\n,]+/).map(s=>parseEntry(s.trim())) : [];
+      if(document.getElementById('membersJsonInput')) document.getElementById('membersJsonInput').value = JSON.stringify(entries);
+    }catch(e){}
     showToast("1ステップ戻しました");
+    switchResultTab('groups');
   } else showToast("これ以上戻れません");
 }
 
@@ -768,7 +768,15 @@ function redoHistory(){
     const val = shufflyHistory[currentHistoryIndex];
     setRawAndRefreshDisplay(val);
     updateParticipantCount();
+    // refresh result display so ③の表示と①の履歴が整合するようにする
+    showGroups();
+    showStats();
+    try{
+      const entries = val ? val.split(/[\r\n,]+/).map(s=>parseEntry(s.trim())) : [];
+      if(document.getElementById('membersJsonInput')) document.getElementById('membersJsonInput').value = JSON.stringify(entries);
+    }catch(e){}
     showToast("1ステップ進めました");
+    switchResultTab('groups');
   } else showToast("これ以上進めません");
 }
 
@@ -1038,6 +1046,24 @@ window.onload = () => {
   bindIf('btn-copy-orderoutput', 'click', (e)=>{ e.preventDefault(); copyOrderOutput(); });
   bindIf('btn-copy-rolesoutput', 'click', (e)=>{ e.preventDefault(); copyRolesOutput(); });
 
+  // Prev/Next links in results card (moved from settings area; same functionality, link style)
+  bindIf('btn-prev-group', 'click', (e)=>{
+    if(e) e.preventDefault();
+    if(currentHistoryIndex <= 0){
+      showToast("これ以上戻れません");
+      return;
+    }
+    undoHistory();
+  });
+  bindIf('btn-next-group', 'click', (e)=>{
+    if(e) e.preventDefault();
+    if(currentHistoryIndex >= shufflyHistory.length-1){
+      showToast("これ以上進めません");
+      return;
+    }
+    redoHistory();
+  });
+
   // Share controls
   bindIf('btn-toggle-presentation', 'click', (e)=>{ if(e) e.preventDefault(); togglePresentationMode(); });
   bindIf('btn-export-results', 'click', (e)=>{ if(e) e.preventDefault(); exportResults(); });
@@ -1048,8 +1074,7 @@ window.onload = () => {
   if (gAct) {
     const btns = gAct.querySelectorAll('button, a[role="button"], a');
     if (btns[0]) btns[0].addEventListener('click', (e)=>{ if(e) e.preventDefault(); assignGroups(); /* SPA: update panels without reload */ });
-    if (btns[1]) btns[1].addEventListener('click', (e)=>{ if(e) e.preventDefault(); undoHistory(); /* keep on groups tab */ });
-    if (btns[2]) btns[2].addEventListener('click', (e)=>{ if(e) e.preventDefault(); redoHistory(); /* keep on groups tab */ });
+    // prev/next moved to results links
   }
   const oAct = document.getElementById('settings-action-order');
   if (oAct) {
