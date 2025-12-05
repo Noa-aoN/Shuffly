@@ -14,7 +14,7 @@
       <label class="block text-sm font-medium mb-2">メンバー名リスト（改行またはカンマ区切り）</label>
 
       <!-- hidden raw data textarea (機能上のデータはここに保持) -->
-      <textarea id="membersRaw" rows="8" class="hidden" style="display:none;"><%= begin
+      <textarea id="membersRaw" rows="10" class="hidden" style="display:none;"><%= begin
         members = @event.members_json.present? ? JSON.parse(@event.members_json) : []
         members.map do |m|
           if m.is_a?(Hash)
@@ -30,7 +30,8 @@
       end %></textarea>
 
       <!-- visible textarea for user (表示はフォーマットして見やすくする) -->
-      <textarea id="membersInput" rows="8" class="w-full border rounded-md px-3 py-2 mb-3" placeholder="例：メンバー1, メンバー2, ..."></textarea>
+      <textarea id="membersInput" rows="10" class="w-full border rounded-md px-3 py-2" placeholder="例：メンバー1, メンバー2, ..."></textarea>
+      <p class="text-xs text-gray-500 mt-0 mb-4">ユニークなメンバー名を入力してください。</p>
 
       <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
         <a href="#" id="btn-trigger-import" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">テキスト/CSVから入力</a>
@@ -61,19 +62,19 @@
           <div class="flex flex-col gap-3 mb-2">
             <div>
               <label class="text-xs text-gray-600">グループ数</label>
-              <input id="groupCount" type="number" min="1" max="26" value="<%= @event.group_count.presence || 3 %>" class="mt-1 w-full border rounded px-2 py-1">
+              <input id="groupCount" type="number" min="1" max="26" value="<%= @event.group_count.presence || 3 %>" class="mt-1 w-full border rounded px-2 py-1 mb-1">
             </div>
             <div>
               <label class="text-xs text-gray-600">グループ名（任意：改行またはカンマ区切り）</label>
               <textarea id="customGroupNames" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
-              <p class="text-xs text-gray-500 mt-1">グループ名を入力すると、その数が優先してグループ数に反映されます。</p>
+              <p class="text-xs text-gray-500 mb-1">グループ名を入力すると、その数が優先してグループ数に反映されます。</p>
             </div>
           </div>
 
           <div>
             <label class="text-xs text-gray-600">分散固定メンバー（任意：改行またはカンマ区切り）</label>
             <textarea id="fixedMembersInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
-            <p class="text-xs text-gray-500 mt-1">固定メンバーはグループ分け実行時に可能な限り指定グループに残します（自動振り分けとの兼ね合いにより完全固定にならない場合があります）。</p>
+            <p class="text-xs text-gray-500 mb-1">入力されたメンバーはグループ分け実行時に可能な限り分散し、グループに固定します。</p>
           </div>
 
           <div id="groupSizeHint" class="text-xs text-gray-500 mt-2"></div>
@@ -171,19 +172,22 @@
         <h3 class="font-medium mb-2">グループ表示</h3>
 
         <div class="mb-2">
-          <label class="inline-flex items-center gap-1 mt-2">
-            <input type="checkbox" id="showGroupLabel" checked class="rounded border-gray-300">
-            <span class="text-sm ml-2">グループ名表示</span>
-          </label>
-          <label class="inline-flex items-center gap-1 mt-2 ml-4">
-            <input type="checkbox" id="showGroupCount" checked class="rounded border-gray-300">
-            <span class="text-sm ml-2">グループ人数表示</span>
-          </label>
-          <label class="inline-flex items-center gap-1 mt-2 ml-4">
-            <input type="checkbox" id="breakMemberLine" checked class="rounded border-gray-300">
-            <span class="text-sm ml-2">メンバーを改行表示</span>
-          </label>
-          <div class="mt-1 flex items-center gap-3">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+            <label class="inline-flex items-center gap-1 mt-2">
+              <input type="checkbox" id="showGroupLabel" checked class="rounded border-gray-300">
+              <span class="text-sm ml-2">グループ名表示</span>
+            </label>
+            <label class="inline-flex items-center gap-1 mt-2">
+              <input type="checkbox" id="showGroupCount" checked class="rounded border-gray-300">
+              <span class="text-sm ml-2">グループ人数表示</span>
+            </label>
+            <label class="inline-flex items-center gap-1 mt-2">
+              <input type="checkbox" id="breakMemberLine" checked class="rounded border-gray-300">
+              <span class="text-sm ml-2">メンバーを改行表示</span>
+            </label>
+          </div>
+
+          <div class="mt-2 flex flex-col sm:flex-row sm:items-center gap-3">
             <div>
               <label class="text-sm mr-2">メンバーの区切り方:</label>
               <select id="separatorSelect" class="border rounded-md px-2 py-1 mt-1">
@@ -216,7 +220,7 @@
           <h3 class="font-medium"><a href="#" id="btn-toggle-stats" class="hover:underline">統計情報を表示</a></h3>
         </div>
         <div id="statsContainer" class="hidden">
-          <textarea id="statsOutput" rows="6" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-sm mb-3"></textarea>
+          <textarea id="statsOutput" rows="10" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-sm mb-3"></textarea>
         </div>
 
         <!-- クリップボードコピー / 履歴移動（リンクスタイル） -->
@@ -455,27 +459,45 @@ function assignGroups(){
   const fixedEntries = entries.filter(e=>fixedSet.has(e.name));
   const otherEntries = entries.filter(e=>!fixedSet.has(e.name));
 
+  // helper: pick random element from array
+  function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  // assign fixed entries but randomize among empty/min candidates to avoid left-bias
   for(const p of fixedEntries){
-    let emptyGroup = groupIds.find(g=>groups[g].length===0);
-    if(emptyGroup){ groups[emptyGroup].push(p); }
-    else {
-      const minSize=Math.min(...groupIds.map(g=>groups[g].length));
-      const candidates=groupIds.filter(g=>groups[g].length===minSize);
-      groups[candidates[0]].push(p);
+    const emptyGroups = groupIds.filter(g=>groups[g].length===0);
+    if(emptyGroups.length>0){
+      const chosen = pickRandom(emptyGroups);
+      groups[chosen].push(p);
+    } else {
+      const minSize = Math.min(...groupIds.map(g=>groups[g].length));
+      const candidates = groupIds.filter(g=>groups[g].length===minSize);
+      const chosen = pickRandom(candidates);
+      groups[chosen].push(p);
     }
   }
 
   for(const p of otherEntries){
-    let emptyGroup=groupIds.find(g=>groups[g].length===0);
-    if(emptyGroup){ groups[emptyGroup].push(p); continue; }
+    const emptyGroups = groupIds.filter(g=>groups[g].length===0);
+    if(emptyGroups.length>0){
+      // when there are multiple empty groups, pick randomly among them
+      const chosen = pickRandom(emptyGroups);
+      groups[chosen].push(p);
+      continue;
+    }
 
     const minSize=Math.min(...groupIds.map(g=>groups[g].length));
     const candidates=groupIds.filter(g=>groups[g].length===minSize);
-    let minMK=Infinity, selected=candidates[0];
+
+    // compute co-occurrence score (mk) for each candidate and choose among ties randomly
+    let minMK=Infinity;
+    const scores=[];
     for(const g of candidates){
       const mk=groups[g].reduce((acc,q)=>acc+(coMap[p.name][q.name]||0),0);
-      if(mk<minMK){minMK=mk; selected=g;}
+      scores.push({g, mk});
+      if(mk<minMK) minMK=mk;
     }
+    const tied = scores.filter(s=>s.mk===minMK).map(s=>s.g);
+    const selected = pickRandom(tied);
     groups[selected].push(p);
   }
 
@@ -715,12 +737,15 @@ function showStats(){
   for(const id of groupIds){
     const members=groupMap[id];
     let total=0;
+    const memberLines = [];
     for(const m of members){
       const mk=members.reduce((sum,other)=>sum+(m!==other?(coMap[m][other]||0):0),0);
-      lines.push(`${m}：被り数＝${mk}`);
+      memberLines.push(`${m}：被り経験数＝${mk}`);
       total+=mk;
     }
-    lines.push(`${idToName[id] ? `グループ ${idToName[id]}` : `グループ ${id}`}（被り平均値＝${members.length? (total/members.length).toFixed(2):0}）`);
+    // group header first, then member lines (average calculated above)
+    lines.push(`${idToName[id] ? `グループ ${idToName[id]}` : `グループ ${id}`}（被り経験数平均＝${members.length? (total/members.length).toFixed(2):0}）：`);
+    lines.push(...memberLines);
     lines.push('');
   }
   document.getElementById('statsOutput').value=lines.join("\n");
