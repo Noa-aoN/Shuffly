@@ -179,14 +179,19 @@
             <input type="checkbox" id="showGroupCount" checked class="rounded border-gray-300">
             <span class="text-sm ml-2">グループ人数表示</span>
           </label>
+          <label class="inline-flex items-center gap-1 mt-2 ml-4">
+            <input type="checkbox" id="breakMemberLine" checked class="rounded border-gray-300">
+            <span class="text-sm ml-2">メンバーを改行表示</span>
+          </label>
           <div class="mt-1 flex items-center gap-3">
             <div>
               <label class="text-sm mr-2">メンバーの区切り方:</label>
               <select id="separatorSelect" class="border rounded-md px-2 py-1 mt-1">
-                <option value=" ">スペース</option>
-                <option value=",">カンマ</option>
+                <option value=" " >スペース</option>
+                <option value="," selected>カンマ</option>
+                <option value="\\n">改行</option>
                 <option value="  ">ダブルスペース</option>
-                <option value="\t">タブ</option>
+                <option value="\\t">タブ</option>
               </select>
             </div>
 
@@ -208,7 +213,7 @@
 
         <!-- 統計情報（折りたたみ可能・デフォルトは折りたたみ） -->
         <div class="flex items-center justify-between mb-3">
-          <h3 class="font-medium"><a href="#" id="btn-toggle-stats" class="text-blue-600 hover:underline">統計情報を表示</a></h3>
+          <h3 class="font-medium"><a href="#" id="btn-toggle-stats" class="hover:underline">統計情報を表示</a></h3>
         </div>
         <div id="statsContainer" class="hidden">
           <textarea id="statsOutput" rows="6" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-sm mb-3"></textarea>
@@ -651,9 +656,12 @@ function showGroups(){
     groups[id].push(e.name);
   }
 
-  const memberSep = document.getElementById('separatorSelect').value==='\\t'?'\t':document.getElementById('separatorSelect').value;
+  // separator support: space, comma (default), double-space, tab, newline
+  const sepVal = document.getElementById('separatorSelect').value;
+  const memberSep = sepVal==='\\t' ? '\t' : (sepVal==='\\n' ? '\n' : sepVal);
   const showLabel=document.getElementById('showGroupLabel').checked;
   const showCount=document.getElementById('showGroupCount') ? document.getElementById('showGroupCount').checked : true;
+  const breakMemberLine = document.getElementById('breakMemberLine') ? document.getElementById('breakMemberLine').checked : true;
   const groupSepVal = document.getElementById('groupSeparatorSelect') ? document.getElementById('groupSeparatorSelect').value : 'space';
 
   let groupSep = '\n\n'; // default to previous behaviour
@@ -669,7 +677,8 @@ function showGroups(){
     let block = '';
     if(showLabel){
       const countText = showCount ? `（${members.length}人）` : '';
-      block += `${label}${countText}：\n`;
+      // When breakMemberLine is true, keep newline after label; otherwise keep header and members inline
+      block += breakMemberLine ? `${label}${countText}：\n` : `${label}${countText}： `;
     }
     block += members.join(memberSep);
     parts.push(block);
@@ -1057,6 +1066,7 @@ window.onload = () => {
   // Group view controls: SPAで即時反映
   bindIf('showGroupLabel', 'change', ()=>{ showGroups(); });
   bindIf('showGroupCount', 'change', ()=>{ showGroups(); });
+  bindIf('breakMemberLine', 'change', ()=>{ showGroups(); });
   bindIf('separatorSelect', 'change', ()=>{ showGroups(); });
   bindIf('groupSeparatorSelect', 'change', ()=>{ showGroups(); });
 
