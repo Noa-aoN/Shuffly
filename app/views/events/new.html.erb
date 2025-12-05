@@ -33,7 +33,7 @@
       <textarea id="membersInput" rows="8" class="w-full border rounded-md px-3 py-2 mb-3" placeholder="例：メンバー1, メンバー2, ..."></textarea>
 
       <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
-        <a href="#" id="btn-trigger-import" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">メンバーリストから入力</a>
+        <a href="#" id="btn-trigger-import" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">テキスト/CSVから入力</a>
         <input id="importFile" type="file" accept=".txt,.csv" class="hidden">
         <a href="#" id="btn-paste-clipboard" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">クリップボードから入力</a>
         <a href="#" id="btn-clear-history" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">履歴をクリア</a>
@@ -100,7 +100,7 @@
         <div class="mb-4">
           <label class="block font-medium mb-1">役割決めオプション</label>
           <label class="text-xs text-gray-600">役割名（改行またはカンマ区切り）</label>
-          <textarea id="rolesInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
+          <textarea id="rolesInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
 
           <p class="text-xs text-gray-500 mt-2">複数の役割をカンマ区切りで入力してください。役割の割り当ては常にランダムに行われ、各役割は可能な限り異なるメンバーに一意に割り当てられます。</p>
         </div>
@@ -171,18 +171,30 @@
         <h3 class="font-medium mb-2">グループ表示</h3>
 
         <div class="mb-2">
-          <label class="inline-flex items-center gap-1 mb-2">
+          <label class="inline-flex items-center gap-1 mt-2">
             <input type="checkbox" id="showGroupLabel" checked class="rounded border-gray-300">
             <span class="text-sm ml-2">グループ名表示</span>
           </label>
-          <div class="mt-2">
-            <label class="text-sm mr-2">メンバーの区切り方:</label>
-            <select id="separatorSelect" class="border rounded-md px-2 py-1 mt-1">
-              <option value=" ">スペース</option>
-              <option value=",">カンマ</option>
-              <option value="  ">ダブルスペース</option>
-              <option value="\t">タブ</option>
-            </select>
+          <div class="mt-1 flex items-center gap-3">
+            <div>
+              <label class="text-sm mr-2">メンバーの区切り方:</label>
+              <select id="separatorSelect" class="border rounded-md px-2 py-1 mt-1">
+                <option value=" ">スペース</option>
+                <option value=",">カンマ</option>
+                <option value="  ">ダブルスペース</option>
+                <option value="\t">タブ</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="text-sm mr-2">グループの区切り方:</label>
+              <select id="groupSeparatorSelect" class="border rounded-md px-2 py-1 mt-1">
+                <option value="space" selected>スペース</option>
+                <option value="none">なし</option>
+                <option value="line">線</option>
+                <option value="wave">波線</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -193,7 +205,6 @@
         <!-- 統計情報（折りたたみ可能・デフォルトは折りたたみ） -->
         <div class="flex items-center justify-between mb-3">
           <h3 class="font-medium"><a href="#" id="btn-toggle-stats" class="text-blue-600 hover:underline">統計情報を表示</a></h3>
-          
         </div>
         <div id="statsContainer" class="hidden">
           <textarea id="statsOutput" rows="6" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-sm mb-3"></textarea>
@@ -636,15 +647,27 @@ function showGroups(){
     groups[id].push(e.name);
   }
 
-  const sep=document.getElementById('separatorSelect').value==='\\t'?'\t':document.getElementById('separatorSelect').value;
+  const memberSep = document.getElementById('separatorSelect').value==='\\t'?'\t':document.getElementById('separatorSelect').value;
   const showLabel=document.getElementById('showGroupLabel').checked;
-  let display='';
+  const groupSepVal = document.getElementById('groupSeparatorSelect') ? document.getElementById('groupSeparatorSelect').value : 'space';
+
+  let groupSep = '\n\n'; // default to previous behaviour
+  if(groupSepVal === 'none') groupSep = '\n'; // minimal: single newline
+  else if(groupSepVal === 'space') groupSep = '\n\n';
+  else if(groupSepVal === 'line') groupSep = '\n────────\n';
+  else if(groupSepVal === 'wave') groupSep = '\n〜〜〜〜〜〜〜\n';
+
+  const parts = [];
   for(const id of groupIds){
     const members=groups[id];
     const label = idToName[id] || id;
-    if(showLabel) display+=`${label}（${members.length}人）：\n`;
-    display+=members.join(sep)+'\n\n';
+    let block = '';
+    if(showLabel) block += `${label}（${members.length}人）：\n`;
+    block += members.join(memberSep);
+    parts.push(block);
   }
+
+  const display = parts.join(groupSep);
   document.getElementById('groupOutput').value=display.trim();
 }
 
@@ -1023,9 +1046,11 @@ window.onload = () => {
   bindIf('tab-order', 'click', ()=>switchResultTab('order'));
   bindIf('tab-roles', 'click', ()=>switchResultTab('roles'));
 
-  // Group view controls
-  bindIf('showGroupLabel', 'change', ()=>{ /* no auto-refresh; group view updated after assignGroups */ });
-  bindIf('separatorSelect', 'change', ()=>{ /* no auto-refresh; group view updated after assignGroups */ });
+  // Group view controls: SPAで即時反映
+  bindIf('showGroupLabel', 'change', ()=>{ showGroups(); });
+  bindIf('separatorSelect', 'change', ()=>{ showGroups(); });
+  bindIf('groupSeparatorSelect', 'change', ()=>{ showGroups(); });
+
   bindIf('btn-copy-groupoutput', 'click', (e)=>{ e.preventDefault(); copyGroupOutput(); });
   bindIf('btn-copy-orderoutput', 'click', (e)=>{ e.preventDefault(); copyOrderOutput(); });
   bindIf('btn-copy-rolesoutput', 'click', (e)=>{ e.preventDefault(); copyRolesOutput(); });
