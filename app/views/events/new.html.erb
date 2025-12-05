@@ -1,3 +1,4 @@
+<%# filepath: /Users/n/workspace/Shuffly/app/views/events/new.html.erb %>
 <div class="max-w-6xl mx-auto px-6 pt-2 pb-10">
   <h1 class="text-3xl font-bold mb-8"><%= @event.title.presence || "イベント作成" %></h1>
 
@@ -11,7 +12,9 @@
       </div>
 
       <label class="block text-sm font-medium mb-2">メンバー名リスト（改行またはカンマ区切り）</label>
-      <textarea id="membersInput" rows="8" class="w-full border rounded-md px-3 py-2 mb-3" placeholder="例：メンバー1, メンバー2, ..."><%= begin
+
+      <!-- hidden raw data textarea (機能上のデータはここに保持) -->
+      <textarea id="membersRaw" rows="10" class="hidden" style="display:none;"><%= begin
         members = @event.members_json.present? ? JSON.parse(@event.members_json) : []
         members.map do |m|
           if m.is_a?(Hash)
@@ -26,8 +29,12 @@
         ""
       end %></textarea>
 
+      <!-- visible textarea for user (表示はフォーマットして見やすくする) -->
+      <textarea id="membersInput" rows="10" class="w-full border rounded-md px-3 py-2" placeholder="例：メンバー1, メンバー2, ..."></textarea>
+      <p class="text-xs text-gray-500 mt-0 mb-4">ユニークなメンバー名を入力してください。</p>
+
       <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
-        <a href="#" id="btn-trigger-import" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">メンバーリストから入力</a>
+        <a href="#" id="btn-trigger-import" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">テキスト/CSVから入力</a>
         <input id="importFile" type="file" accept=".txt,.csv" class="hidden">
         <a href="#" id="btn-paste-clipboard" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">クリップボードから入力</a>
         <a href="#" id="btn-clear-history" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">履歴をクリア</a>
@@ -55,19 +62,19 @@
           <div class="flex flex-col gap-3 mb-2">
             <div>
               <label class="text-xs text-gray-600">グループ数</label>
-              <input id="groupCount" type="number" min="1" max="26" value="<%= @event.group_count.presence || 3 %>" class="mt-1 w-full border rounded px-2 py-1">
+              <input id="groupCount" type="number" min="1" max="26" value="<%= @event.group_count.presence || 3 %>" class="mt-1 w-full border rounded px-2 py-1 mb-1">
             </div>
             <div>
-              <label class="text-xs text-gray-600">グループ名（任意・改行/カンマ区切り）</label>
-              <textarea id="customGroupNames" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
-              <p class="text-xs text-gray-500 mt-1">グループ名を入力すると、その数が優先してグループ数に反映されます。</p>
+              <label class="text-xs text-gray-600">グループ名（任意：改行またはカンマ区切り）</label>
+              <textarea id="customGroupNames" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
+              <p class="text-xs text-gray-500 mb-1">グループ名を入力すると、その数が優先してグループ数に反映されます。</p>
             </div>
           </div>
 
           <div>
-            <label class="text-xs text-gray-600">固定メンバー（任意・改行/カンマ区切り）</label>
+            <label class="text-xs text-gray-600">分散固定メンバー（任意：改行またはカンマ区切り）</label>
             <textarea id="fixedMembersInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
-            <p class="text-xs text-gray-500 mt-1">固定メンバーはグループ分け実行時に可能な限り指定グループに残します（自動振り分けとの兼ね合いにより完全固定にならない場合があります）。</p>
+            <p class="text-xs text-gray-500 mb-1">入力されたメンバーはグループ分け実行時に可能な限り分散し、グループに固定します。</p>
           </div>
 
           <div id="groupSizeHint" class="text-xs text-gray-500 mt-2"></div>
@@ -80,9 +87,9 @@
           <label class="block font-medium mb-1">順番決めオプション</label>
 
           <div class="mb-2">
-            <label class="text-xs text-gray-600">特定メンバーの順番を固定（任意・改行/カンマ区切り）</label>
+            <label class="text-xs text-gray-600">順番固定メンバー（任意：改行またはカンマ区切り）</label>
             <textarea id="fixedOrderInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：1:メンバー3, 5:メンバー1, ..."></textarea>
-            <p class="text-xs text-gray-500 mt-1">「番号:メンバー名」を入力してください。順番決め実行時にその番号に対応するメンバーが固定され、残りのメンバーはランダムに割り当てられます。</p>
+            <p class="text-xs text-gray-500 mt-1">「固定する番号:メンバー名」を入力してください。順番決め実行時にその番号に対応するメンバーが固定され、残りのメンバーはランダムに割り当てられます。</p>
           </div>
 
           <p class="text-xs text-gray-500 mt-2">固定を使わない場合は空欄のまま「順番決め実行」を押すと全員の順番がランダムに決まります。</p>
@@ -93,7 +100,8 @@
       <div id="panel-settings-roles" class="settings-panel hidden">
         <div class="mb-4">
           <label class="block font-medium mb-1">役割決めオプション</label>
-          <textarea id="rolesInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
+          <label class="text-xs text-gray-600">役割名（改行またはカンマ区切り）</label>
+          <textarea id="rolesInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
 
           <p class="text-xs text-gray-500 mt-2">複数の役割をカンマ区切りで入力してください。役割の割り当ては常にランダムに行われ、各役割は可能な限り異なるメンバーに一意に割り当てられます。</p>
         </div>
@@ -111,22 +119,6 @@
                 variant: 'primary',
                 full_mobile: false,
                 extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
-          <%= render 'shared/button',
-                f: nil,
-                button_text: '前のグループへ',
-                id: nil,
-                path: '#',
-                variant: 'secondary',
-                full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
-          <%= render 'shared/button',
-                f: nil,
-                button_text: '後ろのグループへ',
-                id: nil,
-                path: '#',
-                variant: 'secondary',
-                full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
         </div>
       </div>
 
@@ -152,9 +144,9 @@
                 button_text: '役割決め実行',
                 id: nil,
                 path: '#',
-                variant: 'secondary',
+                variant: 'primary',
                 full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
         </div>
       </div>
     </div>
@@ -180,32 +172,64 @@
         <h3 class="font-medium mb-2">グループ表示</h3>
 
         <div class="mb-2">
-          <label class="inline-flex items-center gap-1 mb-2">
-            <input type="checkbox" id="showGroupLabel" checked class="rounded border-gray-300">
-            <span class="text-sm ml-2">グループ名表示</span>
-          </label>
-          <div class="mt-2">
-            <label class="text-sm mr-2">メンバーの区切り方:</label>
-            <select id="separatorSelect" class="border rounded-md px-2 py-1 mt-1">
-              <option value=" ">スペース</option>
-              <option value=",">カンマ</option>
-              <option value="  ">ダブルスペース</option>
-              <option value="\t">タブ</option>
-            </select>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+            <label class="inline-flex items-center gap-1 mt-2">
+              <input type="checkbox" id="showGroupLabel" checked class="rounded border-gray-300">
+              <span class="text-sm ml-2">グループ名表示</span>
+            </label>
+            <label class="inline-flex items-center gap-1 mt-2">
+              <input type="checkbox" id="showGroupCount" checked class="rounded border-gray-300">
+              <span class="text-sm ml-2">グループ人数表示</span>
+            </label>
+            <label class="inline-flex items-center gap-1 mt-2">
+              <input type="checkbox" id="breakMemberLine" checked class="rounded border-gray-300">
+              <span class="text-sm ml-2">メンバーを改行表示</span>
+            </label>
+          </div>
+
+          <div class="mt-2 flex flex-col sm:flex-row sm:items-start gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full sm:w-auto">
+              <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0">メンバーの区切り方 :</label>
+              <select id="separatorSelect" class="border rounded-md px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto">
+                <option value=" " >スペース</option>
+                <option value="," selected>カンマ</option>
+                <option value="\\n">改行</option>
+                <option value="  ">ダブルスペース</option>
+                <option value="\\t">タブ</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full sm:w-auto">
+              <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0">グループの区切り方 :</label>
+              <select id="groupSeparatorSelect" class="border rounded-md px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto">
+                <option value="space">スペース</option>
+                <option value="none" selected>なし</option>
+                <option value="line">線</option>
+                <option value="wave">波線</option>
+              </select>
+            </div>
           </div>
         </div>
 
         <!-- 結果表示フォーム色を薄いグレー系に変更 -->
         <!-- 初期は空。グループ分け実行ボタン押下後に初回表示される -->
-        <textarea id="groupOutput" rows="8" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
+        <textarea id="groupOutput" rows="10" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
 
-        <h3 class="font-medium mb-2">統計情報</h3>
-        <textarea id="statsOutput" rows="6" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-sm"></textarea>
-
-        <!-- クリップボードコピー（リンクスタイル） -->
-        <div class="flex justify-center mt-2 w-full">
-          <a href="#" id="btn-copy-groupoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
+        <!-- 統計情報（折りたたみ可能・デフォルトは折りたたみ） -->
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-medium"><a href="#" id="btn-toggle-stats" class="hover:underline">統計情報を表示</a></h3>
         </div>
+        <div id="statsContainer" class="hidden">
+          <textarea id="statsOutput" rows="10" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-sm mb-3"></textarea>
+        </div>
+
+        <!-- クリップボードコピー / 履歴移動（リンクスタイル） -->
+        <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
+          <a href="#" id="btn-prev-group" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">前回のグループ分けへ</a>
+          <a href="#" id="btn-next-group" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">次回のグループ分けへ</a>
+          <a href="#" id="btn-copy-groupoutput" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
+        </div>
+
       </div>
 
       <!-- 順番表示パネル -->
@@ -221,7 +245,7 @@
       <!-- 役割表示パネル -->
       <div id="panel-roles" class="result-panel hidden">
         <h3 class="font-medium mb-2">役割表示</h3>
-        <textarea id="rolesOutput" rows="8" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-lg"></textarea>
+        <textarea id="rolesOutput" rows="10" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-lg"></textarea>
 
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-rolesoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
@@ -288,6 +312,7 @@
 <script>
 let shufflyHistory = [], currentHistoryIndex = -1;
 const IS_SIGNED_IN = <%= user_signed_in? ? 'true' : 'false' %>;
+let statsCollapsed = true; // 統計情報はデフォルトで折りたたみ
 
 // --- helper functions (existing) ---
 function clampGroupCount(v){
@@ -346,49 +371,138 @@ function buildGroupIdsAndNames(){
   return { ids, displayNames, idToName, groupCount };
 }
 
+// --- New helpers for display-only formatted history ---
+let suppressDisplayInput = false;
+
+function getRawValue(){ return (document.getElementById('membersRaw') || {value:''}).value || ""; }
+function setRawValue(v){ const el = document.getElementById('membersRaw'); if(el) el.value = v; }
+
+function getDisplayValue(){ return (document.getElementById('membersInput') || {value:''}).value || ""; }
+function setDisplayValue(v){ const el = document.getElementById('membersInput'); if(el) el.value = v; }
+
+function formatEntryForDisplay(entry){
+  const name = entry.split('#')[0].trim();
+  const hist = entry.match(/#\d+[A-Z]/g) || [];
+  const { idToName } = buildGroupIdsAndNames();
+  const formattedHist = hist.map(h=>{
+    const m=h.match(/^#(\d+)([A-Z])$/);
+    if(m){
+      const num=m[1], id=m[2];
+      const gname = idToName[id] || id;
+      return ` [ ${num}回目：${gname} ]`;
+    }
+    return h;
+  }).join('');
+  return `${name}${formattedHist}`;
+}
+
+function updateDisplayFromRaw(){
+  const raw = getRawValue();
+  const lines = raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+  const formatted = lines.map(formatEntryForDisplay).join("\n");
+  suppressDisplayInput = true;
+  setDisplayValue(formatted);
+  setTimeout(()=>{ suppressDisplayInput = false; }, 0);
+}
+
+function parseDisplayToRaw(displayText){
+  const { idToName } = buildGroupIdsAndNames();
+  const nameToId = {};
+  for(const k in idToName) nameToId[idToName[k]] = k;
+
+  const lines = displayText.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const rawLines = lines.map(line=>{
+    const parts = line.split('#').filter(Boolean);
+    if(parts.length === 0) return "";
+    const base = parts[0].trim();
+    const tokens = parts.slice(1);
+    const rawTokens = tokens.map(tok=>{
+      const mRaw = tok.match(/^(\d+)([A-Z])$/);
+      if(mRaw) return `#${mRaw[1]}${mRaw[2]}`;
+      const m = tok.match(/^(\d+)\s*巡目\s*[:：]\s*(.+)$/);
+      if(m){
+        const num = m[1];
+        const gname = m[2].trim();
+        let id = nameToId[gname];
+        if(!id){
+          const stripped = gname.replace(/^グループ\s*/i,'').trim();
+          id = nameToId[stripped];
+        }
+        if(id) return `#${num}${id}`;
+        return `#${num}`;
+      }
+      return `#${tok.replace(/^#?/,'')}`;
+    }).filter(Boolean);
+    return base + rawTokens.join('');
+  }).filter(Boolean);
+  return rawLines.join("\n");
+}
+
+function setRawAndRefreshDisplay(rawText){
+  setRawValue(rawText);
+  updateDisplayFromRaw();
+}
+
+// --- Adjusted core functions to use raw storage (membersRaw) for processing ---
 function assignGroups(){
-  const input=document.getElementById('membersInput');
-  let raw=input.value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  let entries=raw.map(parseEntry);
+  let raw = getRawValue().trim();
+  let rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+  let entries = rawList.map(parseEntry);
   const round=getCurrentRound(entries);
 
   const { ids: groupIds, idToName, groupCount } = buildGroupIdsAndNames();
   const groups=Object.fromEntries(groupIds.map(g=>[g,[]]));
   const coMap=getCoOccurrenceMap(entries);
 
-  // 固定メンバーを考慮（簡易実装: 固定メンバーは先にグループの先頭に配置）
   const fixedRaw = (document.getElementById('fixedMembersInput').value || "").split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
   const fixedSet = new Set(fixedRaw);
   const fixedEntries = entries.filter(e=>fixedSet.has(e.name));
   const otherEntries = entries.filter(e=>!fixedSet.has(e.name));
 
-  // まず固定を一人ずつ空のグループに割り当て（存在すれば）
+  // helper: pick random element from array
+  function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  // assign fixed entries but randomize among empty/min candidates to avoid left-bias
   for(const p of fixedEntries){
-    let emptyGroup = groupIds.find(g=>groups[g].length===0);
-    if(emptyGroup){ groups[emptyGroup].push(p); }
-    else {
-      const minSize=Math.min(...groupIds.map(g=>groups[g].length));
-      const candidates=groupIds.filter(g=>groups[g].length===minSize);
-      groups[candidates[0]].push(p);
+    const emptyGroups = groupIds.filter(g=>groups[g].length===0);
+    let chosen;
+    if(emptyGroups.length>0){
+      chosen = pickRandom(emptyGroups);
+    } else {
+      const minSize = Math.min(...groupIds.map(g=>groups[g].length));
+      const candidates = groupIds.filter(g=>groups[g].length===minSize);
+      chosen = pickRandom(candidates);
     }
+    groups[chosen].push(p);
+    p.assignedGroup = chosen; // preserve assignment on the original entry object
   }
 
-  // ランダム化オプションは順番パネルから削除されたため、ここでは常にランダム配置せずに最小被り優先で割当
   for(const p of otherEntries){
-    let emptyGroup=groupIds.find(g=>groups[g].length===0);
-    if(emptyGroup){ groups[emptyGroup].push(p); continue; }
+    const emptyGroups = groupIds.filter(g=>groups[g].length===0);
+    if(emptyGroups.length>0){
+      const chosen = pickRandom(emptyGroups);
+      groups[chosen].push(p);
+      p.assignedGroup = chosen;
+      continue;
+    }
 
     const minSize=Math.min(...groupIds.map(g=>groups[g].length));
     const candidates=groupIds.filter(g=>groups[g].length===minSize);
-    let minMK=Infinity, selected=candidates[0];
+
+    // compute co-occurrence score (mk) for each candidate and choose among ties randomly
+    let minMK=Infinity;
+    const scores=[];
     for(const g of candidates){
       const mk=groups[g].reduce((acc,q)=>acc+(coMap[p.name][q.name]||0),0);
-      if(mk<minMK){minMK=mk; selected=g;}
+      scores.push({g, mk});
+      if(mk<minMK) minMK=mk;
     }
+    const tied = scores.filter(s=>s.mk===minMK).map(s=>s.g);
+    const selected = pickRandom(tied);
     groups[selected].push(p);
+    p.assignedGroup = selected;
   }
 
-  // グループ内での役割付与（入力があれば、循環割当てで付与）
   const rolesForGroups = document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
   if(rolesForGroups.length>0){
     for(const g of groupIds){
@@ -397,8 +511,17 @@ function assignGroups(){
     }
   }
 
-  const updated=groupIds.flatMap(g=>groups[g].map(e=>`${e.name}${e.history.join('')}#${round}${g}`));
-  input.value=updated.join("\n");
+  // Preserve original input order when appending history: build updated lines from entries array order
+  const updated = entries.map(e => {
+    const assigned = e.assignedGroup || (()=>{
+      // fallback: find in groups if assignment missing
+      for(const g of groupIds) if(groups[g].some(x=>x.name===e.name)) return g;
+      return groupIds[0];
+    })();
+    return `${e.name}${e.history.join('')}#${round}${assigned}`;
+  });
+
+  setRawAndRefreshDisplay(updated.join("\n"));
 
   try{
     document.getElementById('membersJsonInput').value = JSON.stringify(entries);
@@ -413,13 +536,13 @@ function assignGroups(){
   }
 
   updateParticipantCount(); showGroups(); showStats(); pushToHistory();
-  // SPA behavior: reflect results immediately without reload
   switchResultTab('groups');
 }
 
 function assignOrder(){
-  const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  let members=raw.map(s=>s.split('#')[0].trim());
+  const raw = getRawValue().trim();
+  const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+  let members = rawList.map(s=>s.split('#')[0].trim());
   if(members.length === 0){
     document.getElementById('orderOutput').value = "";
     if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = "[]";
@@ -427,9 +550,8 @@ function assignOrder(){
     return;
   }
 
-  // 固定順のパース（例: "1: 田中 太郎" を1ベースで解釈）
   const fixedRaw = (document.getElementById('fixedOrderInput')?.value || "").split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  const fixedMap = {}; // pos (1-based) -> name
+  const fixedMap = {};
   const invalids = [];
   for(const line of fixedRaw){
     if(!line) continue;
@@ -447,7 +569,6 @@ function assignOrder(){
     }
   }
 
-  // 検証: 固定指定の名前が参加者に存在するか確認
   const namesSet = new Set(members);
   const assignedFixedNames = new Set();
   const invalidNameEntries = [];
@@ -469,23 +590,18 @@ function assignOrder(){
     showToast(msgs.join('、') + "（無視されます）");
   }
 
-  // プールを作成してシャッフル
   const pool = members.filter(m=>!assignedFixedNames.has(m));
   for(let i=pool.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
     [pool[i], pool[j]]=[pool[j], pool[i]];
   }
 
-  // 結果配列を作る（null で初期化）
   const result = Array(members.length).fill(null);
-
-  // 固定を反映（posは1ベース）
   for(const posStr in fixedMap){
     const pos = parseInt(posStr,10);
     result[pos-1] = fixedMap[pos];
   }
 
-  // 残りスロットをプールで埋める
   let poolIdx = 0;
   for(let i=0;i<result.length;i++){
     if(result[i] === null){
@@ -493,7 +609,6 @@ function assignOrder(){
     }
   }
 
-  // 表示と保存
   const lines = result.map((name, idx) => `${idx+1}. ${name}`);
   document.getElementById('orderOutput').value = lines.join("\n");
 
@@ -505,14 +620,14 @@ function assignOrder(){
 }
 
 function assignRoles(){
-  const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  let members=raw.map(s=>s.split('#')[0].trim());
+  const raw = getRawValue().trim();
+  const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+  let members = rawList.map(s=>s.split('#')[0].trim());
   if(members.length===0){ showToast("参加者がいません"); return; }
 
   const roles = document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
   if(roles.length===0){ showToast("役割が未入力です"); return; }
 
-  // 常にランダムかつ一意に割り当てる（役割数 <= メンバー数 の場合は全て一意）
   function shuffleArray(arr){
     for(let i=arr.length-1;i>0;i--){
       const j=Math.floor(Math.random()*(i+1));
@@ -524,21 +639,17 @@ function assignRoles(){
   shuffleArray(pool);
 
   const assignments = [];
-  // 各役割を一意に割り当てる（役割がメンバー数を上回る場合はトランケート）
   for(let i=0;i<roles.length && i<pool.length;i++){
     assignments.push({ name: pool[i], role: roles[i] });
   }
-  // 残りメンバーはrole=null
   const assignedNames = new Set(assignments.map(a=>a.name));
   for(const m of members){
     if(!assignedNames.has(m)) assignments.push({ name: m, role: null });
   }
 
-  // 表示: 役割つき → 役割なし の順で出す
   const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
   document.getElementById('rolesOutput').value = displayLines.join("\n");
 
-  // persist role_assignments in settingsJsonInput
   try {
     const settingsField = document.getElementById('settingsJsonInput');
     let settings = {};
@@ -553,13 +664,13 @@ function assignRoles(){
   }
 
   showToast("役割を割り当てました");
-  // SPA reflect
   switchResultTab('roles');
 }
 
 function showGroups(){
-  const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  const entries=raw.map(parseEntry);
+  const raw = getRawValue().trim();
+  const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+  const entries = rawList.map(parseEntry);
 
   const { ids: groupIds, idToName } = buildGroupIdsAndNames();
   const groups=Object.fromEntries(groupIds.map(g=>[g,[]]));
@@ -578,21 +689,42 @@ function showGroups(){
     groups[id].push(e.name);
   }
 
-  const sep=document.getElementById('separatorSelect').value==='\\t'?'\t':document.getElementById('separatorSelect').value;
+  // separator support: space, comma (default), double-space, tab, newline
+  const sepVal = document.getElementById('separatorSelect').value;
+  const memberSep = sepVal==='\\t' ? '\t' : (sepVal==='\\n' ? '\n' : sepVal);
   const showLabel=document.getElementById('showGroupLabel').checked;
-  let display='';
+  const showCount=document.getElementById('showGroupCount') ? document.getElementById('showGroupCount').checked : true;
+  const breakMemberLine = document.getElementById('breakMemberLine') ? document.getElementById('breakMemberLine').checked : true;
+  const groupSepVal = document.getElementById('groupSeparatorSelect') ? document.getElementById('groupSeparatorSelect').value : 'space';
+
+  let groupSep = '\n\n'; // default to previous behaviour
+  if(groupSepVal === 'none') groupSep = '\n'; // minimal: single newline
+  else if(groupSepVal === 'space') groupSep = '\n\n';
+  else if(groupSepVal === 'line') groupSep = '\n────────\n';
+  else if(groupSepVal === 'wave') groupSep = '\n〜〜〜〜〜〜〜\n';
+
+  const parts = [];
   for(const id of groupIds){
     const members=groups[id];
     const label = idToName[id] || id;
-    if(showLabel) display+=`${label}（${members.length}人）：\n`;
-    display+=members.join(sep)+'\n\n';
+    let block = '';
+    if(showLabel){
+      const countText = showCount ? `（${members.length}人）` : '';
+      // When breakMemberLine is true, keep newline after label; otherwise keep header and members inline
+      block += breakMemberLine ? `${label}${countText}：\n` : `${label}${countText}： `;
+    }
+    block += members.join(memberSep);
+    parts.push(block);
   }
+
+  const display = parts.join(groupSep);
   document.getElementById('groupOutput').value=display.trim();
 }
 
 function showStats(){
-  const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  const entries=raw.map(parseEntry);
+  const raw = getRawValue().trim();
+  const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+  const entries=rawList.map(parseEntry);
   const coMap=getCoOccurrenceMap(entries,true);
 
   const { ids: groupIds, idToName } = buildGroupIdsAndNames();
@@ -616,19 +748,23 @@ function showStats(){
   for(const id of groupIds){
     const members=groupMap[id];
     let total=0;
+    const memberLines = [];
     for(const m of members){
       const mk=members.reduce((sum,other)=>sum+(m!==other?(coMap[m][other]||0):0),0);
-      lines.push(`${m}：被り数＝${mk}`);
+      memberLines.push(`${m}：被り経験数＝${mk}`);
       total+=mk;
     }
-    lines.push(`${idToName[id] ? `グループ ${idToName[id]}` : `グループ ${id}`}（被り平均値＝${members.length? (total/members.length).toFixed(2):0}）`);
+    // group header first, then member lines (average calculated above)
+    lines.push(`${idToName[id] ? `グループ ${idToName[id]}` : `グループ ${id}`}（被り経験数平均＝${members.length? (total/members.length).toFixed(2):0}）：`);
+    lines.push(...memberLines);
     lines.push('');
   }
   document.getElementById('statsOutput').value=lines.join("\n");
 }
 
 function updateParticipantCount(){
-  const count=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean).length;
+  const raw = getRawValue().trim();
+  const count = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean).length : 0;
   const span=document.getElementById('groupSizeHint');
   const { groupCount } = buildGroupIdsAndNames();
   if(!groupCount||count===0){ if(span) span.textContent=''; return;}
@@ -648,7 +784,7 @@ function showToast(msg){
 }
 
 function pushToHistory(){
-  const text=document.getElementById('membersInput').value;
+  const text = getRawValue();
   if(currentHistoryIndex>=0 && shufflyHistory[currentHistoryIndex]===text) return;
   shufflyHistory = shufflyHistory.slice(0,currentHistoryIndex+1);
   shufflyHistory.push(text);
@@ -660,16 +796,34 @@ function pushToHistory(){
 function undoHistory(){
   if(currentHistoryIndex>0){
     currentHistoryIndex--;
-    document.getElementById('membersInput').value=shufflyHistory[currentHistoryIndex];
-    updateParticipantCount(); /* do not auto-show groups/stats until assignGroups() */ showToast("1ステップ戻しました");
+    const val = shufflyHistory[currentHistoryIndex];
+    setRawAndRefreshDisplay(val);
+    updateParticipantCount();
+    showGroups();
+    showStats();
+    try{
+      const entries = val ? val.split(/[\r\n,]+/).map(s=>parseEntry(s.trim())) : [];
+      if(document.getElementById('membersJsonInput')) document.getElementById('membersJsonInput').value = JSON.stringify(entries);
+    }catch(e){}
+    showToast("1ステップ戻しました");
+    switchResultTab('groups');
   } else showToast("これ以上戻れません");
 }
 
 function redoHistory(){
   if(currentHistoryIndex<shufflyHistory.length-1){
     currentHistoryIndex++;
-    document.getElementById('membersInput').value=shufflyHistory[currentHistoryIndex];
-    updateParticipantCount(); /* do not auto-show groups/stats until assignGroups() */ showToast("1ステップ進めました");
+    const val = shufflyHistory[currentHistoryIndex];
+    setRawAndRefreshDisplay(val);
+    updateParticipantCount();
+    showGroups();
+    showStats();
+    try{
+      const entries = val ? val.split(/[\r\n,]+/).map(s=>parseEntry(s.trim())) : [];
+      if(document.getElementById('membersJsonInput')) document.getElementById('membersJsonInput').value = JSON.stringify(entries);
+    }catch(e){}
+    showToast("1ステップ進めました");
+    switchResultTab('groups');
   } else showToast("これ以上進めません");
 }
 
@@ -719,36 +873,34 @@ function handleImportFile(e){
   const reader = new FileReader();
   reader.onload = function(ev){
     const text = ev.target.result;
-    const cur = document.getElementById('membersInput').value.trim();
+    const cur = getRawValue().trim();
     const merged = (cur?cur + "\n":"") + text.replace(/\r/g,'').trim();
-    document.getElementById('membersInput').value = merged;
+    setRawAndRefreshDisplay(merged);
     updateParticipantCount(); pushToHistory();
     showToast("ファイルをインポートしました");
-    // do not auto-show groups/stats — user must press グループ分け実行
   };
   reader.readAsText(file, 'utf-8');
 }
 function pasteFromClipboard(){
   navigator.clipboard.readText().then(txt=>{
-    const cur = document.getElementById('membersInput').value.trim();
+    const cur = getRawValue().trim();
     const merged = (cur?cur + "\n":"") + txt.replace(/\r/g,'').trim();
-    document.getElementById('membersInput').value = merged;
+    setRawAndRefreshDisplay(merged);
     updateParticipantCount(); pushToHistory();
     showToast("クリップボードから貼り付けました");
-    // do not auto-show groups/stats
   }).catch(()=>showToast("クリップボードにアクセスできません"));
 }
 
-// 履歴クリア（メンバー名の「#」以降を一括削除）
+// 履歴クリア（メンバー名以降を一括削除）
 function clearMemberHistories(){
-  if(!document.getElementById('membersInput')) return;
-  const confirmed = window.confirm("メンバー名リストに含まれる全メンバーの履歴（「#」以降）を一括で削除します。よろしいですか？");
+  const rawEl = getRawValue();
+  if(rawEl === undefined) return;
+  const confirmed = window.confirm("メンバー名リストに含まれる全メンバーの履歴を一括で削除します。よろしいですか？");
   if(!confirmed) return;
 
-  const cur = document.getElementById('membersInput').value || "";
-  // 分割して各エントリの「#」以降を削除し、空でないものだけ残す（出力は改行区切り）
+  const cur = getRawValue() || "";
   const cleaned = cur.split(/[\r\n,]+/).map(s=>s.split('#')[0].trim()).filter(Boolean);
-  document.getElementById('membersInput').value = cleaned.join("\n");
+  setRawAndRefreshDisplay(cleaned.join("\n"));
   updateParticipantCount();
   pushToHistory();
   showToast("履歴をクリアしました");
@@ -757,7 +909,7 @@ function clearMemberHistories(){
 function togglePresentationMode(){
   try{
     const payload = {
-      members_json: (()=>{ try { return JSON.parse(document.getElementById('membersJsonInput')?.value || '[]'); } catch(e){ return document.getElementById('membersInput')?.value || ""; } })(),
+      members_json: (()=>{ try { return JSON.parse(document.getElementById('membersJsonInput')?.value || '[]'); } catch(e){ return getRawValue() || ""; } })(),
       results_json: (()=>{ try { return JSON.parse(document.getElementById('resultsJsonInput')?.value || '{}'); } catch(e){ return document.getElementById('resultsJsonInput')?.value || ""; } })(),
       order_json: (()=>{ try { return JSON.parse(document.getElementById('orderJsonInput')?.value || '[]'); } catch(e){ return document.getElementById('orderOutput')?.value || ""; } })(),
       settings_json: (()=>{ try { return JSON.parse(document.getElementById('settingsJsonInput')?.value || '{}'); } catch(e){ return document.getElementById('settingsJsonInput')?.value || ""; } })(),
@@ -789,7 +941,7 @@ function exportResults(){
 
 function saveResults(){
   try{
-    const membersRaw = document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+    const membersRaw = getRawValue().trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
     const entries = membersRaw.map(m=> parseEntry(m) );
     document.getElementById('membersJsonInput').value = JSON.stringify(entries);
   }catch(e){}
@@ -813,7 +965,7 @@ function saveResults(){
     }catch(e){}
   }
   if(!document.getElementById('historyJsonInput').value){
-    try{ document.getElementById('historyJsonInput').value = JSON.stringify(shufflyHistory); }catch(e){}
+    try{ document.getElementById('historyJsonInput').value=JSON.stringify(shufflyHistory); }catch(e){}
   }
 
   const titleField = document.getElementById('hiddenEventTitle');
@@ -854,18 +1006,33 @@ window.onload = () => {
       shufflyHistory = JSON.parse(histField.value);
       currentHistoryIndex = shufflyHistory.length - 1;
       if (currentHistoryIndex >= 0) {
-        const mi = document.getElementById('membersInput');
-        if(mi) mi.value = shufflyHistory[currentHistoryIndex];
+        const val = shufflyHistory[currentHistoryIndex];
+        setRawAndRefreshDisplay(val);
       }
     } catch(e) {
       shufflyHistory=[]; currentHistoryIndex=-1;
     }
+  } else {
+    // if no history stored, initialize display from membersRaw initial value
+    updateDisplayFromRaw();
   }
   updateParticipantCount();
   if(shufflyHistory.length === 0) pushToHistory();
-  // 初回読み込みではグループ表示/統計は自動表示しない（グループ分け実行後に表示される）
   switchResultTab('groups');
   switchSettingsTab('groups');
+
+  // ensure stats collapsed state reflected on load
+  const sc = document.getElementById('statsContainer');
+  const btn = document.getElementById('btn-toggle-stats');
+  if(sc && btn){
+    if(statsCollapsed){
+      sc.classList.add('hidden');
+      btn.textContent = "統計情報を表示";
+    } else {
+      sc.classList.remove('hidden');
+      btn.textContent = "統計情報を非表示";
+    }
+  }
 
   if(IS_SIGNED_IN){
     const pending = localStorage.getItem('pending_shuffly_event');
@@ -896,8 +1063,16 @@ window.onload = () => {
     if(el) el.addEventListener(evt, handler);
   }
 
-  // メンバー編集時は表示の自動更新を行わない（グループ表示は「グループ分け実行」で反映）
-  bindIf('membersInput', 'input', ()=>{ updateParticipantCount(); pushToHistory(); });
+  // Visible membersInput: on user edit, parse back to raw and update hidden storage
+  bindIf('membersInput', 'input', ()=>{
+    if(suppressDisplayInput) return;
+    const disp = getDisplayValue();
+    const raw = parseDisplayToRaw(disp);
+    setRawValue(raw);
+    updateParticipantCount();
+    pushToHistory();
+  });
+
   bindIf('groupCount', 'input', ()=>{ updateParticipantCount(); /* do not auto-show groups/stats */ });
   bindIf('customGroupNames', 'input', ()=>{ /* no automatic group display */ });
   bindIf('rolesInput', 'input', ()=>{
@@ -924,12 +1099,47 @@ window.onload = () => {
   bindIf('tab-order', 'click', ()=>switchResultTab('order'));
   bindIf('tab-roles', 'click', ()=>switchResultTab('roles'));
 
-  // Group view controls
-  bindIf('showGroupLabel', 'change', ()=>{ /* no auto-refresh; group view updated after assignGroups */ });
-  bindIf('separatorSelect', 'change', ()=>{ /* no auto-refresh; group view updated after assignGroups */ });
+  // Group view controls: SPAで即時反映
+  bindIf('showGroupLabel', 'change', ()=>{ showGroups(); });
+  bindIf('showGroupCount', 'change', ()=>{ showGroups(); });
+  bindIf('breakMemberLine', 'change', ()=>{ showGroups(); });
+  bindIf('separatorSelect', 'change', ()=>{ showGroups(); });
+  bindIf('groupSeparatorSelect', 'change', ()=>{ showGroups(); });
+
   bindIf('btn-copy-groupoutput', 'click', (e)=>{ e.preventDefault(); copyGroupOutput(); });
   bindIf('btn-copy-orderoutput', 'click', (e)=>{ e.preventDefault(); copyOrderOutput(); });
   bindIf('btn-copy-rolesoutput', 'click', (e)=>{ e.preventDefault(); copyRolesOutput(); });
+
+  // Toggle stats visibility (default collapsed)
+  bindIf('btn-toggle-stats', 'click', (e)=>{
+    if(e) e.preventDefault();
+    const sc = document.getElementById('statsContainer');
+    const btn = document.getElementById('btn-toggle-stats');
+    if(!sc || !btn) return;
+    sc.classList.toggle('hidden');
+    statsCollapsed = sc.classList.contains('hidden');
+    btn.textContent = statsCollapsed ? "統計情報を表示" : "統計情報を非表示";
+    // update stats content whenever opened
+    if(!statsCollapsed) showStats();
+  });
+
+  // Prev/Next links in results card (moved from settings area; same functionality, link style)
+  bindIf('btn-prev-group', 'click', (e)=>{
+    if(e) e.preventDefault();
+    if(currentHistoryIndex <= 0){
+      showToast("これ以上戻れません");
+      return;
+    }
+    undoHistory();
+  });
+  bindIf('btn-next-group', 'click', (e)=>{
+    if(e) e.preventDefault();
+    if(currentHistoryIndex >= shufflyHistory.length-1){
+      showToast("これ以上進めません");
+      return;
+    }
+    redoHistory();
+  });
 
   // Share controls
   bindIf('btn-toggle-presentation', 'click', (e)=>{ if(e) e.preventDefault(); togglePresentationMode(); });
@@ -941,8 +1151,7 @@ window.onload = () => {
   if (gAct) {
     const btns = gAct.querySelectorAll('button, a[role="button"], a');
     if (btns[0]) btns[0].addEventListener('click', (e)=>{ if(e) e.preventDefault(); assignGroups(); /* SPA: update panels without reload */ });
-    if (btns[1]) btns[1].addEventListener('click', (e)=>{ if(e) e.preventDefault(); undoHistory(); /* keep on groups tab */ });
-    if (btns[2]) btns[2].addEventListener('click', (e)=>{ if(e) e.preventDefault(); redoHistory(); /* keep on groups tab */ });
+    // prev/next moved to results links
   }
   const oAct = document.getElementById('settings-action-order');
   if (oAct) {
