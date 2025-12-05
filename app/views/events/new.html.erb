@@ -64,14 +64,14 @@
               <input id="groupCount" type="number" min="1" max="26" value="<%= @event.group_count.presence || 3 %>" class="mt-1 w-full border rounded px-2 py-1">
             </div>
             <div>
-              <label class="text-xs text-gray-600">グループ名（任意・改行/カンマ区切り）</label>
-              <textarea id="customGroupNames" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
+              <label class="text-xs text-gray-600">グループ名（任意：改行またはカンマ区切り）</label>
+              <textarea id="customGroupNames" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
               <p class="text-xs text-gray-500 mt-1">グループ名を入力すると、その数が優先してグループ数に反映されます。</p>
             </div>
           </div>
 
           <div>
-            <label class="text-xs text-gray-600">固定メンバー（任意・改行/カンマ区切り）</label>
+            <label class="text-xs text-gray-600">分散固定メンバー（任意：改行またはカンマ区切り）</label>
             <textarea id="fixedMembersInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
             <p class="text-xs text-gray-500 mt-1">固定メンバーはグループ分け実行時に可能な限り指定グループに残します（自動振り分けとの兼ね合いにより完全固定にならない場合があります）。</p>
           </div>
@@ -86,9 +86,9 @@
           <label class="block font-medium mb-1">順番決めオプション</label>
 
           <div class="mb-2">
-            <label class="text-xs text-gray-600">特定メンバーの順番を固定（任意・改行/カンマ区切り）</label>
+            <label class="text-xs text-gray-600">順番固定メンバー（任意：改行またはカンマ区切り）</label>
             <textarea id="fixedOrderInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：1:メンバー3, 5:メンバー1, ..."></textarea>
-            <p class="text-xs text-gray-500 mt-1">「番号:メンバー名」を入力してください。順番決め実行時にその番号に対応するメンバーが固定され、残りのメンバーはランダムに割り当てられます。</p>
+            <p class="text-xs text-gray-500 mt-1">「固定する番号:メンバー名」を入力してください。順番決め実行時にその番号に対応するメンバーが固定され、残りのメンバーはランダムに割り当てられます。</p>
           </div>
 
           <p class="text-xs text-gray-500 mt-2">固定を使わない場合は空欄のまま「順番決め実行」を押すと全員の順番がランダムに決まります。</p>
@@ -99,6 +99,7 @@
       <div id="panel-settings-roles" class="settings-panel hidden">
         <div class="mb-4">
           <label class="block font-medium mb-1">役割決めオプション</label>
+          <label class="text-xs text-gray-600">役割名（改行またはカンマ区切り）</label>
           <textarea id="rolesInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
 
           <p class="text-xs text-gray-500 mt-2">複数の役割をカンマ区切りで入力してください。役割の割り当ては常にランダムに行われ、各役割は可能な限り異なるメンバーに一意に割り当てられます。</p>
@@ -142,9 +143,9 @@
                 button_text: '役割決め実行',
                 id: nil,
                 path: '#',
-                variant: 'secondary',
+                variant: 'primary',
                 full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
         </div>
       </div>
     </div>
@@ -189,10 +190,16 @@
         <!-- 初期は空。グループ分け実行ボタン押下後に初回表示される -->
         <textarea id="groupOutput" rows="8" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
 
-        <h3 class="font-medium mb-2">統計情報</h3>
-        <textarea id="statsOutput" rows="6" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-sm mb-3"></textarea>
+        <!-- 統計情報（折りたたみ可能・デフォルトは折りたたみ） -->
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-medium"><a href="#" id="btn-toggle-stats" class="text-blue-600 hover:underline">統計情報を表示</a></h3>
+          
+        </div>
+        <div id="statsContainer" class="hidden">
+          <textarea id="statsOutput" rows="6" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-sm mb-3"></textarea>
+        </div>
 
-        <!-- クリップボードコピー（リンクスタイル） -->
+        <!-- クリップボードコピー / 履歴移動（リンクスタイル） -->
         <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
           <a href="#" id="btn-prev-group" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">前回のグループ分けへ</a>
           <a href="#" id="btn-next-group" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">次回のグループ分けへ</a>
@@ -281,6 +288,7 @@
 <script>
 let shufflyHistory = [], currentHistoryIndex = -1;
 const IS_SIGNED_IN = <%= user_signed_in? ? 'true' : 'false' %>;
+let statsCollapsed = true; // 統計情報はデフォルトで折りたたみ
 
 // --- helper functions (existing) ---
 function clampGroupCount(v){
@@ -340,8 +348,6 @@ function buildGroupIdsAndNames(){
 }
 
 // --- New helpers for display-only formatted history ---
-// raw (functional) textarea: #membersRaw
-// visible (user-facing) textarea: #membersInput
 let suppressDisplayInput = false;
 
 function getRawValue(){ return (document.getElementById('membersRaw') || {value:''}).value || ""; }
@@ -350,7 +356,6 @@ function setRawValue(v){ const el = document.getElementById('membersRaw'); if(el
 function getDisplayValue(){ return (document.getElementById('membersInput') || {value:''}).value || ""; }
 function setDisplayValue(v){ const el = document.getElementById('membersInput'); if(el) el.value = v; }
 
-// format a single raw entry like "太郎#1A#2B" -> "太郎#1巡目：グループA#2巡目：グループB#"
 function formatEntryForDisplay(entry){
   const name = entry.split('#')[0].trim();
   const hist = entry.match(/#\d+[A-Z]/g) || [];
@@ -367,20 +372,15 @@ function formatEntryForDisplay(entry){
   return `${name}${formattedHist}`;
 }
 
-// convert full raw text to display text
 function updateDisplayFromRaw(){
   const raw = getRawValue();
   const lines = raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
   const formatted = lines.map(formatEntryForDisplay).join("\n");
   suppressDisplayInput = true;
   setDisplayValue(formatted);
-  // release suppression shortly after (allow user edits)
   setTimeout(()=>{ suppressDisplayInput = false; }, 0);
 }
 
-// parse display text back to raw (accept both formatted and raw tokens)
-// formatted token: "#<num>巡目：<groupName>#"
-// raw token: "#<num><ID>"
 function parseDisplayToRaw(displayText){
   const { idToName } = buildGroupIdsAndNames();
   const nameToId = {};
@@ -388,31 +388,25 @@ function parseDisplayToRaw(displayText){
 
   const lines = displayText.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
   const rawLines = lines.map(line=>{
-    // extract base name (before first '#'), keep rest tokens
-    const parts = line.split('#').filter(Boolean); // e.g. ["太郎","1巡目：グループA","2巡目：グループB"]
+    const parts = line.split('#').filter(Boolean);
     if(parts.length === 0) return "";
     const base = parts[0].trim();
     const tokens = parts.slice(1);
     const rawTokens = tokens.map(tok=>{
-      // if already raw like "1A" (no "巡目"), try detect pattern /^(\d+)([A-Z])$/
       const mRaw = tok.match(/^(\d+)([A-Z])$/);
       if(mRaw) return `#${mRaw[1]}${mRaw[2]}`;
-      // formatted: "1巡目：グループA" or "1巡目：A"
       const m = tok.match(/^(\d+)\s*巡目\s*[:：]\s*(.+)$/);
       if(m){
         const num = m[1];
         const gname = m[2].trim();
-        // try direct match or partial match (strip "グループ" prefix)
         let id = nameToId[gname];
         if(!id){
           const stripped = gname.replace(/^グループ\s*/i,'').trim();
           id = nameToId[stripped];
         }
         if(id) return `#${num}${id}`;
-        // if cannot resolve, fallback: keep numeric with no group id (preserve as-is)
         return `#${num}`;
       }
-      // fallback: keep original token prefixed with '#'
       return `#${tok.replace(/^#?/,'')}`;
     }).filter(Boolean);
     return base + rawTokens.join('');
@@ -420,16 +414,12 @@ function parseDisplayToRaw(displayText){
   return rawLines.join("\n");
 }
 
-// 共通: set raw and update display
 function setRawAndRefreshDisplay(rawText){
   setRawValue(rawText);
   updateDisplayFromRaw();
 }
 
 // --- Adjusted core functions to use raw storage (membersRaw) for processing ---
-// Note: everywhere we previously read document.getElementById('membersInput').value,
-// we now read getRawValue() (functional data). Visible textarea is for users and mapped back.
-
 function assignGroups(){
   let raw = getRawValue().trim();
   let rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
@@ -440,13 +430,11 @@ function assignGroups(){
   const groups=Object.fromEntries(groupIds.map(g=>[g,[]]));
   const coMap=getCoOccurrenceMap(entries);
 
-  // 固定メンバーを考慮（簡易実装: 固定メンバーは先にグループの先頭に配置）
   const fixedRaw = (document.getElementById('fixedMembersInput').value || "").split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
   const fixedSet = new Set(fixedRaw);
   const fixedEntries = entries.filter(e=>fixedSet.has(e.name));
   const otherEntries = entries.filter(e=>!fixedSet.has(e.name));
 
-  // まず固定を一人ずつ空のグループに割り当て（存在すれば）
   for(const p of fixedEntries){
     let emptyGroup = groupIds.find(g=>groups[g].length===0);
     if(emptyGroup){ groups[emptyGroup].push(p); }
@@ -457,7 +445,6 @@ function assignGroups(){
     }
   }
 
-  // 割当処理（最小被り優先）
   for(const p of otherEntries){
     let emptyGroup=groupIds.find(g=>groups[g].length===0);
     if(emptyGroup){ groups[emptyGroup].push(p); continue; }
@@ -472,7 +459,6 @@ function assignGroups(){
     groups[selected].push(p);
   }
 
-  // グループ内での役割付与（入力があれば、循環割当てで付与）
   const rolesForGroups = document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
   if(rolesForGroups.length>0){
     for(const g of groupIds){
@@ -482,7 +468,6 @@ function assignGroups(){
   }
 
   const updated=groupIds.flatMap(g=>groups[g].map(e=>`${e.name}${e.history.join('')}#${round}${g}`));
-  // set raw and update display
   setRawAndRefreshDisplay(updated.join("\n"));
 
   try{
@@ -512,9 +497,8 @@ function assignOrder(){
     return;
   }
 
-  // 固定順のパース（例: "1: 田中 太郎" を1ベースで解釈）
   const fixedRaw = (document.getElementById('fixedOrderInput')?.value || "").split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  const fixedMap = {}; // pos (1-based) -> name
+  const fixedMap = {};
   const invalids = [];
   for(const line of fixedRaw){
     if(!line) continue;
@@ -532,7 +516,6 @@ function assignOrder(){
     }
   }
 
-  // 検証: 固定指定の名前が参加者に存在するか確認
   const namesSet = new Set(members);
   const assignedFixedNames = new Set();
   const invalidNameEntries = [];
@@ -554,23 +537,18 @@ function assignOrder(){
     showToast(msgs.join('、') + "（無視されます）");
   }
 
-  // プールを作成してシャッフル
   const pool = members.filter(m=>!assignedFixedNames.has(m));
   for(let i=pool.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
     [pool[i], pool[j]]=[pool[j], pool[i]];
   }
 
-  // 結果配列を作る（null で初期化）
   const result = Array(members.length).fill(null);
-
-  // 固定を反映（posは1ベース）
   for(const posStr in fixedMap){
     const pos = parseInt(posStr,10);
     result[pos-1] = fixedMap[pos];
   }
 
-  // 残りスロットをプールで埋める
   let poolIdx = 0;
   for(let i=0;i<result.length;i++){
     if(result[i] === null){
@@ -578,7 +556,6 @@ function assignOrder(){
     }
   }
 
-  // 表示と保存
   const lines = result.map((name, idx) => `${idx+1}. ${name}`);
   document.getElementById('orderOutput').value = lines.join("\n");
 
@@ -746,10 +723,8 @@ function undoHistory(){
     const val = shufflyHistory[currentHistoryIndex];
     setRawAndRefreshDisplay(val);
     updateParticipantCount();
-    // refresh result display so ③の表示と①の履歴が整合するようにする
     showGroups();
     showStats();
-    // update hidden JSON fields for consistency (non-destructive)
     try{
       const entries = val ? val.split(/[\r\n,]+/).map(s=>parseEntry(s.trim())) : [];
       if(document.getElementById('membersJsonInput')) document.getElementById('membersJsonInput').value = JSON.stringify(entries);
@@ -765,7 +740,6 @@ function redoHistory(){
     const val = shufflyHistory[currentHistoryIndex];
     setRawAndRefreshDisplay(val);
     updateParticipantCount();
-    // refresh result display so ③の表示と①の履歴が整合するようにする
     showGroups();
     showStats();
     try{
@@ -971,6 +945,19 @@ window.onload = () => {
   switchResultTab('groups');
   switchSettingsTab('groups');
 
+  // ensure stats collapsed state reflected on load
+  const sc = document.getElementById('statsContainer');
+  const btn = document.getElementById('btn-toggle-stats');
+  if(sc && btn){
+    if(statsCollapsed){
+      sc.classList.add('hidden');
+      btn.textContent = "統計情報を表示";
+    } else {
+      sc.classList.remove('hidden');
+      btn.textContent = "統計情報を非表示";
+    }
+  }
+
   if(IS_SIGNED_IN){
     const pending = localStorage.getItem('pending_shuffly_event');
     if(pending){
@@ -1042,6 +1029,19 @@ window.onload = () => {
   bindIf('btn-copy-groupoutput', 'click', (e)=>{ e.preventDefault(); copyGroupOutput(); });
   bindIf('btn-copy-orderoutput', 'click', (e)=>{ e.preventDefault(); copyOrderOutput(); });
   bindIf('btn-copy-rolesoutput', 'click', (e)=>{ e.preventDefault(); copyRolesOutput(); });
+
+  // Toggle stats visibility (default collapsed)
+  bindIf('btn-toggle-stats', 'click', (e)=>{
+    if(e) e.preventDefault();
+    const sc = document.getElementById('statsContainer');
+    const btn = document.getElementById('btn-toggle-stats');
+    if(!sc || !btn) return;
+    sc.classList.toggle('hidden');
+    statsCollapsed = sc.classList.contains('hidden');
+    btn.textContent = statsCollapsed ? "統計情報を表示" : "統計情報を非表示";
+    // update stats content whenever opened
+    if(!statsCollapsed) showStats();
+  });
 
   // Prev/Next links in results card (moved from settings area; same functionality, link style)
   bindIf('btn-prev-group', 'click', (e)=>{
