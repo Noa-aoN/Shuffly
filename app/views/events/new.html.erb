@@ -190,18 +190,15 @@
         <textarea id="groupOutput" rows="8" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
 
         <h3 class="font-medium mb-2">統計情報</h3>
-        <textarea id="statsOutput" rows="6" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-sm"></textarea>
-
-        <!-- 前回/次回へのリンク（コピーリンクと同様のリンクスタイルで表示） -->
-        <div class="flex justify-center gap-4 mt-2 w-full">
-          <a href="#" id="btn-prev-group" class="text-sm text-blue-600 hover:underline">前回のグループ分けへ</a>
-          <a href="#" id="btn-next-group" class="text-sm text-blue-600 hover:underline">次回のグループ分けへ</a>
-        </div>
+        <textarea id="statsOutput" rows="6" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-sm mb-3"></textarea>
 
         <!-- クリップボードコピー（リンクスタイル） -->
-        <div class="flex justify-center mt-2 w-full">
-          <a href="#" id="btn-copy-groupoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
+        <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
+          <a href="#" id="btn-prev-group" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">前回のグループ分けへ</a>
+          <a href="#" id="btn-next-group" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">次回のグループ分けへ</a>
+          <a href="#" id="btn-copy-groupoutput" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
         </div>
+
       </div>
 
       <!-- 順番表示パネル -->
