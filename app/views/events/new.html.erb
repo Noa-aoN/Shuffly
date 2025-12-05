@@ -11,7 +11,9 @@
       </div>
 
       <label class="block text-sm font-medium mb-2">メンバー名リスト（改行またはカンマ区切り）</label>
-      <textarea id="membersInput" rows="8" class="w-full border rounded-md px-3 py-2 mb-3" placeholder="例：メンバー1, メンバー2, ..."><%= begin
+
+      <!-- hidden raw data textarea (機能上のデータはここに保持) -->
+      <textarea id="membersRaw" rows="8" class="hidden" style="display:none;"><%= begin
         members = @event.members_json.present? ? JSON.parse(@event.members_json) : []
         members.map do |m|
           if m.is_a?(Hash)
@@ -25,6 +27,9 @@
       rescue JSON::ParserError
         ""
       end %></textarea>
+
+      <!-- visible textarea for user (表示はフォーマットして見やすくする) -->
+      <textarea id="membersInput" rows="8" class="w-full border rounded-md px-3 py-2 mb-3" placeholder="例：メンバー1, メンバー2, ..."></textarea>
 
       <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
         <a href="#" id="btn-trigger-import" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">メンバーリストから入力</a>
@@ -346,10 +351,101 @@ function buildGroupIdsAndNames(){
   return { ids, displayNames, idToName, groupCount };
 }
 
+// --- New helpers for display-only formatted history ---
+// raw (functional) textarea: #membersRaw
+// visible (user-facing) textarea: #membersInput
+let suppressDisplayInput = false;
+
+function getRawValue(){ return (document.getElementById('membersRaw') || {value:''}).value || ""; }
+function setRawValue(v){ const el = document.getElementById('membersRaw'); if(el) el.value = v; }
+
+function getDisplayValue(){ return (document.getElementById('membersInput') || {value:''}).value || ""; }
+function setDisplayValue(v){ const el = document.getElementById('membersInput'); if(el) el.value = v; }
+
+// format a single raw entry like "太郎 # 1回目：グループA # 2回目：グループB#"
+function formatEntryForDisplay(entry){
+  const name = entry.split('#')[0].trim();
+  const hist = entry.match(/#\d+[A-Z]/g) || [];
+  const { idToName } = buildGroupIdsAndNames();
+  const formattedHist = hist.map(h=>{
+    const m=h.match(/^#(\d+)([A-Z])$/);
+    if(m){
+      const num=m[1], id=m[2];
+      const gname = idToName[id] || id;
+      return ` # ${num}回目：${gname}`;
+    }
+    return h;
+  }).join('');
+  return `${name}${formattedHist}`;
+}
+
+// convert full raw text to display text
+function updateDisplayFromRaw(){
+  const raw = getRawValue();
+  const lines = raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+  const formatted = lines.map(formatEntryForDisplay).join("\n");
+  suppressDisplayInput = true;
+  setDisplayValue(formatted);
+  // release suppression shortly after (allow user edits)
+  setTimeout(()=>{ suppressDisplayInput = false; }, 0);
+}
+
+// parse display text back to raw (accept both formatted and raw tokens)
+// formatted token: "#<num>巡目：<groupName>#"
+// raw token: "#<num><ID>"
+function parseDisplayToRaw(displayText){
+  const { idToName } = buildGroupIdsAndNames();
+  const nameToId = {};
+  for(const k in idToName) nameToId[idToName[k]] = k;
+
+  const lines = displayText.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const rawLines = lines.map(line=>{
+    // extract base name (before first '#'), keep rest tokens
+    const parts = line.split('#').filter(Boolean); // e.g. ["太郎","1巡目：グループA","2巡目：グループB"]
+    if(parts.length === 0) return "";
+    const base = parts[0].trim();
+    const tokens = parts.slice(1);
+    const rawTokens = tokens.map(tok=>{
+      // if already raw like "1A" (no "巡目"), try detect pattern /^(\d+)([A-Z])$/
+      const mRaw = tok.match(/^(\d+)([A-Z])$/);
+      if(mRaw) return `#${mRaw[1]}${mRaw[2]}`;
+      // formatted: "1巡目：グループA" or "1巡目：A"
+      const m = tok.match(/^(\d+)\s*巡目\s*[:：]\s*(.+)$/);
+      if(m){
+        const num = m[1];
+        const gname = m[2].trim();
+        // try direct match or partial match (strip "グループ" prefix)
+        let id = nameToId[gname];
+        if(!id){
+          const stripped = gname.replace(/^グループ\s*/i,'').trim();
+          id = nameToId[stripped];
+        }
+        if(id) return `#${num}${id}`;
+        // if cannot resolve, fallback: keep numeric with no group id (preserve as-is)
+        return `#${num}`;
+      }
+      // fallback: keep original token prefixed with '#'
+      return `#${tok.replace(/^#?/,'')}`;
+    }).filter(Boolean);
+    return base + rawTokens.join('');
+  }).filter(Boolean);
+  return rawLines.join("\n");
+}
+
+// 共通: set raw and update display
+function setRawAndRefreshDisplay(rawText){
+  setRawValue(rawText);
+  updateDisplayFromRaw();
+}
+
+// --- Adjusted core functions to use raw storage (membersRaw) for processing ---
+// Note: everywhere we previously read document.getElementById('membersInput').value,
+// we now read getRawValue() (functional data). Visible textarea is for users and mapped back.
+
 function assignGroups(){
-  const input=document.getElementById('membersInput');
-  let raw=input.value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  let entries=raw.map(parseEntry);
+  let raw = getRawValue().trim();
+  let rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+  let entries = rawList.map(parseEntry);
   const round=getCurrentRound(entries);
 
   const { ids: groupIds, idToName, groupCount } = buildGroupIdsAndNames();
@@ -373,7 +469,7 @@ function assignGroups(){
     }
   }
 
-  // ランダム化オプションは順番パネルから削除されたため、ここでは常にランダム配置せずに最小被り優先で割当
+  // 割当処理（最小被り優先）
   for(const p of otherEntries){
     let emptyGroup=groupIds.find(g=>groups[g].length===0);
     if(emptyGroup){ groups[emptyGroup].push(p); continue; }
@@ -398,7 +494,8 @@ function assignGroups(){
   }
 
   const updated=groupIds.flatMap(g=>groups[g].map(e=>`${e.name}${e.history.join('')}#${round}${g}`));
-  input.value=updated.join("\n");
+  // set raw and update display
+  setRawAndRefreshDisplay(updated.join("\n"));
 
   try{
     document.getElementById('membersJsonInput').value = JSON.stringify(entries);
@@ -413,13 +510,13 @@ function assignGroups(){
   }
 
   updateParticipantCount(); showGroups(); showStats(); pushToHistory();
-  // SPA behavior: reflect results immediately without reload
   switchResultTab('groups');
 }
 
 function assignOrder(){
-  const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  let members=raw.map(s=>s.split('#')[0].trim());
+  const raw = getRawValue().trim();
+  const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+  let members = rawList.map(s=>s.split('#')[0].trim());
   if(members.length === 0){
     document.getElementById('orderOutput').value = "";
     if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = "[]";
@@ -505,14 +602,14 @@ function assignOrder(){
 }
 
 function assignRoles(){
-  const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  let members=raw.map(s=>s.split('#')[0].trim());
+  const raw = getRawValue().trim();
+  const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+  let members = rawList.map(s=>s.split('#')[0].trim());
   if(members.length===0){ showToast("参加者がいません"); return; }
 
   const roles = document.getElementById('rolesInput').value.split(',').map(r=>r.trim()).filter(Boolean);
   if(roles.length===0){ showToast("役割が未入力です"); return; }
 
-  // 常にランダムかつ一意に割り当てる（役割数 <= メンバー数 の場合は全て一意）
   function shuffleArray(arr){
     for(let i=arr.length-1;i>0;i--){
       const j=Math.floor(Math.random()*(i+1));
@@ -524,21 +621,17 @@ function assignRoles(){
   shuffleArray(pool);
 
   const assignments = [];
-  // 各役割を一意に割り当てる（役割がメンバー数を上回る場合はトランケート）
   for(let i=0;i<roles.length && i<pool.length;i++){
     assignments.push({ name: pool[i], role: roles[i] });
   }
-  // 残りメンバーはrole=null
   const assignedNames = new Set(assignments.map(a=>a.name));
   for(const m of members){
     if(!assignedNames.has(m)) assignments.push({ name: m, role: null });
   }
 
-  // 表示: 役割つき → 役割なし の順で出す
   const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
   document.getElementById('rolesOutput').value = displayLines.join("\n");
 
-  // persist role_assignments in settingsJsonInput
   try {
     const settingsField = document.getElementById('settingsJsonInput');
     let settings = {};
@@ -553,13 +646,13 @@ function assignRoles(){
   }
 
   showToast("役割を割り当てました");
-  // SPA reflect
   switchResultTab('roles');
 }
 
 function showGroups(){
-  const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  const entries=raw.map(parseEntry);
+  const raw = getRawValue().trim();
+  const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+  const entries = rawList.map(parseEntry);
 
   const { ids: groupIds, idToName } = buildGroupIdsAndNames();
   const groups=Object.fromEntries(groupIds.map(g=>[g,[]]));
@@ -591,8 +684,9 @@ function showGroups(){
 }
 
 function showStats(){
-  const raw=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-  const entries=raw.map(parseEntry);
+  const raw = getRawValue().trim();
+  const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+  const entries=rawList.map(parseEntry);
   const coMap=getCoOccurrenceMap(entries,true);
 
   const { ids: groupIds, idToName } = buildGroupIdsAndNames();
@@ -628,7 +722,8 @@ function showStats(){
 }
 
 function updateParticipantCount(){
-  const count=document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean).length;
+  const raw = getRawValue().trim();
+  const count = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean).length : 0;
   const span=document.getElementById('groupSizeHint');
   const { groupCount } = buildGroupIdsAndNames();
   if(!groupCount||count===0){ if(span) span.textContent=''; return;}
@@ -648,7 +743,7 @@ function showToast(msg){
 }
 
 function pushToHistory(){
-  const text=document.getElementById('membersInput').value;
+  const text = getRawValue();
   if(currentHistoryIndex>=0 && shufflyHistory[currentHistoryIndex]===text) return;
   shufflyHistory = shufflyHistory.slice(0,currentHistoryIndex+1);
   shufflyHistory.push(text);
@@ -660,16 +755,20 @@ function pushToHistory(){
 function undoHistory(){
   if(currentHistoryIndex>0){
     currentHistoryIndex--;
-    document.getElementById('membersInput').value=shufflyHistory[currentHistoryIndex];
-    updateParticipantCount(); /* do not auto-show groups/stats until assignGroups() */ showToast("1ステップ戻しました");
+    const val = shufflyHistory[currentHistoryIndex];
+    setRawAndRefreshDisplay(val);
+    updateParticipantCount();
+    showToast("1ステップ戻しました");
   } else showToast("これ以上戻れません");
 }
 
 function redoHistory(){
   if(currentHistoryIndex<shufflyHistory.length-1){
     currentHistoryIndex++;
-    document.getElementById('membersInput').value=shufflyHistory[currentHistoryIndex];
-    updateParticipantCount(); /* do not auto-show groups/stats until assignGroups() */ showToast("1ステップ進めました");
+    const val = shufflyHistory[currentHistoryIndex];
+    setRawAndRefreshDisplay(val);
+    updateParticipantCount();
+    showToast("1ステップ進めました");
   } else showToast("これ以上進めません");
 }
 
@@ -719,36 +818,34 @@ function handleImportFile(e){
   const reader = new FileReader();
   reader.onload = function(ev){
     const text = ev.target.result;
-    const cur = document.getElementById('membersInput').value.trim();
+    const cur = getRawValue().trim();
     const merged = (cur?cur + "\n":"") + text.replace(/\r/g,'').trim();
-    document.getElementById('membersInput').value = merged;
+    setRawAndRefreshDisplay(merged);
     updateParticipantCount(); pushToHistory();
     showToast("ファイルをインポートしました");
-    // do not auto-show groups/stats — user must press グループ分け実行
   };
   reader.readAsText(file, 'utf-8');
 }
 function pasteFromClipboard(){
   navigator.clipboard.readText().then(txt=>{
-    const cur = document.getElementById('membersInput').value.trim();
+    const cur = getRawValue().trim();
     const merged = (cur?cur + "\n":"") + txt.replace(/\r/g,'').trim();
-    document.getElementById('membersInput').value = merged;
+    setRawAndRefreshDisplay(merged);
     updateParticipantCount(); pushToHistory();
     showToast("クリップボードから貼り付けました");
-    // do not auto-show groups/stats
   }).catch(()=>showToast("クリップボードにアクセスできません"));
 }
 
 // 履歴クリア（メンバー名の「#」以降を一括削除）
 function clearMemberHistories(){
-  if(!document.getElementById('membersInput')) return;
+  const rawEl = getRawValue();
+  if(rawEl === undefined) return;
   const confirmed = window.confirm("メンバー名リストに含まれる全メンバーの履歴（「#」以降）を一括で削除します。よろしいですか？");
   if(!confirmed) return;
 
-  const cur = document.getElementById('membersInput').value || "";
-  // 分割して各エントリの「#」以降を削除し、空でないものだけ残す（出力は改行区切り）
+  const cur = getRawValue() || "";
   const cleaned = cur.split(/[\r\n,]+/).map(s=>s.split('#')[0].trim()).filter(Boolean);
-  document.getElementById('membersInput').value = cleaned.join("\n");
+  setRawAndRefreshDisplay(cleaned.join("\n"));
   updateParticipantCount();
   pushToHistory();
   showToast("履歴をクリアしました");
@@ -757,7 +854,7 @@ function clearMemberHistories(){
 function togglePresentationMode(){
   try{
     const payload = {
-      members_json: (()=>{ try { return JSON.parse(document.getElementById('membersJsonInput')?.value || '[]'); } catch(e){ return document.getElementById('membersInput')?.value || ""; } })(),
+      members_json: (()=>{ try { return JSON.parse(document.getElementById('membersJsonInput')?.value || '[]'); } catch(e){ return getRawValue() || ""; } })(),
       results_json: (()=>{ try { return JSON.parse(document.getElementById('resultsJsonInput')?.value || '{}'); } catch(e){ return document.getElementById('resultsJsonInput')?.value || ""; } })(),
       order_json: (()=>{ try { return JSON.parse(document.getElementById('orderJsonInput')?.value || '[]'); } catch(e){ return document.getElementById('orderOutput')?.value || ""; } })(),
       settings_json: (()=>{ try { return JSON.parse(document.getElementById('settingsJsonInput')?.value || '{}'); } catch(e){ return document.getElementById('settingsJsonInput')?.value || ""; } })(),
@@ -789,7 +886,7 @@ function exportResults(){
 
 function saveResults(){
   try{
-    const membersRaw = document.getElementById('membersInput').value.trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+    const membersRaw = getRawValue().trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
     const entries = membersRaw.map(m=> parseEntry(m) );
     document.getElementById('membersJsonInput').value = JSON.stringify(entries);
   }catch(e){}
@@ -813,7 +910,7 @@ function saveResults(){
     }catch(e){}
   }
   if(!document.getElementById('historyJsonInput').value){
-    try{ document.getElementById('historyJsonInput').value = JSON.stringify(shufflyHistory); }catch(e){}
+    try{ document.getElementById('historyJsonInput').value=JSON.stringify(shufflyHistory); }catch(e){}
   }
 
   const titleField = document.getElementById('hiddenEventTitle');
@@ -854,16 +951,18 @@ window.onload = () => {
       shufflyHistory = JSON.parse(histField.value);
       currentHistoryIndex = shufflyHistory.length - 1;
       if (currentHistoryIndex >= 0) {
-        const mi = document.getElementById('membersInput');
-        if(mi) mi.value = shufflyHistory[currentHistoryIndex];
+        const val = shufflyHistory[currentHistoryIndex];
+        setRawAndRefreshDisplay(val);
       }
     } catch(e) {
       shufflyHistory=[]; currentHistoryIndex=-1;
     }
+  } else {
+    // if no history stored, initialize display from membersRaw initial value
+    updateDisplayFromRaw();
   }
   updateParticipantCount();
   if(shufflyHistory.length === 0) pushToHistory();
-  // 初回読み込みではグループ表示/統計は自動表示しない（グループ分け実行後に表示される）
   switchResultTab('groups');
   switchSettingsTab('groups');
 
@@ -896,8 +995,16 @@ window.onload = () => {
     if(el) el.addEventListener(evt, handler);
   }
 
-  // メンバー編集時は表示の自動更新を行わない（グループ表示は「グループ分け実行」で反映）
-  bindIf('membersInput', 'input', ()=>{ updateParticipantCount(); pushToHistory(); });
+  // Visible membersInput: on user edit, parse back to raw and update hidden storage
+  bindIf('membersInput', 'input', ()=>{
+    if(suppressDisplayInput) return;
+    const disp = getDisplayValue();
+    const raw = parseDisplayToRaw(disp);
+    setRawValue(raw);
+    updateParticipantCount();
+    pushToHistory();
+  });
+
   bindIf('groupCount', 'input', ()=>{ updateParticipantCount(); /* do not auto-show groups/stats */ });
   bindIf('customGroupNames', 'input', ()=>{ /* no automatic group display */ });
   bindIf('rolesInput', 'input', ()=>{
