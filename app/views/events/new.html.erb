@@ -1,4 +1,3 @@
-<%# filepath: /Users/n/workspace/Shuffly/app/views/events/new.html.erb %>
 <div class="max-w-6xl mx-auto px-6 pt-2 pb-10">
   <h1 class="text-3xl font-bold mb-8"><%= @event.title.presence || "イベント作成" %></h1>
 
@@ -214,14 +213,14 @@
 
         <!-- 結果表示フォーム色を薄いグレー系に変更 -->
         <!-- 初期は空。グループ分け実行ボタン押下後に初回表示される -->
-        <textarea id="groupOutput" rows="10" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
+        <textarea id="groupOutput" rows="10" readonly class="bg-gray-50 text-gray-500 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
 
         <!-- 統計情報（折りたたみ可能・デフォルトは折りたたみ） -->
         <div class="flex items-center justify-between mb-3">
           <h3 class="font-medium"><a href="#" id="btn-toggle-stats" class="hover:underline">統計情報を表示</a></h3>
         </div>
         <div id="statsContainer" class="hidden">
-          <textarea id="statsOutput" rows="10" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-sm mb-3"></textarea>
+          <textarea id="statsOutput" rows="10" readonly class="bg-gray-50 text-gray-500 border rounded-md px-3 py-2 w-full text-sm mb-3"></textarea>
         </div>
 
         <!-- クリップボードコピー / 履歴移動（リンクスタイル） -->
@@ -236,7 +235,7 @@
       <!-- 順番表示パネル -->
       <div id="panel-order" class="result-panel hidden">
         <h3 class="font-medium mb-2">順番表示</h3>
-        <textarea id="orderOutput" rows="10" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-lg"></textarea>
+        <textarea id="orderOutput" rows="10" readonly class="bg-gray-50 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
 
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-orderoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
@@ -246,7 +245,7 @@
       <!-- 役割表示パネル -->
       <div id="panel-roles" class="result-panel hidden">
         <h3 class="font-medium mb-2">役割表示</h3>
-        <textarea id="rolesOutput" rows="10" readonly class="bg-gray-50 border rounded-md px-3 py-2 w-full text-lg"></textarea>
+        <textarea id="rolesOutput" rows="10" readonly class="bg-gray-50 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
 
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-rolesoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
@@ -747,7 +746,15 @@ function showStats(){
     groupMap[id].push(e.name);
   }
 
-  const lines=[];
+  // group separator should reflect the UI option (same mapping as showGroups)
+  const groupSepVal = document.getElementById('groupSeparatorSelect') ? document.getElementById('groupSeparatorSelect').value : 'space';
+  let groupSep = '\n\n';
+  if(groupSepVal === 'none') groupSep = '\n';
+  else if(groupSepVal === 'space') groupSep = '\n\n';
+  else if(groupSepVal === 'line') groupSep = '\n────────\n';
+  else if(groupSepVal === 'wave') groupSep = '\n〜〜〜〜〜〜〜\n';
+
+  const parts = [];
   for(const id of groupIds){
     const members=groupMap[id];
     let total=0;
@@ -757,12 +764,12 @@ function showStats(){
       memberLines.push(`${m}：同グループ回数＝${mk}`);
       total+=mk;
     }
-    // group header first, then member lines (average calculated above)
-    lines.push(`${idToName[id] ? `グループ ${idToName[id]}` : `グループ ${id}`}（同グループ回数平均＝${members.length? (total/members.length).toFixed(2):0}）：`);
-    lines.push(...memberLines);
-    lines.push('');
+    const header = `${idToName[id] ? `グループ ${idToName[id]}` : `グループ ${id}`}（同グループ回数平均＝${members.length? (total/members.length).toFixed(2):0}）：`;
+    const block = [header].concat(memberLines).join("\n");
+    parts.push(block);
   }
-  document.getElementById('statsOutput').value=lines.join("\n");
+
+  document.getElementById('statsOutput').value = parts.join(groupSep).trim();
 }
 
 function updateParticipantCount(){
@@ -1133,11 +1140,11 @@ window.onload = () => {
   bindIf('tab-roles', 'click', ()=>switchResultTab('roles'));
 
   // Group view controls: SPAで即時反映
-  bindIf('showGroupLabel', 'change', ()=>{ showGroups(); });
-  bindIf('showGroupCount', 'change', ()=>{ showGroups(); });
+  bindIf('showGroupLabel', 'change', ()=>{ showGroups(); showStats(); });
+  bindIf('showGroupCount', 'change', ()=>{ showGroups(); showStats(); });
   bindIf('breakMemberLine', 'change', ()=>{ showGroups(); });
-  bindIf('separatorSelect', 'change', ()=>{ showGroups(); });
-  bindIf('groupSeparatorSelect', 'change', ()=>{ showGroups(); });
+  bindIf('separatorSelect', 'change', ()=>{ showGroups(); showStats(); });
+  bindIf('groupSeparatorSelect', 'change', ()=>{ showGroups(); showStats(); });
 
   bindIf('btn-copy-groupoutput', 'click', (e)=>{ e.preventDefault(); copyGroupOutput(); });
   bindIf('btn-copy-orderoutput', 'click', (e)=>{ e.preventDefault(); copyOrderOutput(); });
