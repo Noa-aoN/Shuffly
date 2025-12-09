@@ -1,4 +1,3 @@
-<%# filepath: /Users/n/workspace/Shuffly/app/views/events/new.html.erb %>
 <div class="max-w-6xl mx-auto px-6 pt-2 pb-10">
   <h1 class="text-3xl font-bold mb-8"><%= @event.title.presence || "イベント作成" %></h1>
 
@@ -67,7 +66,7 @@
             <div>
               <label class="text-xs text-gray-600">グループ名（任意：改行またはカンマ区切り）</label>
               <textarea id="customGroupNames" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
-              <p class="text-xs text-gray-500 mb-1">グループ名を入力すると、その数が優先してグループ数に反映されます。</p>
+              <p class="text-xs text-gray-500 mb-1">グループ名を入力すると、その数に合わせてグループ数が自動で設定されます。</p>
             </div>
           </div>
 
@@ -753,11 +752,11 @@ function showStats(){
     const memberLines = [];
     for(const m of members){
       const mk=members.reduce((sum,other)=>sum+(m!==other?(coMap[m][other]||0):0),0);
-      memberLines.push(`${m}：被り経験数＝${mk}`);
+      memberLines.push(`${m}：同グループ回数＝${mk}`);
       total+=mk;
     }
     // group header first, then member lines (average calculated above)
-    lines.push(`${idToName[id] ? `グループ ${idToName[id]}` : `グループ ${id}`}（被り経験数平均＝${members.length? (total/members.length).toFixed(2):0}）：`);
+    lines.push(`${idToName[id] ? `グループ ${idToName[id]}` : `グループ ${id}`}（同グループ回数平均＝${members.length? (total/members.length).toFixed(2):0}）：`);
     lines.push(...memberLines);
     lines.push('');
   }
@@ -768,7 +767,19 @@ function updateParticipantCount(){
   const raw = getRawValue().trim();
   const count = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean).length : 0;
   const span=document.getElementById('groupSizeHint');
-  const { groupCount } = buildGroupIdsAndNames();
+
+  // Use number of custom group names if provided; otherwise fall back to groupCount input
+  const customNamesEl = document.getElementById('customGroupNames');
+  let groupCount;
+  if(customNamesEl){
+    const customNames = (customNamesEl.value || "").split(/[\r\n,]+/).map(n=>n.trim()).filter(Boolean);
+    if(customNames.length > 0) groupCount = Math.min(customNames.length, 26);
+  }
+  if(!groupCount){
+    const groupCountInputEl = document.getElementById('groupCount');
+    groupCount = clampGroupCount(groupCountInputEl ? groupCountInputEl.value : 3);
+  }
+
   if(!groupCount||count===0){ if(span) span.textContent=''; return;}
   const min=Math.floor(count/groupCount), max=Math.ceil(count/groupCount);
   if(span) span.textContent=min===max?`（1グループあたり${min}人）`:`（1グループあたり${min}〜${max}人）`;
@@ -895,15 +906,20 @@ function pasteFromClipboard(){
 
 // 履歴クリア（メンバー名以降を一括削除）
 function clearMemberHistories(){
-  const rawEl = getRawValue();
-  if(rawEl === undefined) return;
   const confirmed = window.confirm("メンバー名リストに含まれる全メンバーの履歴を一括で削除します。よろしいですか？");
   if(!confirmed) return;
 
   const cur = getRawValue() || "";
-  The
   const cleaned = cur.split(/[\r\n,]+/).map(s=>s.split('#')[0].trim()).filter(Boolean);
   setRawAndRefreshDisplay(cleaned.join("\n"));
+
+  // update hidden members json field as well
+  try{
+    const entries = cleaned.map(s=>parseEntry(s));
+    const mj = document.getElementById('membersJsonInput');
+    if(mj) mj.value = JSON.stringify(entries);
+  }catch(e){}
+
   updateParticipantCount();
   pushToHistory();
   showToast("履歴をクリアしました");
@@ -1077,7 +1093,7 @@ window.onload = () => {
   });
 
   bindIf('groupCount', 'input', ()=>{ updateParticipantCount(); /* do not auto-show groups/stats */ });
-  bindIf('customGroupNames', 'input', ()=>{ /* no automatic group display */ });
+  bindIf('customGroupNames', 'input', ()=>{ updateParticipantCount(); /* reflect 1グループあたり人数をリアルタイムで更新 */ });
   bindIf('rolesInput', 'input', ()=>{
     const settingsField = document.getElementById('settingsJsonInput');
     if(settingsField) settingsField.value=JSON.stringify({
