@@ -587,7 +587,7 @@ function assignOrder(){
   if(invalids.length>0 || invalidNameEntries.length>0){
     const msgs = [];
     if(invalids.length>0) msgs.push("固定指定の書式が不正な行があります");
-    if(invalidNameEntries.length>0) msgs.push("参加者に存在しない名前の固定指定があります");
+    if(invalidNameEntries.length>0) msgs.push("メンバーに存在しない名前の固定指定があります");
     showToast(msgs.join('、') + "（無視されます）");
   }
 
@@ -624,7 +624,7 @@ function assignRoles(){
   const raw = getRawValue().trim();
   const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
   let members = rawList.map(s=>s.split('#')[0].trim());
-  if(members.length===0){ showToast("参加者がいません"); return; }
+  if(members.length===0){ showToast("メンバーがいません"); return; }
 
   // Accept roles separated by comma or newline
   const roles = document.getElementById('rolesInput').value.split(/[\r\n,]+/).map(r=>r.trim()).filter(Boolean);
@@ -964,6 +964,30 @@ function togglePresentationMode(){
   const presentationPath = '/events/show';
   const w = window.open(presentationPath, '_blank', 'noopener');
   if(!w) showToast("ポップアップがブロックされました。ポップアップを許可してください");
+
+  // --- 送信部: BroadcastChannel があれば初期ペイロードを送る（既存の機能には影響しない）
+  try {
+    if (typeof BroadcastChannel !== 'undefined') {
+      const bc = new BroadcastChannel('shuffly_channel');
+      // defer slightly to give the new window a moment to initialize its listener
+      setTimeout(()=> {
+        try {
+          const initPayload = {
+            type: 'init',
+            payload: payload,
+            timestamp: Date.now()
+          };
+          bc.postMessage(initPayload);
+        } catch(err){
+          console.warn('BroadcastChannel post failed', err);
+        } finally {
+          try { bc.close(); } catch(e){}
+        }
+      }, 150);
+    }
+  } catch(e){
+    console.warn('BroadcastChannel unavailable', e);
+  }
 }
 
 function exportResults(){
