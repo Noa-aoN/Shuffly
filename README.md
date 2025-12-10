@@ -1,24 +1,10 @@
-# README
+# Shuffly
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Shuffly は、参加者リストからグループ分け・順番決め・役割割り当てを素早く行える Web アプリです。
+シンプルなテキスト入力やローカルファイル（.txt / 単純な .csv）を読み込んで使えます。
 
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+## 主な機能
+- メンバーの手軽な入力 / インポート
+- グループ分け（履歴を保持）
+- 順番・役割の自動割り当て
+- 結果のコピー・エクスポート

@@ -1,22 +1,23 @@
 <%# filepath: /Users/n/workspace/Shuffly/app/views/events/presentation.html.erb %>
 <div class="min-h-screen bg-gray-50 text-gray-900">
-  <div class="max-w-6xl mx-auto px-6 py-12">
-    <header class="mb-8">
+  <div class="max-w-6xl mx-auto px-6 pt-2 pb-4">
+    <!-- イベントタイトルを先に表示（タブと表示順を逆に） -->
+    <div id="event-title-wrap" class="text-center mb-4">
+      <h1 id="event-title" class="text-3xl font-extrabold"></h1>
+    </div>
+
+    <header class="mb-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <div>
-            <h1 class="text-4xl font-extrabold">プレゼンテーションモード</h1>
-            <p class="text-sm text-gray-600 mt-1">準備が完了したら、下のボタンで結果を表示します</p>
-          </div>
+          <!-- ロゴ削除（スペース詰め） -->
         </div>
 
         <div class="flex items-center gap-3">
-          <button id="btn-back-to-settings" class="px-4 py-2 bg-white border border-gray-200 rounded text-sm shadow-sm">イベント設定に戻る</button>
-          <button id="btn-close" class="px-3 py-2 text-sm text-gray-600">閉じる</button>
+          <!-- 表示スタイルは後で履歴の下に移動 -->
         </div>
       </div>
 
-      <!-- tabs (centered) -->
+      <!-- tabs (centered) — 順序はそのままだがタイトル表示との順序を逆にしています -->
       <nav class="mt-6 border-b border-gray-200">
         <div class="flex gap-8 text-sm justify-center w-full">
           <button data-mode="groups" class="mode-btn pb-3 text-blue-600 border-b-2 border-blue-600">グループ分け</button>
@@ -27,49 +28,132 @@
     </header>
 
     <main>
-      <div id="pres-content" class="grid grid-cols-1 gap-6">
+      <div id="pres-content" class="grid grid-cols-1 gap-4">
         <!-- large visible area (white rounded dashed box) -->
-        <section class="bg-white rounded-lg border-2 border-dashed border-gray-300 p-10 flex flex-col items-center justify-center min-h-[360px]">
+        <section class="bg-white rounded-lg border-2 border-dashed border-gray-300 p-6 flex flex-col items-center justify-center min-h-[200px]">
           <div class="text-center max-w-3xl w-full">
             <h2 id="display-subtitle" class="text-xl font-semibold mb-2">シャッフル結果</h2>
-            <p id="display-hint" class="text-sm text-gray-500">結果はここに表示されます。「次へ」または「一括表示」ボタンをクリックして開始してください。</p>
+            <p id="display-hint" class="text-sm text-gray-500">結果はここに表示されます。</p>
 
-            <div id="display-area" class="mt-8 w-full bg-white">
-              <!-- large display used by script — initially empty until reveal -->
-              <div id="display-item" class="text-4xl md:text-5xl font-extrabold text-center leading-relaxed whitespace-pre-wrap"></div>
+            <div id="display-area" class="relative mt-4 w-full bg-black rounded-md overflow-auto"
+                 style="max-height: calc(100vh - 220px); min-height: 260px;">
+              <!-- mini fullscreen button (emoji) at top-right of display area -->
+              <button id="btn-mini-fullscreen" class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white rounded px-2 py-1" aria-label="全画面表示">⛶</button>
+
+              <!-- display wrapper: auto-resizes to window via max-height; content scrolls when long -->
+              <div id="display-inner" class="w-full h-full flex items-center justify-center p-6">
+                <!-- large display used by script — initially black and empty until reveal -->
+                <pre id="display-item" class="w-full text-center whitespace-pre-wrap leading-relaxed m-0 text-white"
+                     style="font-family: inherit; font-size: 1.75rem;"></pre>
+              </div>
             </div>
 
-            <!-- small snapshot (kept hidden by default so nothing shows until reveal) -->
-            <div id="pres-snapshot" class="mt-8 text-sm text-gray-600 whitespace-pre-wrap hidden"></div>
+            <!-- 履歴下の結果表示は除外 -->
           </div>
         </section>
 
-        <!-- controls centered under the big box -->
-        <div class="flex justify-center gap-4 mt-4">
-          <button id="btn-prev-item" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">前へ</button>
-          <button id="btn-next-item" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">次へ</button>
+        <!-- controls centered under the big box (フルスクリーンでも一部は表示される) -->
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mt-2">
+          <button id="btn-toggle-fullscreen" class="px-3 py-2 bg-white border rounded shadow-sm text-gray-700">全画面</button>
+          <button id="btn-hide-results" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">非表示</button>
+          <button id="btn-prev-item" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">前の表示</button>
+          <button id="btn-step-item" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">1件表示</button>
+          <button id="btn-next-item" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">後の表示</button>
           <button id="btn-reveal" class="px-6 py-3 bg-blue-600 text-white rounded shadow">一括表示</button>
         </div>
 
-        <!-- hidden controls / compact list for presenter (kept for functionality) -->
-        <div class="hidden md:flex items-start gap-6 mt-6">
-          <div class="flex items-center gap-2">
-            <button id="btn-prev-snapshot" class="px-3 py-1 bg-white border rounded disabled:opacity-50">履歴◀</button>
-            <button id="btn-next-snapshot" class="px-3 py-1 bg-white border rounded disabled:opacity-50">履歴▶</button>
-            <span id="snapshot-index" class="ml-3 text-sm text-gray-500"></span>
-          </div>
-
-          <div class="ml-auto text-sm text-gray-500">
-            <span id="display-counter"></span>
-          </div>
+        <!-- history navigation (centered, link style; stacks vertically on small screens) -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-4">
+          <a href="#" id="btn-prev-snapshot" class="text-sm text-blue-600 hover:underline">◀︎ 履歴</a>
+          <span id="snapshot-index" class="text-sm text-gray-500"></span>
+          <a href="#" id="btn-next-snapshot" class="text-sm text-blue-600 hover:underline">履歴 ▶︎</a>
         </div>
 
-        <!-- compact list for quick selection (kept but visually subtle) -->
+        <!-- 表示設定（統計表示と同じスタイルに合わせる） -->
+        <div class="flex items-center justify-between mb-3 mt-2">
+          <h3 class="font-medium"><a href="#" id="btn-toggle-style-settings" class="hover:underline">表示設定</a></h3>
+        </div>
+        <div id="style-settings" class="hidden">
+          <fieldset class="bg-white border rounded-md px-3 py-2 mb-3">
+            <legend class="sr-only">表示設定</legend>
+            <label class="text-sm text-gray-600 mr-2">表示スタイル</label>
+            <div class="flex gap-2 items-center text-sm mt-2">
+              <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="simple" class="mr-1" checked> シンプル</label>
+              <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="work" class="mr-1"> ワーク</label>
+              <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="school" class="mr-1"> スクール</label>
+              <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="sports" class="mr-1"> スポーツ</label>
+              <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="party" class="mr-1"> パーティ</label>
+              <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="casino" class="mr-1"> カジノ</label>
+            </div>
+          </fieldset>
+        </div>
+
+        <!-- hidden compact list for presenter (kept but visually subtle) -->
         <div id="list-compact" class="hidden md:block text-sm text-gray-700"></div>
+
+        <!-- 移動したリンクスタイルの操作（ページ末尾に表示） -->
+        <div class="mt-2 text-center">
+          <a id="btn-back-to-settings" href="#" class="text-sm text-blue-600 hover:underline mr-4">新規イベント作成</a>
+          <a id="btn-close" href="#" class="text-sm text-blue-600 hover:underline">このページを閉じる</a>
+        </div>
       </div>
     </main>
   </div>
 </div>
+
+<!-- flash message (イベント作成ページと同様のスタイル) -->
+<div id="flash-message" class="hidden fixed top-6 left-1/2 transform -translate-x-1/2 bg-yellow-300 text-black px-4 py-2 rounded shadow z-50"></div>
+
+<style>
+/* fullscreen mode: hide header/footer and make pres-content occupy whole viewport */
+.fullscreen-active header { display: none !important; }
+.fullscreen-active .mt-2.text-center { display: none !important; } /* hide bottom small footer area if present */
+.fullscreen-active .max-w-6xl { padding-top: 0 !important; padding-bottom: 0 !important; }
+.fullscreen-active #pres-content {
+  position: fixed;
+  inset: 0;
+  background: #111827;
+  z-index: 1200;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+/* hide specific controls in fullscreen: keep only 非表示 and mini/fullscreen toggle if desired */
+.fullscreen-active .flex.flex-col.sm\\:flex-row.justify-center.gap-4.mt-2 > :not(#btn-hide-results):not(#btn-toggle-fullscreen):not(#btn-mini-fullscreen) {
+  display: none !important;
+}
+
+.fullscreen-active #display-area {
+  background: #111827 !important;
+  border-radius: 6px;
+  flex: 1 1 auto;
+  max-height: none !important;
+}
+.fullscreen-active #display-item { color: #fff !important; }
+
+/* Ensure the mini fullscreen button (⛶) is always visible and above content */
+#btn-mini-fullscreen {
+  display: inline-flex !important;
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 1300 !important;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* ensure visible appearance in fullscreen */
+.fullscreen-active #btn-mini-fullscreen {
+  background: rgba(255,255,255,0.06) !important;
+  color: #fff !important;
+}
+
+/* flash helper (no-op beyond placement) */
+#flash-message { transition: opacity 180ms ease; }
+
+/* style-settings toggle active state handled via aria-expanded in JS */
+</style>
 
 <script>
 (function(){
@@ -126,17 +210,32 @@
   if(!payload) payload = { members_json:null, results_json:null, order_json:null, settings_json:null, history_json:null, title:'' };
 
   // DOM refs
-  const titleEl = document.querySelector('h1') || document.getElementById('pres-title');
+  const eventTitleEl = document.getElementById('event-title');
   const displaySubtitle = document.getElementById('display-subtitle');
+  const displayHint = document.getElementById('display-hint');
   const displayItem = document.getElementById('display-item');
-  const displayCounter = document.getElementById('display-counter');
-  const presSnapshot = document.getElementById('pres-snapshot');
+  const displayInner = document.getElementById('display-inner');
+  const displayArea = document.getElementById('display-area');
   const listCompact = document.getElementById('list-compact');
   const snapshotIndexEl = document.getElementById('snapshot-index');
   const prevSnapshotBtn = document.getElementById('btn-prev-snapshot');
   const nextSnapshotBtn = document.getElementById('btn-next-snapshot');
+  const btnHideResults = document.getElementById('btn-hide-results');
+  const btnToggleFullscreen = document.getElementById('btn-toggle-fullscreen');
+  const btnMiniFullscreen = document.getElementById('btn-mini-fullscreen');
+  const btnToggleStyleSettings = document.getElementById('btn-toggle-style-settings');
+  const styleSettingsDiv = document.getElementById('style-settings');
+  const flashMessageEl = document.getElementById('flash-message');
 
-  if(titleEl) titleEl.textContent = payload.title || document.title || 'プレゼンテーション';
+  if(eventTitleEl) {
+    if(payload.title && payload.title.trim() !== '') {
+      eventTitleEl.textContent = payload.title;
+      eventTitleEl.classList.remove('hidden');
+    } else {
+      eventTitleEl.textContent = '';
+      eventTitleEl.classList.add('hidden');
+    }
+  }
 
   // prepare data structures for modes
   function normalizeGroups(results){
@@ -171,7 +270,7 @@
     return [];
   })();
 
-  // snapshot/history handling (kept but not shown until reveal)
+  // snapshot/history handling (no snapshot display under history)
   let history = [];
   if(Array.isArray(payload.history_json)) history = payload.history_json.slice();
   else if(typeof payload.history_json === 'string'){
@@ -184,21 +283,51 @@
   let historyIdx = history.length > 0 ? history.length - 1 : -1;
   function updateSnapshotUI(){
     if(historyIdx < 0 || history.length === 0){
-      presSnapshot.textContent = '';
       snapshotIndexEl.textContent = '';
-      if(prevSnapshotBtn) prevSnapshotBtn.disabled = true;
-      if(nextSnapshotBtn) nextSnapshotBtn.disabled = true;
+      if(prevSnapshotBtn) prevSnapshotBtn.classList.add('opacity-50');
+      if(nextSnapshotBtn) nextSnapshotBtn.classList.add('opacity-50');
     } else {
-      const raw = history[historyIdx];
-      const parsed = safeParse(raw) || raw;
-      presSnapshot.textContent = typeof parsed === 'string' ? parsed : JSON.stringify(parsed, null, 2);
       snapshotIndexEl.textContent = ` ${historyIdx+1}/${history.length}`;
-      if(prevSnapshotBtn) prevSnapshotBtn.disabled = historyIdx <= 0;
-      if(nextSnapshotBtn) nextSnapshotBtn.disabled = historyIdx >= history.length - 1;
+      if(prevSnapshotBtn) prevSnapshotBtn.classList.toggle('opacity-50', historyIdx <= 0);
+      if(nextSnapshotBtn) nextSnapshotBtn.classList.toggle('opacity-50', historyIdx >= history.length - 1);
     }
   }
-  if(prevSnapshotBtn) prevSnapshotBtn.addEventListener('click', ()=>{ if(historyIdx>0){ historyIdx--; updateSnapshotUI(); }});
-  if(nextSnapshotBtn) nextSnapshotBtn.addEventListener('click', ()=>{ if(historyIdx < history.length-1){ historyIdx++; updateSnapshotUI(); }});
+
+  // attach history prev/next handlers (keep behavior but no extra display under history)
+  if(prevSnapshotBtn) prevSnapshotBtn.addEventListener('click', (e) => {
+    if(e) e.preventDefault();
+    revealed = false; bulkView = false;
+    displayArea.classList.add('bg-black'); displayArea.classList.remove('bg-white');
+    displayItem.textContent = ''; displayInner.style.alignItems = 'center';
+    if(historyIdx > 0){ historyIdx--; updateSnapshotUI();
+      if(mode === 'groups'){
+        const entry = history[historyIdx];
+        const reconstructed = parseHistoryToGroups(entry);
+        groupsList.length = 0; Array.prototype.push.apply(groupsList, reconstructed);
+        counts.groups = groupsList.length;
+        indices.groups = 0;
+        rebuildListCompact();
+        revealed = true; bulkView = false; updateDisplay();
+      }
+    }
+  });
+  if(nextSnapshotBtn) nextSnapshotBtn.addEventListener('click', (e) => {
+    if(e) e.preventDefault();
+    revealed = false; bulkView = false;
+    displayArea.classList.add('bg-black'); displayArea.classList.remove('bg-white');
+    displayItem.textContent = ''; displayInner.style.alignItems = 'center';
+    if(historyIdx < history.length - 1){ historyIdx++; updateSnapshotUI();
+      if(mode === 'groups'){
+        const entry = history[historyIdx];
+        const reconstructed = parseHistoryToGroups(entry);
+        groupsList.length = 0; Array.prototype.push.apply(groupsList, reconstructed);
+        counts.groups = groupsList.length;
+        indices.groups = 0;
+        rebuildListCompact();
+        revealed = true; bulkView = false; updateDisplay();
+      }
+    }
+  });
   updateSnapshotUI();
 
   // mode state and per-mode index
@@ -206,6 +335,10 @@
   const modeBtns = Array.from(document.querySelectorAll('.mode-btn'));
   const indices = { groups: 0, order: 0, roles: 0 };
   const counts = { groups: groupsList.length, order: orderList.length, roles: rolesList.length };
+
+  // control flags
+  let revealed = false;
+  let bulkView = false; // true when 一括表示 is active
 
   function setMode(m){
     mode = m;
@@ -215,11 +348,38 @@
       b.classList.toggle('border-blue-600', b.dataset.mode === m);
       b.classList.toggle('text-gray-600', b.dataset.mode !== m);
     });
-    if(m === 'groups') displaySubtitle.textContent = 'シャッフル結果';
+    if(m === 'groups') displaySubtitle.textContent = 'グループ（1グループずつ表示）';
     if(m === 'order') displaySubtitle.textContent = '順番（1件ずつ表示）';
     if(m === 'roles') displaySubtitle.textContent = '役職（1件ずつ表示）';
     rebuildListCompact();
-    updateDisplay(); // do not auto-reveal; updateDisplay keeps content empty until reveal
+
+    // If no results exist for this mode -> show "未実行"
+    if((counts[m] || 0) === 0){
+      bulkView = false;
+      revealed = false;
+      // show a neutral "未実行" (exception to black initial state)
+      displayArea.classList.remove('bg-black');
+      displayArea.classList.add('bg-white');
+      displayItem.style.color = '#6B7280'; // gray-500
+      displayItem.style.fontSize = '1rem';
+      displayItem.textContent = '未実行';
+      // ensure subtitle/hint visible for modes with no data (but will be hidden when bulkView)
+      displaySubtitle.style.display = ''; displayHint.style.display = '';
+      updateControls();
+      return;
+    }
+
+    // otherwise, keep initial black state until a display control is pressed
+    revealed = false;
+    bulkView = false;
+    displayArea.classList.add('bg-black');
+    displayArea.classList.remove('bg-white');
+    displayItem.textContent = '';
+    displayItem.style.color = '#FFFFFF';
+    displayItem.style.fontSize = '1.75rem';
+    // restore subtitle/hint
+    displaySubtitle.style.display = ''; displayHint.style.display = '';
+    updateControls();
   }
   modeBtns.forEach(b => b.addEventListener('click', ()=> setMode(b.dataset.mode)));
 
@@ -231,7 +391,7 @@
         const el = document.createElement('div');
         el.className = 'p-2 bg-white rounded cursor-pointer hover:bg-gray-50';
         el.textContent = `${i+1}. ${g.label} (${g.members.length})`;
-        el.addEventListener('click', () => { indices.groups = i; revealCurrent(); });
+        el.addEventListener('click', () => { indices.groups = i; bulkView = false; revealCurrent(); });
         listCompact.appendChild(el);
       });
       if(groupsList.length === 0) listCompact.textContent = '';
@@ -240,7 +400,7 @@
         const el = document.createElement('div');
         el.className = 'p-2 bg-white rounded cursor-pointer hover:bg-gray-50';
         el.textContent = `${i+1}. ${o.name || JSON.stringify(o)}`;
-        el.addEventListener('click', () => { indices.order = i; revealCurrent(); });
+        el.addEventListener('click', () => { indices.order = i; bulkView = false; revealCurrent(); });
         listCompact.appendChild(el);
       });
       if(orderList.length === 0) listCompact.textContent = '';
@@ -249,7 +409,7 @@
         const el = document.createElement('div');
         el.className = 'p-2 bg-white rounded cursor-pointer hover:bg-gray-50';
         el.textContent = `${i+1}. ${r.name || ''} ${r.role ? '– ' + r.role : ''}`;
-        el.addEventListener('click', () => { indices.roles = i; revealCurrent(); });
+        el.addEventListener('click', () => { indices.roles = i; bulkView = false; revealCurrent(); });
         listCompact.appendChild(el);
       });
       if(rolesList.length === 0) listCompact.textContent = '';
@@ -257,19 +417,18 @@
     counts.groups = groupsList.length; counts.order = orderList.length; counts.roles = rolesList.length;
   }
 
-  // display control
-  let revealed = false;
+  // display control refs
   const btnReveal = document.getElementById('btn-reveal');
   const btnPrevItem = document.getElementById('btn-prev-item');
   const btnNextItem = document.getElementById('btn-next-item');
+  const btnStepItem = document.getElementById('btn-step-item');
 
   function updateControls(){
     const len = counts[mode] || 0;
     const idx = indices[mode] || 0;
     if(btnPrevItem) btnPrevItem.disabled = !revealed || idx <= 0;
     if(btnNextItem) btnNextItem.disabled = !revealed || idx >= len - 1;
-    if(displayCounter) displayCounter.textContent = revealed && len > 0 ? `${idx+1}/${len}` : '';
-    if(btnReveal) btnReveal.classList.toggle('hidden', revealed);
+    if(btnStepItem) btnStepItem.disabled = revealed && idx >= len - 1;
   }
 
   function formatGroupForDisplay(g){
@@ -296,53 +455,344 @@
     return (r.name || '') + (r.role ? ` — ${r.role}` : '');
   }
 
+  function renderBulkList(){
+    // render all items for current mode in a consistent font size; allow scroll via display-area
+    let lines = [];
+    if(mode === 'groups'){
+      groupsList.forEach((g,i) => {
+        lines.push(`${i+1}. ${g.label}（${(g.members||[]).length}名）`);
+        (g.members||[]).forEach(m => lines.push(`  - ${typeof m === 'string' ? m : (m.name || m.full_name || JSON.stringify(m))}`));
+        lines.push(''); // gap
+      });
+    } else if(mode === 'order'){
+      orderList.forEach((o,i) => {
+        lines.push(`${i+1}. ${formatOrderForDisplay(o)}`);
+      });
+    } else if(mode === 'roles'){
+      rolesList.forEach((r,i) => {
+        lines.push(`${i+1}. ${formatRoleForDisplay(r)}`);
+      });
+    }
+    // uniform font-size for bulk
+    displayArea.classList.remove('bg-black');
+    displayArea.classList.add('bg-white');
+    displayItem.style.color = '#111827'; // gray-900
+    displayItem.style.fontSize = '1rem';
+    displayItem.textContent = lines.join('\n');
+    // ensure inner alignment uses top-left for lists
+    displayInner.style.alignItems = 'flex-start';
+  }
+
   function updateDisplay(){
     const len = counts[mode] || 0;
     const idx = indices[mode] || 0;
+
+    // If no results -> handled in setMode but keep fallback
+    if(len === 0){
+      displayArea.classList.remove('bg-black');
+      displayArea.classList.add('bg-white');
+      displayItem.style.color = '#6B7280';
+      displayItem.style.fontSize = '1rem';
+      displayItem.textContent = '未実行';
+      // ensure subtitle/hint visible
+      displaySubtitle.style.display = ''; displayHint.style.display = '';
+      updateControls();
+      return;
+    }
+
     if(!revealed){
-      displayItem.textContent = ''; // ensure nothing shown until reveal
+      // initial black state (no content shown)
+      displayArea.classList.add('bg-black');
+      displayArea.classList.remove('bg-white');
+      displayInner.style.alignItems = 'center';
+      displayItem.style.color = '#FFFFFF';
+      displayItem.style.fontSize = '1.75rem';
+      displayItem.textContent = '';
+      // ensure subtitle/hint visible
+      displaySubtitle.style.display = ''; displayHint.style.display = '';
+      updateControls();
+      return;
+    }
+
+    // revealed path
+    if(bulkView){
+      // hide explanatory subtitle/hint in bulk view
+      if(displaySubtitle) displaySubtitle.style.display = 'none';
+      if(displayHint) displayHint.style.display = 'none';
+      renderBulkList();
     } else {
+      // single-item view
+      // restore subtitle/hint
+      if(displaySubtitle) displaySubtitle.style.display = '';
+      if(displayHint) displayHint.style.display = '';
+
+      displayArea.classList.remove('bg-black');
+      displayArea.classList.add('bg-white');
+      displayInner.style.alignItems = 'center';
+      displayItem.style.color = '#111827';
+      displayItem.style.fontSize = '1.75rem';
+
       if(mode === 'groups'){
-        if(len === 0){ displayItem.textContent = ''; }
-        else displayItem.textContent = formatGroupForDisplay(groupsList[idx]);
+        displayItem.textContent = formatGroupForDisplay(groupsList[idx] || {});
       } else if(mode === 'order'){
-        if(len === 0){ displayItem.textContent = ''; }
-        else displayItem.textContent = formatOrderForDisplay(orderList[idx]);
+        const item = orderList[idx] || {};
+        let namePart = formatOrderForDisplay(item);
+        if(item && Array.isArray(item.members) && item.members.length > 0){
+          const lines = [`${idx+1}. ${namePart}`, ''];
+          item.members.forEach(m => lines.push(typeof m === 'string' ? m : (m.name || m.full_name || JSON.stringify(m))));
+          displayItem.textContent = lines.join('\n');
+        } else {
+          displayItem.textContent = `${idx+1}. ${namePart}`;
+        }
       } else if(mode === 'roles'){
-        if(len === 0){ displayItem.textContent = ''; }
-        else displayItem.textContent = formatRoleForDisplay(rolesList[idx]);
+        displayItem.textContent = formatRoleForDisplay(rolesList[idx] || {});
       }
     }
+
     updateControls();
   }
 
-  function revealCurrent(){
+  function revealCurrent(asBulk){
     revealed = true;
-    // show snapshot (if exists) for presenter; otherwise keep it hidden
-    if(presSnapshot && presSnapshot.textContent) presSnapshot.classList.remove('hidden');
+    bulkView = !!asBulk;
     updateDisplay();
   }
   function hideAll(){
     revealed = false;
+    bulkView = false;
     displayItem.textContent = '';
+    displayArea.classList.add('bg-black');
+    displayArea.classList.remove('bg-white');
+    displayInner.style.alignItems = 'center';
+    // restore subtitle/hint
+    if(displaySubtitle) displaySubtitle.style.display = '';
+    if(displayHint) displayHint.style.display = '';
     updateControls();
   }
 
-  if(btnReveal) btnReveal.addEventListener('click', () => revealCurrent());
+  // flash helper (イベント作成ページと同様の表示)
+  function showFlash(text, ms){
+    if(!flashMessageEl) return;
+    flashMessageEl.textContent = text;
+    flashMessageEl.classList.remove('hidden');
+    flashMessageEl.style.opacity = '1';
+    clearTimeout(flashMessageEl._timeout);
+    flashMessageEl._timeout = setTimeout(() => {
+      flashMessageEl.style.opacity = '0';
+      setTimeout(()=> flashMessageEl.classList.add('hidden'), 200);
+    }, ms || 1800);
+  }
+
+  if(btnReveal) btnReveal.addEventListener('click', () => {
+    // no-op if already bulk-viewing
+    if(bulkView) return;
+    revealCurrent(true);
+  });
+  if(btnHideResults) btnHideResults.addEventListener('click', () => {
+    hideAll();
+  });
   if(btnPrevItem) btnPrevItem.addEventListener('click', () => {
-    if(indices[mode] > 0){ indices[mode]--; revealCurrent(); }
+    if((counts[mode]||0) === 0) return;
+    if(indices[mode] > 0){ indices[mode]--; revealCurrent(false); }
   });
   if(btnNextItem) btnNextItem.addEventListener('click', () => {
-    if(indices[mode] < (counts[mode]-1)){ indices[mode]++; revealCurrent(); }
+    if((counts[mode]||0) === 0) return;
+    if(indices[mode] < (counts[mode]-1)){ indices[mode]++; revealCurrent(false); }
+    // if now at last, flash with same wording/style as other pages
+    if(indices[mode] === (counts[mode]-1)){
+      showFlash('最後の結果です', 1800);
+    }
   });
+  if(btnStepItem) btnStepItem.addEventListener('click', () => {
+    // when there are no items, show "未実行" even if the display area was black
+    if((counts[mode]||0) === 0){
+      revealed = true; bulkView = false;
+      displayArea.classList.remove('bg-black'); displayArea.classList.add('bg-white');
+      displayItem.style.color = '#6B7280'; displayItem.style.fontSize = '1rem';
+      displayItem.textContent = '未実行';
+      // ensure subtitle/hint visible
+      if(displaySubtitle) displaySubtitle.style.display = '';
+      if(displayHint) displayHint.style.display = '';
+      updateControls();
+      return;
+    }
+    if(!revealed){
+      revealCurrent(false);
+      // if only one item, flash as last
+      if(counts[mode] === 1){
+        showFlash('最後の結果です', 1800);
+      }
+    } else if(indices[mode] < (counts[mode]-1)){
+      indices[mode]++; revealCurrent(false);
+      if(indices[mode] === (counts[mode]-1)){
+        showFlash('最後の結果です', 1800);
+      }
+    } else {
+      // at end: reveal last and flash
+      indices[mode] = Math.max(0, counts[mode]-1);
+      revealCurrent(false);
+      showFlash('最後の結果です', 1800);
+    }
+  });
+
+  // fullscreen toggle (shared handler for both buttons)
+  function toggleFullscreen(){
+    document.body.classList.toggle('fullscreen-active');
+    const active = document.body.classList.contains('fullscreen-active');
+    if(btnToggleFullscreen) btnToggleFullscreen.textContent = active ? '全画面解除' : '全画面';
+    if(btnMiniFullscreen) btnMiniFullscreen.textContent = active ? '✕' : '⛶';
+  }
+  if(btnToggleFullscreen) btnToggleFullscreen.addEventListener('click', toggleFullscreen);
+  if(btnMiniFullscreen) btnMiniFullscreen.addEventListener('click', toggleFullscreen);
+
+  // style settings toggle (click toggles show/hide like 統計情報を表示)
+  if(btnToggleStyleSettings && styleSettingsDiv){
+    btnToggleStyleSettings.addEventListener('click', (e) => {
+      if(e) e.preventDefault();
+      styleSettingsDiv.classList.toggle('hidden');
+      const expanded = !styleSettingsDiv.classList.contains('hidden');
+      try { btnToggleStyleSettings.setAttribute('aria-expanded', expanded.toString()); } catch(err){}
+    });
+  }
 
   // init (do not reveal anything on load)
   setMode('groups');
   rebuildListCompact();
   updateDisplay();
 
-  // back -> restore pending inputs and go to new
-  document.getElementById('btn-back-to-settings').addEventListener('click', function(){
+  // --- helpers reused from above ---
+  function parseHistoryToGroups(raw){
+    if(!raw) return [];
+    let lines = [];
+    if(Array.isArray(raw)) {
+      lines = raw.map(r => (typeof r === 'string' ? r : (r.name || JSON.stringify(r))));
+    } else if(typeof raw === 'string'){
+      lines = raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+    } else {
+      return [];
+    }
+    const groupsMap = {};
+    for(const line of lines){
+      const name = line.split('#')[0].trim();
+      const m = line.match(/#\d+([A-Z])$/);
+      const id = m ? m[1] : null;
+      const key = id || 'A';
+      if(!groupsMap[key]) groupsMap[key]=[];
+      groupsMap[key].push(name);
+    }
+    const keys = Object.keys(groupsMap).sort();
+    return keys.map(k => ({ label: `グループ ${k}`, members: groupsMap[k] }));
+  }
+
+  // --- receive updates from authoring window (BroadcastChannel) and fallback via storage ---
+  try {
+    if (typeof BroadcastChannel !== 'undefined') {
+      const bc = new BroadcastChannel('shuffly_channel');
+      bc.onmessage = (ev) => {
+        try {
+          const data = ev.data;
+          if(!data) return;
+          if(data.type === 'init' || data.type === 'update'){
+            const p = data.payload || {};
+            payload = {
+              members_json: safeParse(p.members_json) || p.members_json || payload.members_json,
+              results_json: safeParse(p.results_json) || p.results_json || payload.results_json,
+              order_json: safeParse(p.order_json) || p.order_json || payload.order_json,
+              settings_json: safeParse(p.settings_json) || p.settings_json || payload.settings_json,
+              history_json: safeParse(p.history_json) || p.history_json || payload.history_json,
+              title: p.title || payload.title
+            };
+
+            if(eventTitleEl){
+              if(payload.title && payload.title.trim() !== ''){
+                eventTitleEl.textContent = payload.title;
+                eventTitleEl.classList.remove('hidden');
+              } else {
+                eventTitleEl.textContent = '';
+                eventTitleEl.classList.add('hidden');
+              }
+            }
+
+            const newGroups = normalizeGroups(payload.results_json);
+            groupsList.length = 0; Array.prototype.push.apply(groupsList, newGroups);
+
+            const newOrder = (Array.isArray(payload.order_json) ? payload.order_json.map(it => (typeof it === 'string' ? {name:it} : it)) : []);
+            orderList.length = 0; Array.prototype.push.apply(orderList, newOrder);
+
+            const s = payload.settings_json || (payload.settingsJson || {});
+            const newRoles = (s && Array.isArray(s.role_assignments)) ? s.role_assignments.map(r=>({name:r.name, role:r.role})) : (s && s.roles && typeof s.roles === 'object' ? Object.keys(s.roles).map(k=>({name:k, role:s.roles[k]})) : []);
+            rolesList.length = 0; Array.prototype.push.apply(rolesList, newRoles);
+
+            const parsedHistory = Array.isArray(payload.history_json) ? payload.history_json.slice() : (typeof payload.history_json === 'string' ? (safeParse(payload.history_json) || []) : []);
+            history = parsedHistory.length ? parsedHistory : history;
+            historyIdx = history.length > 0 ? history.length - 1 : -1;
+
+            if(indices.groups >= groupsList.length) indices.groups = Math.max(0, groupsList.length-1);
+            if(indices.order >= orderList.length) indices.order = Math.max(0, orderList.length-1);
+            if(indices.roles >= rolesList.length) indices.roles = Math.max(0, rolesList.length-1);
+
+            rebuildListCompact();
+            updateSnapshotUI();
+            updateDisplay();
+          }
+        } catch(err){
+          console.warn('shuffly_channel handler error', err);
+        }
+      };
+    }
+  } catch(e){
+    console.warn('BroadcastChannel not available', e);
+  }
+
+  // storage fallback
+  window.addEventListener('storage', function(e){
+    if(!e || !e.key) return;
+    if(e.key === 'presentation_shuffly_event'){
+      try {
+        const raw = e.newValue;
+        if(!raw) return;
+        const p = safeParse(raw) || JSON.parse(raw);
+        payload = {
+          members_json: safeParse(p.members_json) || p.members_json || payload.members_json,
+          results_json: safeParse(p.results_json) || p.results_json || payload.results_json,
+          order_json: safeParse(p.order_json) || p.order_json || payload.order_json,
+          settings_json: safeParse(p.settings_json) || p.settings_json || payload.settings_json,
+          history_json: safeParse(p.history_json) || p.history_json || payload.history_json,
+          title: p.title || payload.title
+        };
+        if(eventTitleEl){
+          if(payload.title && payload.title.trim() !== ''){
+            eventTitleEl.textContent = payload.title;
+            eventTitleEl.classList.remove('hidden');
+          } else {
+            eventTitleEl.textContent = '';
+            eventTitleEl.classList.add('hidden');
+          }
+        }
+        const newGroups = normalizeGroups(payload.results_json);
+        groupsList.length = 0; Array.prototype.push.apply(groupsList, newGroups);
+        const newOrder = (Array.isArray(payload.order_json) ? payload.order_json.map(it => (typeof it === 'string' ? {name:it} : it)) : []);
+        orderList.length = 0; Array.prototype.push.apply(orderList, newOrder);
+        const s = payload.settings_json || (payload.settingsJson || {});
+        const newRoles = (s && Array.isArray(s.role_assignments)) ? s.role_assignments.map(r=>({name:r.name, role:r.role})) : (s && s.roles && typeof s.roles === 'object' ? Object.keys(s.roles).map(k=>({name:k, role:s.roles[k]})) : []);
+        rolesList.length = 0; Array.prototype.push.apply(rolesList, newRoles);
+        const parsedHistory = Array.isArray(payload.history_json) ? payload.history_json.slice() : (typeof payload.history_json === 'string' ? (safeParse(payload.history_json) || []) : []);
+        history = parsedHistory.length ? parsedHistory : history;
+        historyIdx = history.length > 0 ? history.length - 1 : -1;
+        if(indices.groups >= groupsList.length) indices.groups = Math.max(0, groupsList.length-1);
+        if(indices.order >= orderList.length) indices.order = Math.max(0, orderList.length-1);
+        if(indices.roles >= rolesList.length) indices.roles = Math.max(0, rolesList.length-1);
+        rebuildListCompact();
+        updateSnapshotUI();
+        updateDisplay();
+      } catch(err){ /* ignore parse errors */ }
+    }
+  });
+
+  // back / close handlers (unchanged)
+  const backBtn = document.getElementById('btn-back-to-settings');
+  if(backBtn) backBtn.addEventListener('click', function(e){
+    if(e) e.preventDefault();
     try{
       const preview = {
         members_json: (typeof payload.members_json === 'string') ? payload.members_json : (payload.members_json ? JSON.stringify(payload.members_json) : ''),
@@ -357,17 +807,37 @@
     window.location.href = "<%= new_event_path %>";
   });
 
-  document.getElementById('btn-close').addEventListener('click', function(){
+  const closeBtn = document.getElementById('btn-close');
+  if(closeBtn) closeBtn.addEventListener('click', function(e){
+    if(e) e.preventDefault();
     if(window.opener) window.close(); else window.location.href = "<%= root_path %>";
   });
 
-  // keyboard
+  // keyboard (unchanged)
   document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape') document.getElementById('btn-back-to-settings').click();
+    if(e.key === 'Escape') {
+      // if fullscreen active, exit fullscreen first
+      if(document.body.classList.contains('fullscreen-active')){
+        toggleFullscreen();
+        return;
+      }
+      document.getElementById('btn-back-to-settings').click();
+    }
     if(e.key === 'ArrowLeft') document.getElementById('btn-prev-item').click();
     if(e.key === 'ArrowRight') document.getElementById('btn-next-item').click();
-    if(e.key === ' '){ e.preventDefault(); revealed ? hideAll() : revealCurrent(); }
+    if(e.key === ' '){ e.preventDefault(); revealed ? hideAll() : revealCurrent(false); }
   });
 
+  // style selector persistence (kept but moved)
+  try {
+    const radios = document.querySelectorAll('input[name="presentationStyle"]');
+    const stored = localStorage.getItem('presentation_style');
+    if(stored){
+      radios.forEach(r => { if(r.value === stored) r.checked = true; });
+    }
+    radios.forEach(r => r.addEventListener('change', (e) => {
+      try { localStorage.setItem('presentation_style', e.target.value); } catch(e){}
+    }));
+  } catch(e){}
 })();
 </script>
