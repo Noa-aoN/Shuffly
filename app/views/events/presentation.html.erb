@@ -1,9 +1,9 @@
 <%# filepath: /Users/n/workspace/Shuffly/app/views/events/presentation.html.erb %>
 <div class="min-h-screen bg-gray-50 text-gray-900">
-  <div class="max-w-6xl mx-auto px-6 pt-2 pb-4">
-    <!-- イベントタイトルを先に表示（タブと表示順を逆に） -->
+  <div class="max-w-7xl mx-auto px-6 pt-2 pb-4">
+    <!-- イベントタイトル -->
     <div id="event-title-wrap" class="text-center mb-4">
-      <h1 id="event-title" class="text-3xl font-extrabold"></h1>
+      <h1 id="event-title" class="text-3xl font-extrabold border rounded-md px-4 py-2 bg-white inline-block"></h1>
     </div>
 
     <header class="mb-4">
@@ -17,7 +17,7 @@
         </div>
       </div>
 
-      <!-- tabs (centered) — 順序はそのままだがタイトル表示との順序を逆にしています -->
+      <!-- tabs (centered) -->
       <nav class="mt-6 border-b border-gray-200">
         <div class="flex gap-8 text-sm justify-center w-full">
           <button data-mode="groups" class="mode-btn pb-3 text-blue-600 border-b-2 border-blue-600">グループ分け</button>
@@ -31,20 +31,20 @@
       <div id="pres-content" class="grid grid-cols-1 gap-4">
         <!-- large visible area (white rounded dashed box) -->
         <section class="bg-white rounded-lg border-2 border-dashed border-gray-300 p-6 flex flex-col items-center justify-center min-h-[200px]">
-          <div class="text-center max-w-3xl w-full">
+          <div class="text-center max-w-7xl w-full">
             <h2 id="display-subtitle" class="text-xl font-semibold mb-2">シャッフル結果</h2>
             <p id="display-hint" class="text-sm text-gray-500">結果はここに表示されます。</p>
 
             <div id="display-area" class="relative mt-4 w-full bg-black rounded-md overflow-auto"
-                 style="max-height: calc(100vh - 220px); min-height: 260px;">
+                 style="max-height: calc(100vh - 160px); min-height: 60vh;">
               <!-- mini fullscreen button (emoji) at top-right of display area -->
               <button id="btn-mini-fullscreen" class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white rounded px-2 py-1" aria-label="全画面表示">⛶</button>
 
               <!-- display wrapper: auto-resizes to window via max-height; content scrolls when long -->
-              <div id="display-inner" class="w-full h-full flex items-center justify-center p-6">
+              <div id="display-inner" class="w-full h-full flex items-center justify-center p-4">
                 <!-- large display used by script — initially black and empty until reveal -->
                 <pre id="display-item" class="w-full text-center whitespace-pre-wrap leading-relaxed m-0 text-white"
-                     style="font-family: inherit; font-size: 1.75rem;"></pre>
+                     style="font-family: inherit;"></pre>
               </div>
             </div>
 
@@ -52,14 +52,65 @@
           </div>
         </section>
 
-        <!-- controls centered under the big box (フルスクリーンでも一部は表示される) -->
+        <!-- controls centered under the big box (フルスクリーンでも一部は表示される) --><!--
         <div class="flex flex-col sm:flex-row justify-center gap-4 mt-2">
-          <button id="btn-toggle-fullscreen" class="px-3 py-2 bg-white border rounded shadow-sm text-gray-700">全画面</button>
-          <button id="btn-hide-results" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">非表示</button>
-          <button id="btn-prev-item" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">前の表示</button>
-          <button id="btn-step-item" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">1件表示</button>
-          <button id="btn-next-item" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">後の表示</button>
-          <button id="btn-reveal" class="px-6 py-3 bg-blue-600 text-white rounded shadow">一括表示</button>
+          <button id="btn-toggle-fullscreen" class="w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50">全画面表示</button>
+          <button id="btn-hide-results" class="w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50">結果を隠す</button>
+          <button id="btn-prev-item" class="w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50">前の表示</button>
+          <button id="btn-step-item" class="w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50">1件表示</button>
+          <button id="btn-next-item" class="w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50">後の表示</button>
+          <button id="btn-reveal" class="w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600">一括表示</button>
+        </div>-->
+
+        <div class="flex flex-col md:flex-row gap-2 mb-3 items-center justify-center w-full">
+          <%= render 'shared/button',
+                f: nil,
+                button_text: '全画面表示',
+                id: 'btn-toggle-fullscreen',
+                path: '#',
+                variant: 'secondary',
+                full_mobile: false,
+                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+          <%= render 'shared/button',
+                f: nil,
+                button_text: '結果を隠す',
+                id: 'btn-hide-results',
+                path: '#',
+                variant: 'secondary',
+                full_mobile: false,
+                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+          <%= render 'shared/button',
+                f: nil,
+                button_text: '前の結果',
+                id: 'btn-prev-item',
+                path: '#',
+                variant: 'secondary',
+                full_mobile: false,
+                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+          <%= render 'shared/button',
+                f: nil,
+                button_text: '1件表示',
+                id: 'btn-step-item',
+                path: '#',
+                variant: 'secondary',
+                full_mobile: false,
+                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+          <%= render 'shared/button',
+                f: nil,
+                button_text: '後の結果',
+                id: 'btn-next-item',
+                path: '#',
+                variant: 'secondary',
+                full_mobile: false,
+                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+          <%= render 'shared/button',
+                f: nil,
+                button_text: '結果一覧',
+                id: 'btn-reveal',
+                path: '#',
+                variant: 'primary',
+                full_mobile: false,
+                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
         </div>
 
         <!-- history navigation (centered, link style; stacks vertically on small screens) -->
@@ -70,12 +121,13 @@
         </div>
 
         <!-- 表示設定（統計表示と同じスタイルに合わせる） -->
-        <div class="flex items-center justify-between mb-3 mt-2">
+        <div class="flex items-center justify-between mb-1 mt-2">
           <h3 class="font-medium"><a href="#" id="btn-toggle-style-settings" class="hover:underline">表示設定</a></h3>
         </div>
         <div id="style-settings" class="hidden">
-          <fieldset class="bg-white border rounded-md px-3 py-2 mb-3">
+          <fieldset class="bg-white border rounded-md px-3 py-2 mb-2">
             <legend class="sr-only">表示設定</legend>
+
             <label class="text-sm text-gray-600 mr-2">表示スタイル</label>
             <div class="flex gap-2 items-center text-sm mt-2">
               <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="simple" class="mr-1" checked> シンプル</label>
@@ -85,17 +137,27 @@
               <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="party" class="mr-1"> パーティ</label>
               <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="casino" class="mr-1"> カジノ</label>
             </div>
+
+            <!-- 演出オプション -->
+            <div class="mt-3 text-sm">
+              <div class="font-medium mb-1">演出</div>
+              <div class="flex gap-3 items-center">
+                <label class="inline-flex items-center"><input type="radio" name="presentationPerformance" value="on" class="mr-1" checked> オン</label>
+                <label class="inline-flex items-center"><input type="radio" name="presentationPerformance" value="off" class="mr-1"> オフ</label>
+              </div>
+            </div>
+
+            <!-- 効果音オプション -->
+            <div class="mt-3 text-sm">
+              <div class="font-medium mb-1">効果音</div>
+              <div class="flex gap-3 items-center">
+                <label class="inline-flex items-center"><input type="radio" name="presentationSound" value="on" class="mr-1" checked> オン</label>
+                <label class="inline-flex items-center"><input type="radio" name="presentationSound" value="off" class="mr-1"> オフ</label>
+              </div>
+            </div>
           </fieldset>
         </div>
 
-        <!-- hidden compact list for presenter (kept but visually subtle) -->
-        <div id="list-compact" class="hidden md:block text-sm text-gray-700"></div>
-
-        <!-- 移動したリンクスタイルの操作（ページ末尾に表示） -->
-        <div class="mt-2 text-center">
-          <a id="btn-back-to-settings" href="#" class="text-sm text-blue-600 hover:underline mr-4">新規イベント作成</a>
-          <a id="btn-close" href="#" class="text-sm text-blue-600 hover:underline">このページを閉じる</a>
-        </div>
       </div>
     </main>
   </div>
@@ -108,7 +170,20 @@
 /* fullscreen mode: hide header/footer and make pres-content occupy whole viewport */
 .fullscreen-active header { display: none !important; }
 .fullscreen-active .mt-2.text-center { display: none !important; } /* hide bottom small footer area if present */
-.fullscreen-active .max-w-6xl { padding-top: 0 !important; padding-bottom: 0 !important; }
+/* support both container sizes */
+.fullscreen-active .max-w-6xl,
+.fullscreen-active .max-w-7xl { padding-top: 0 !important; padding-bottom: 0 !important; }
+
+/* expand container and display-area width in fullscreen to match viewport */
+.fullscreen-active .max-w-7xl {
+  max-width: none !important;
+  width: 100% !important;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
 .fullscreen-active #pres-content {
   position: fixed;
   inset: 0;
@@ -119,6 +194,26 @@
   flex-direction: column;
   overflow: auto;
 }
+
+/* Ensure subtitle/hint are hidden in fullscreen */
+.fullscreen-active #display-subtitle,
+.fullscreen-active #display-hint {
+  display: none !important;
+}
+
+/* place event title at top in fullscreen */
+.fullscreen-active #event-title-wrap {
+  position: fixed !important;
+  top: 12px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 1250 !important;
+  margin: 0 !important;
+}
+.fullscreen-active #event-title {
+  background: rgba(255,255,255,0.95);
+}
+
 /* hide specific controls in fullscreen: keep only 非表示 and mini/fullscreen toggle if desired */
 .fullscreen-active .flex.flex-col.sm\\:flex-row.justify-center.gap-4.mt-2 > :not(#btn-hide-results):not(#btn-toggle-fullscreen):not(#btn-mini-fullscreen) {
   display: none !important;
@@ -129,8 +224,50 @@
   border-radius: 6px;
   flex: 1 1 auto;
   max-height: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box;
 }
 .fullscreen-active #display-item { color: #fff !important; }
+
+/* Responsive font-size for single/bulk display — scales with viewport */
+#display-item {
+  /* fallback and base scaling */
+  font-size: clamp(1rem, 2.5vw + 0.5rem, 2.5rem);
+  line-height: 1.2;
+}
+
+/* Slightly larger scaling when fullscreen */
+.fullscreen-active #display-item {
+  font-size: clamp(1.25rem, 4vw + 0.5rem, 4rem) !important;
+  line-height: 1.15;
+}
+
+/* Make pres-content occupy more viewport height so inner area grows with screen */
+#pres-content {
+  min-height: calc(100vh - 120px);
+}
+
+/* Ensure the top section stretches to use available vertical space */
+#pres-content > section {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Make display-area expand within the section and scale with viewport */
+#display-area {
+  flex: 1 1 auto;
+  min-height: 60vh;
+  max-height: calc(100vh - 160px);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* reduce inner padding slightly to gain more visible area */
+#display-inner { padding: 1rem; }
 
 /* Ensure the mini fullscreen button (⛶) is always visible and above content */
 #btn-mini-fullscreen {
@@ -147,6 +284,15 @@
 .fullscreen-active #btn-mini-fullscreen {
   background: rgba(255,255,255,0.06) !important;
   color: #fff !important;
+}
+
+/* mobile adjustments for fullscreen to avoid overflow and maintain layout */
+@media (max-width: 640px) {
+  .fullscreen-active #pres-content { padding: 12px !important; }
+  .fullscreen-active #display-inner { padding: 0.5rem !important; }
+  .fullscreen-active #event-title { font-size: 1.125rem !important; padding: 8px 10px !important; }
+  /* ensure a readable minimum on small devices */
+  #display-item { font-size: clamp(1rem, 4vw + 0.25rem, 2rem) !important; }
 }
 
 /* flash helper (no-op beyond placement) */
@@ -211,12 +357,12 @@
 
   // DOM refs
   const eventTitleEl = document.getElementById('event-title');
+  const eventTitleWrap = document.getElementById('event-title-wrap');
   const displaySubtitle = document.getElementById('display-subtitle');
   const displayHint = document.getElementById('display-hint');
   const displayItem = document.getElementById('display-item');
   const displayInner = document.getElementById('display-inner');
   const displayArea = document.getElementById('display-area');
-  const listCompact = document.getElementById('list-compact');
   const snapshotIndexEl = document.getElementById('snapshot-index');
   const prevSnapshotBtn = document.getElementById('btn-prev-snapshot');
   const nextSnapshotBtn = document.getElementById('btn-next-snapshot');
@@ -361,10 +507,14 @@
       displayArea.classList.remove('bg-black');
       displayArea.classList.add('bg-white');
       displayItem.style.color = '#6B7280'; // gray-500
-      displayItem.style.fontSize = '1rem';
+      displayItem.style.fontSize = '';
       displayItem.textContent = '未実行';
-      // ensure subtitle/hint visible for modes with no data (but will be hidden when bulkView)
-      displaySubtitle.style.display = ''; displayHint.style.display = '';
+      // ensure subtitle/hint visible for modes with no data (but will be hidden when bulkView or fullscreen)
+      if(!document.body.classList.contains('fullscreen-active')){
+        displaySubtitle.style.display = ''; displayHint.style.display = '';
+      } else {
+        displaySubtitle.style.display = 'none'; displayHint.style.display = 'none';
+      }
       updateControls();
       return;
     }
@@ -376,14 +526,19 @@
     displayArea.classList.remove('bg-white');
     displayItem.textContent = '';
     displayItem.style.color = '#FFFFFF';
-    displayItem.style.fontSize = '1.75rem';
-    // restore subtitle/hint
-    displaySubtitle.style.display = ''; displayHint.style.display = '';
+    displayItem.style.fontSize = '';
+    // restore subtitle/hint (unless fullscreen)
+    if(!document.body.classList.contains('fullscreen-active')){
+      displaySubtitle.style.display = ''; displayHint.style.display = '';
+    } else {
+      displaySubtitle.style.display = 'none'; displayHint.style.display = 'none';
+    }
     updateControls();
   }
   modeBtns.forEach(b => b.addEventListener('click', ()=> setMode(b.dataset.mode)));
 
   function rebuildListCompact(){
+    const listCompact = document.getElementById('list-compact');
     if(!listCompact) return;
     listCompact.innerHTML = '';
     if(mode === 'groups'){
@@ -434,13 +589,8 @@
   function formatGroupForDisplay(g){
     const members = Array.isArray(g.members) ? g.members : [];
     const header = (g.label && g.label !== '') ? `${g.label}（${members.length}名）` : `（${members.length}名）`;
-    const lines = [header, ''];
-    members.forEach(m => {
-      if(typeof m === 'string') lines.push(m);
-      else if(m && (m.name || m.full_name)) lines.push(m.name || m.full_name);
-      else lines.push(JSON.stringify(m));
-    });
-    return lines.join('\n');
+    const memberNames = members.map(m => (typeof m === 'string' ? m : (m.name || m.full_name || JSON.stringify(m)))).filter(Boolean).join(', ');
+    return memberNames ? `${header}\n${memberNames}` : header;
   }
 
   function formatOrderForDisplay(o){
@@ -460,9 +610,9 @@
     let lines = [];
     if(mode === 'groups'){
       groupsList.forEach((g,i) => {
-        lines.push(`${i+1}. ${g.label}（${(g.members||[]).length}名）`);
-        (g.members||[]).forEach(m => lines.push(`  - ${typeof m === 'string' ? m : (m.name || m.full_name || JSON.stringify(m))}`));
-        lines.push(''); // gap
+        const members = Array.isArray(g.members) ? g.members.map(m => (typeof m === 'string' ? m : (m.name || m.full_name || JSON.stringify(m)))).filter(Boolean).join(', ') : '';
+        const header = `${g.label}（${(g.members||[]).length}名）`;
+        lines.push(members ? `${header}\n${members}` : header);
       });
     } else if(mode === 'order'){
       orderList.forEach((o,i) => {
@@ -473,11 +623,11 @@
         lines.push(`${i+1}. ${formatRoleForDisplay(r)}`);
       });
     }
-    // uniform font-size for bulk
+    // uniform font-size for bulk (clear inline font-size so CSS handles responsive sizing)
     displayArea.classList.remove('bg-black');
     displayArea.classList.add('bg-white');
     displayItem.style.color = '#111827'; // gray-900
-    displayItem.style.fontSize = '1rem';
+    displayItem.style.fontSize = '';
     displayItem.textContent = lines.join('\n');
     // ensure inner alignment uses top-left for lists
     displayInner.style.alignItems = 'flex-start';
@@ -492,10 +642,14 @@
       displayArea.classList.remove('bg-black');
       displayArea.classList.add('bg-white');
       displayItem.style.color = '#6B7280';
-      displayItem.style.fontSize = '1rem';
+      displayItem.style.fontSize = '';
       displayItem.textContent = '未実行';
-      // ensure subtitle/hint visible
-      displaySubtitle.style.display = ''; displayHint.style.display = '';
+      // ensure subtitle/hint visible (unless fullscreen)
+      if(!document.body.classList.contains('fullscreen-active')){
+        displaySubtitle.style.display = ''; displayHint.style.display = '';
+      } else {
+        displaySubtitle.style.display = 'none'; displayHint.style.display = 'none';
+      }
       updateControls();
       return;
     }
@@ -506,10 +660,14 @@
       displayArea.classList.remove('bg-white');
       displayInner.style.alignItems = 'center';
       displayItem.style.color = '#FFFFFF';
-      displayItem.style.fontSize = '1.75rem';
+      displayItem.style.fontSize = '';
       displayItem.textContent = '';
-      // ensure subtitle/hint visible
-      displaySubtitle.style.display = ''; displayHint.style.display = '';
+      // ensure subtitle/hint visible (unless fullscreen)
+      if(!document.body.classList.contains('fullscreen-active')){
+        displaySubtitle.style.display = ''; displayHint.style.display = '';
+      } else {
+        displaySubtitle.style.display = 'none'; displayHint.style.display = 'none';
+      }
       updateControls();
       return;
     }
@@ -522,15 +680,20 @@
       renderBulkList();
     } else {
       // single-item view
-      // restore subtitle/hint
-      if(displaySubtitle) displaySubtitle.style.display = '';
-      if(displayHint) displayHint.style.display = '';
+      // restore subtitle/hint only if not fullscreen; otherwise keep hidden
+      if(!document.body.classList.contains('fullscreen-active')){
+        if(displaySubtitle) displaySubtitle.style.display = '';
+        if(displayHint) displayHint.style.display = '';
+      } else {
+        if(displaySubtitle) displaySubtitle.style.display = 'none';
+        if(displayHint) displayHint.style.display = 'none';
+      }
 
       displayArea.classList.remove('bg-black');
       displayArea.classList.add('bg-white');
       displayInner.style.alignItems = 'center';
       displayItem.style.color = '#111827';
-      displayItem.style.fontSize = '1.75rem';
+      displayItem.style.fontSize = '';
 
       if(mode === 'groups'){
         displayItem.textContent = formatGroupForDisplay(groupsList[idx] || {});
@@ -564,9 +727,14 @@
     displayArea.classList.add('bg-black');
     displayArea.classList.remove('bg-white');
     displayInner.style.alignItems = 'center';
-    // restore subtitle/hint
-    if(displaySubtitle) displaySubtitle.style.display = '';
-    if(displayHint) displayHint.style.display = '';
+    // restore subtitle/hint (unless fullscreen)
+    if(!document.body.classList.contains('fullscreen-active')){
+      if(displaySubtitle) displaySubtitle.style.display = '';
+      if(displayHint) displayHint.style.display = '';
+    } else {
+      if(displaySubtitle) displaySubtitle.style.display = 'none';
+      if(displayHint) displayHint.style.display = 'none';
+    }
     updateControls();
   }
 
@@ -586,6 +754,9 @@
   if(btnReveal) btnReveal.addEventListener('click', () => {
     // no-op if already bulk-viewing
     if(bulkView) return;
+    // hide subtitle/hint when revealing all
+    if(displaySubtitle) displaySubtitle.style.display = 'none';
+    if(displayHint) displayHint.style.display = 'none';
     revealCurrent(true);
   });
   if(btnHideResults) btnHideResults.addEventListener('click', () => {
@@ -593,10 +764,16 @@
   });
   if(btnPrevItem) btnPrevItem.addEventListener('click', () => {
     if((counts[mode]||0) === 0) return;
+    // hide subtitle/hint when navigating
+    if(displaySubtitle) displaySubtitle.style.display = 'none';
+    if(displayHint) displayHint.style.display = 'none';
     if(indices[mode] > 0){ indices[mode]--; revealCurrent(false); }
   });
   if(btnNextItem) btnNextItem.addEventListener('click', () => {
     if((counts[mode]||0) === 0) return;
+    // hide subtitle/hint when navigating
+    if(displaySubtitle) displaySubtitle.style.display = 'none';
+    if(displayHint) displayHint.style.display = 'none';
     if(indices[mode] < (counts[mode]-1)){ indices[mode]++; revealCurrent(false); }
     // if now at last, flash with same wording/style as other pages
     if(indices[mode] === (counts[mode]-1)){
@@ -608,14 +785,22 @@
     if((counts[mode]||0) === 0){
       revealed = true; bulkView = false;
       displayArea.classList.remove('bg-black'); displayArea.classList.add('bg-white');
-      displayItem.style.color = '#6B7280'; displayItem.style.fontSize = '1rem';
+      displayItem.style.color = '#6B7280'; displayItem.style.fontSize = '';
       displayItem.textContent = '未実行';
-      // ensure subtitle/hint visible
-      if(displaySubtitle) displaySubtitle.style.display = '';
-      if(displayHint) displayHint.style.display = '';
+      // ensure subtitle/hint visible (unless fullscreen)
+      if(!document.body.classList.contains('fullscreen-active')){
+        if(displaySubtitle) displaySubtitle.style.display = '';
+        if(displayHint) displayHint.style.display = '';
+      } else {
+        if(displaySubtitle) displaySubtitle.style.display = 'none';
+        if(displayHint) displayHint.style.display = 'none';
+      }
       updateControls();
       return;
     }
+    // hide subtitle/hint when stepping
+    if(displaySubtitle) displaySubtitle.style.display = 'none';
+    if(displayHint) displayHint.style.display = 'none';
     if(!revealed){
       revealCurrent(false);
       // if only one item, flash as last
@@ -639,8 +824,27 @@
   function toggleFullscreen(){
     document.body.classList.toggle('fullscreen-active');
     const active = document.body.classList.contains('fullscreen-active');
-    if(btnToggleFullscreen) btnToggleFullscreen.textContent = active ? '全画面解除' : '全画面';
+    if(btnToggleFullscreen) btnToggleFullscreen.textContent = active ? '全画面解除' : '全画面表示';
     if(btnMiniFullscreen) btnMiniFullscreen.textContent = active ? '✕' : '⛶';
+
+    // when entering fullscreen, hide subtitle/hint and ensure title visible
+    if(active){
+      if(displaySubtitle) displaySubtitle.style.display = 'none';
+      if(displayHint) displayHint.style.display = 'none';
+      if(eventTitleWrap) eventTitleWrap.style.display = '';
+    } else {
+      // restore subtitle/hint to default visible state if not in revealed/empty state
+      if(!revealed){
+        if(displaySubtitle) displaySubtitle.style.display = '';
+        if(displayHint) displayHint.style.display = '';
+      } else {
+        // revealed true: keep subtitle hidden unless not desired (single-item and not fullscreen)
+        if(!document.body.classList.contains('fullscreen-active')){
+          if(displaySubtitle) displaySubtitle.style.display = '';
+          if(displayHint) displayHint.style.display = '';
+        }
+      }
+    }
   }
   if(btnToggleFullscreen) btnToggleFullscreen.addEventListener('click', toggleFullscreen);
   if(btnMiniFullscreen) btnMiniFullscreen.addEventListener('click', toggleFullscreen);
@@ -789,55 +993,51 @@
     }
   });
 
-  // back / close handlers (unchanged)
-  const backBtn = document.getElementById('btn-back-to-settings');
-  if(backBtn) backBtn.addEventListener('click', function(e){
-    if(e) e.preventDefault();
-    try{
-      const preview = {
-        members_json: (typeof payload.members_json === 'string') ? payload.members_json : (payload.members_json ? JSON.stringify(payload.members_json) : ''),
-        results_json: (typeof payload.results_json === 'string') ? payload.results_json : (payload.results_json ? JSON.stringify(payload.results_json) : ''),
-        order_json: (typeof payload.order_json === 'string') ? payload.order_json : (payload.order_json ? JSON.stringify(payload.order_json) : ''),
-        settings_json: (typeof payload.settings_json === 'string') ? payload.settings_json : (payload.settings_json ? JSON.stringify(payload.settings_json) : ''),
-        history_json: (typeof payload.history_json === 'string') ? payload.history_json : (payload.history_json ? JSON.stringify(payload.history_json) : ''),
-        title: payload.title || ''
-      };
-      localStorage.setItem('pending_shuffly_event', JSON.stringify(preview));
-    }catch(e){}
-    window.location.href = "<%= new_event_path %>";
-  });
-
-  const closeBtn = document.getElementById('btn-close');
-  if(closeBtn) closeBtn.addEventListener('click', function(e){
-    if(e) e.preventDefault();
-    if(window.opener) window.close(); else window.location.href = "<%= root_path %>";
-  });
-
-  // keyboard (unchanged)
+  // keyboard (modified: Escape only toggles fullscreen; removed navigation to settings)
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape') {
-      // if fullscreen active, exit fullscreen first
       if(document.body.classList.contains('fullscreen-active')){
         toggleFullscreen();
-        return;
       }
-      document.getElementById('btn-back-to-settings').click();
+      return;
     }
     if(e.key === 'ArrowLeft') document.getElementById('btn-prev-item').click();
     if(e.key === 'ArrowRight') document.getElementById('btn-next-item').click();
     if(e.key === ' '){ e.preventDefault(); revealed ? hideAll() : revealCurrent(false); }
   });
 
-  // style selector persistence (kept but moved)
+  // style selector persistence (including new 演出 and 効果音 options)
   try {
     const radios = document.querySelectorAll('input[name="presentationStyle"]');
     const stored = localStorage.getItem('presentation_style');
     if(stored){
       radios.forEach(r => { if(r.value === stored) r.checked = true; });
+    } else {
+      // ensure default is 'simple'
+      radios.forEach(r => { if(r.value === 'simple') r.checked = true; });
     }
     radios.forEach(r => r.addEventListener('change', (e) => {
       try { localStorage.setItem('presentation_style', e.target.value); } catch(e){}
     }));
+
+    const perfRadios = document.querySelectorAll('input[name="presentationPerformance"]');
+    const perfStored = localStorage.getItem('presentation_performance');
+    if(perfStored){
+      perfRadios.forEach(r => { if(r.value === perfStored) r.checked = true; });
+    }
+    perfRadios.forEach(r => r.addEventListener('change', (e) => {
+      try { localStorage.setItem('presentation_performance', e.target.value); } catch(e){}
+    }));
+
+    const soundRadios = document.querySelectorAll('input[name="presentationSound"]');
+    const soundStored = localStorage.getItem('presentation_sound');
+    if(soundStored){
+      soundRadios.forEach(r => { if(r.value === soundStored) r.checked = true; });
+    }
+    soundRadios.forEach(r => r.addEventListener('change', (e) => {
+      try { localStorage.setItem('presentation_sound', e.target.value); } catch(e){}
+    }));
   } catch(e){}
+
 })();
 </script>
