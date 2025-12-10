@@ -1,35 +1,23 @@
 <%# filepath: /Users/n/workspace/Shuffly/app/views/events/presentation.html.erb %>
 <div class="min-h-screen bg-gray-50 text-gray-900">
   <div class="max-w-6xl mx-auto px-6 pt-2 pb-4">
+    <!-- イベントタイトルを先に表示（タブと表示順を逆に） -->
+    <div id="event-title-wrap" class="text-center mb-4">
+      <h1 id="event-title" class="text-3xl font-extrabold"></h1>
+    </div>
+
     <header class="mb-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <div>
-            <!-- ロゴ画像（正方形）用スペースのみ（テキスト等は表示しない） -->
-            <div class="w-20 h-20 bg-gray-200 rounded-md flex items-center justify-center" aria-hidden="true"></div>
-          </div>
+          <!-- ロゴ削除（スペース詰め） -->
         </div>
 
         <div class="flex items-center gap-3">
-          <!-- style selector (for future stylesheet switching) -->
-          <div class="mr-3">
-            <fieldset id="styleSelector" class="flex items-center gap-2 bg-white border border-gray-200 rounded px-3 py-2">
-              <legend class="sr-only">表示スタイル</legend>
-              <label class="text-sm text-gray-600 mr-2">表示スタイル</label>
-              <div class="flex gap-2 items-center text-sm">
-                <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="simple" class="mr-1" checked> シンプル</label>
-                <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="work" class="mr-1"> ワーク</label>
-                <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="school" class="mr-1"> スクール</label>
-                <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="sports" class="mr-1"> スポーツ</label>
-                <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="party" class="mr-1"> パーティ</label>
-                <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="casino" class="mr-1"> カジノ</label>
-              </div>
-            </fieldset>
-          </div>
+          <!-- 表示スタイルは後で履歴の下に移動 -->
         </div>
       </div>
 
-      <!-- tabs (centered) -->
+      <!-- tabs (centered) — 順序はそのままだがタイトル表示との順序を逆にしています -->
       <nav class="mt-6 border-b border-gray-200">
         <div class="flex gap-8 text-sm justify-center w-full">
           <button data-mode="groups" class="mode-btn pb-3 text-blue-600 border-b-2 border-blue-600">グループ分け</button>
@@ -39,11 +27,6 @@
       </nav>
     </header>
 
-    <!-- イベントタイトル（あれば大きく表示） -->
-    <div id="event-title-wrap" class="text-center mb-4">
-      <h1 id="event-title" class="text-3xl font-extrabold"></h1>
-    </div>
-
     <main>
       <div id="pres-content" class="grid grid-cols-1 gap-4">
         <!-- large visible area (white rounded dashed box) -->
@@ -52,8 +35,11 @@
             <h2 id="display-subtitle" class="text-xl font-semibold mb-2">シャッフル結果</h2>
             <p id="display-hint" class="text-sm text-gray-500">結果はここに表示されます。</p>
 
-            <div id="display-area" class="mt-4 w-full bg-black rounded-md overflow-auto"
-                 style="max-height: calc(100vh - 220px); min-height: 280px;">
+            <div id="display-area" class="relative mt-4 w-full bg-black rounded-md overflow-auto"
+                 style="max-height: calc(100vh - 220px); min-height: 260px;">
+              <!-- mini fullscreen button (emoji) at top-right of display area -->
+              <button id="btn-mini-fullscreen" class="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white rounded px-2 py-1" aria-label="全画面表示">⛶</button>
+
               <!-- display wrapper: auto-resizes to window via max-height; content scrolls when long -->
               <div id="display-inner" class="w-full h-full flex items-center justify-center p-6">
                 <!-- large display used by script — initially black and empty until reveal -->
@@ -62,13 +48,14 @@
               </div>
             </div>
 
-            <!-- 履歴下の結果表示は削除しました -->
+            <!-- 履歴下の結果表示は除外 -->
           </div>
         </section>
 
-        <!-- controls centered under the big box -->
+        <!-- controls centered under the big box (フルスクリーンでも一部は表示される) -->
         <div class="flex flex-col sm:flex-row justify-center gap-4 mt-2">
-          <button id="btn-hide-results" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">結果非表示</button>
+          <button id="btn-toggle-fullscreen" class="px-3 py-2 bg-white border rounded shadow-sm text-gray-700">全画面</button>
+          <button id="btn-hide-results" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">非表示</button>
           <button id="btn-prev-item" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">前の表示</button>
           <button id="btn-step-item" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">1件表示</button>
           <button id="btn-next-item" class="px-6 py-3 bg-white border rounded shadow-sm text-gray-700">後の表示</button>
@@ -80,6 +67,25 @@
           <a href="#" id="btn-prev-snapshot" class="text-sm text-blue-600 hover:underline">◀︎ 履歴</a>
           <span id="snapshot-index" class="text-sm text-gray-500"></span>
           <a href="#" id="btn-next-snapshot" class="text-sm text-blue-600 hover:underline">履歴 ▶︎</a>
+        </div>
+
+        <!-- 表示設定（統計表示と同じスタイルに合わせる） -->
+        <div class="flex items-center justify-between mb-3 mt-2">
+          <h3 class="font-medium"><a href="#" id="btn-toggle-style-settings" class="hover:underline">表示設定</a></h3>
+        </div>
+        <div id="style-settings" class="hidden">
+          <fieldset class="bg-white border rounded-md px-3 py-2 mb-3">
+            <legend class="sr-only">表示設定</legend>
+            <label class="text-sm text-gray-600 mr-2">表示スタイル</label>
+            <div class="flex gap-2 items-center text-sm mt-2">
+              <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="simple" class="mr-1" checked> シンプル</label>
+              <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="work" class="mr-1"> ワーク</label>
+              <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="school" class="mr-1"> スクール</label>
+              <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="sports" class="mr-1"> スポーツ</label>
+              <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="party" class="mr-1"> パーティ</label>
+              <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="casino" class="mr-1"> カジノ</label>
+            </div>
+          </fieldset>
         </div>
 
         <!-- hidden compact list for presenter (kept but visually subtle) -->
@@ -94,6 +100,60 @@
     </main>
   </div>
 </div>
+
+<!-- flash message (イベント作成ページと同様のスタイル) -->
+<div id="flash-message" class="hidden fixed top-6 left-1/2 transform -translate-x-1/2 bg-yellow-300 text-black px-4 py-2 rounded shadow z-50"></div>
+
+<style>
+/* fullscreen mode: hide header/footer and make pres-content occupy whole viewport */
+.fullscreen-active header { display: none !important; }
+.fullscreen-active .mt-2.text-center { display: none !important; } /* hide bottom small footer area if present */
+.fullscreen-active .max-w-6xl { padding-top: 0 !important; padding-bottom: 0 !important; }
+.fullscreen-active #pres-content {
+  position: fixed;
+  inset: 0;
+  background: #111827;
+  z-index: 1200;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+/* hide specific controls in fullscreen: keep only 非表示 and mini/fullscreen toggle if desired */
+.fullscreen-active .flex.flex-col.sm\\:flex-row.justify-center.gap-4.mt-2 > :not(#btn-hide-results):not(#btn-toggle-fullscreen):not(#btn-mini-fullscreen) {
+  display: none !important;
+}
+
+.fullscreen-active #display-area {
+  background: #111827 !important;
+  border-radius: 6px;
+  flex: 1 1 auto;
+  max-height: none !important;
+}
+.fullscreen-active #display-item { color: #fff !important; }
+
+/* Ensure the mini fullscreen button (⛶) is always visible and above content */
+#btn-mini-fullscreen {
+  display: inline-flex !important;
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 1300 !important;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* ensure visible appearance in fullscreen */
+.fullscreen-active #btn-mini-fullscreen {
+  background: rgba(255,255,255,0.06) !important;
+  color: #fff !important;
+}
+
+/* flash helper (no-op beyond placement) */
+#flash-message { transition: opacity 180ms ease; }
+
+/* style-settings toggle active state handled via aria-expanded in JS */
+</style>
 
 <script>
 (function(){
@@ -151,8 +211,8 @@
 
   // DOM refs
   const eventTitleEl = document.getElementById('event-title');
-  const titleEl = document.querySelector('h1') || document.getElementById('pres-title');
   const displaySubtitle = document.getElementById('display-subtitle');
+  const displayHint = document.getElementById('display-hint');
   const displayItem = document.getElementById('display-item');
   const displayInner = document.getElementById('display-inner');
   const displayArea = document.getElementById('display-area');
@@ -161,6 +221,11 @@
   const prevSnapshotBtn = document.getElementById('btn-prev-snapshot');
   const nextSnapshotBtn = document.getElementById('btn-next-snapshot');
   const btnHideResults = document.getElementById('btn-hide-results');
+  const btnToggleFullscreen = document.getElementById('btn-toggle-fullscreen');
+  const btnMiniFullscreen = document.getElementById('btn-mini-fullscreen');
+  const btnToggleStyleSettings = document.getElementById('btn-toggle-style-settings');
+  const styleSettingsDiv = document.getElementById('style-settings');
+  const flashMessageEl = document.getElementById('flash-message');
 
   if(eventTitleEl) {
     if(payload.title && payload.title.trim() !== '') {
@@ -171,8 +236,6 @@
       eventTitleEl.classList.add('hidden');
     }
   }
-
-  if(titleEl) titleEl.textContent = payload.title || document.title || 'プレゼンテーション';
 
   // prepare data structures for modes
   function normalizeGroups(results){
@@ -207,31 +270,7 @@
     return [];
   })();
 
-  // parse history entries into groups (try to respect assigned group tags like #1A)
-  function parseHistoryToGroups(raw){
-    if(!raw) return [];
-    let lines = [];
-    if(Array.isArray(raw)) {
-      lines = raw.map(r => (typeof r === 'string' ? r : (r.name || JSON.stringify(r))));
-    } else if(typeof raw === 'string'){
-      lines = raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-    } else {
-      return [];
-    }
-    const groupsMap = {};
-    for(const line of lines){
-      const name = line.split('#')[0].trim();
-      const m = line.match(/#\d+([A-Z])$/);
-      const id = m ? m[1] : null;
-      const key = id || 'A';
-      if(!groupsMap[key]) groupsMap[key]=[];
-      groupsMap[key].push(name);
-    }
-    const keys = Object.keys(groupsMap).sort();
-    return keys.map(k => ({ label: `グループ ${k}`, members: groupsMap[k] }));
-  }
-
-  // snapshot/history handling
+  // snapshot/history handling (no snapshot display under history)
   let history = [];
   if(Array.isArray(payload.history_json)) history = payload.history_json.slice();
   else if(typeof payload.history_json === 'string'){
@@ -254,18 +293,13 @@
     }
   }
 
-  // attach history prev/next handlers (link style)
+  // attach history prev/next handlers (keep behavior but no extra display under history)
   if(prevSnapshotBtn) prevSnapshotBtn.addEventListener('click', (e) => {
     if(e) e.preventDefault();
-    // make display area black immediately
-    revealed = false;
-    bulkView = false;
-    displayArea.classList.add('bg-black');
-    displayArea.classList.remove('bg-white');
-    displayItem.textContent = '';
-    displayInner.style.alignItems = 'center';
+    revealed = false; bulkView = false;
+    displayArea.classList.add('bg-black'); displayArea.classList.remove('bg-white');
+    displayItem.textContent = ''; displayInner.style.alignItems = 'center';
     if(historyIdx > 0){ historyIdx--; updateSnapshotUI();
-      // if viewing groups, reconstruct groupsList from history entry
       if(mode === 'groups'){
         const entry = history[historyIdx];
         const reconstructed = parseHistoryToGroups(entry);
@@ -273,22 +307,15 @@
         counts.groups = groupsList.length;
         indices.groups = 0;
         rebuildListCompact();
-        // show reconstructed groups as current (single-group view hidden until user presses a display button)
-        revealed = true;
-        bulkView = false;
-        updateDisplay();
+        revealed = true; bulkView = false; updateDisplay();
       }
     }
   });
   if(nextSnapshotBtn) nextSnapshotBtn.addEventListener('click', (e) => {
     if(e) e.preventDefault();
-    // make display area black immediately
-    revealed = false;
-    bulkView = false;
-    displayArea.classList.add('bg-black');
-    displayArea.classList.remove('bg-white');
-    displayItem.textContent = '';
-    displayInner.style.alignItems = 'center';
+    revealed = false; bulkView = false;
+    displayArea.classList.add('bg-black'); displayArea.classList.remove('bg-white');
+    displayItem.textContent = ''; displayInner.style.alignItems = 'center';
     if(historyIdx < history.length - 1){ historyIdx++; updateSnapshotUI();
       if(mode === 'groups'){
         const entry = history[historyIdx];
@@ -297,9 +324,7 @@
         counts.groups = groupsList.length;
         indices.groups = 0;
         rebuildListCompact();
-        revealed = true;
-        bulkView = false;
-        updateDisplay();
+        revealed = true; bulkView = false; updateDisplay();
       }
     }
   });
@@ -338,6 +363,8 @@
       displayItem.style.color = '#6B7280'; // gray-500
       displayItem.style.fontSize = '1rem';
       displayItem.textContent = '未実行';
+      // ensure subtitle/hint visible for modes with no data (but will be hidden when bulkView)
+      displaySubtitle.style.display = ''; displayHint.style.display = '';
       updateControls();
       return;
     }
@@ -350,6 +377,8 @@
     displayItem.textContent = '';
     displayItem.style.color = '#FFFFFF';
     displayItem.style.fontSize = '1.75rem';
+    // restore subtitle/hint
+    displaySubtitle.style.display = ''; displayHint.style.display = '';
     updateControls();
   }
   modeBtns.forEach(b => b.addEventListener('click', ()=> setMode(b.dataset.mode)));
@@ -400,7 +429,6 @@
     if(btnPrevItem) btnPrevItem.disabled = !revealed || idx <= 0;
     if(btnNextItem) btnNextItem.disabled = !revealed || idx >= len - 1;
     if(btnStepItem) btnStepItem.disabled = revealed && idx >= len - 1;
-    // 「一括表示」は常に表示したいので非表示制御は行わない
   }
 
   function formatGroupForDisplay(g){
@@ -466,6 +494,8 @@
       displayItem.style.color = '#6B7280';
       displayItem.style.fontSize = '1rem';
       displayItem.textContent = '未実行';
+      // ensure subtitle/hint visible
+      displaySubtitle.style.display = ''; displayHint.style.display = '';
       updateControls();
       return;
     }
@@ -478,15 +508,24 @@
       displayItem.style.color = '#FFFFFF';
       displayItem.style.fontSize = '1.75rem';
       displayItem.textContent = '';
+      // ensure subtitle/hint visible
+      displaySubtitle.style.display = ''; displayHint.style.display = '';
       updateControls();
       return;
     }
 
     // revealed path
     if(bulkView){
+      // hide explanatory subtitle/hint in bulk view
+      if(displaySubtitle) displaySubtitle.style.display = 'none';
+      if(displayHint) displayHint.style.display = 'none';
       renderBulkList();
     } else {
       // single-item view
+      // restore subtitle/hint
+      if(displaySubtitle) displaySubtitle.style.display = '';
+      if(displayHint) displayHint.style.display = '';
+
       displayArea.classList.remove('bg-black');
       displayArea.classList.add('bg-white');
       displayInner.style.alignItems = 'center';
@@ -496,10 +535,8 @@
       if(mode === 'groups'){
         displayItem.textContent = formatGroupForDisplay(groupsList[idx] || {});
       } else if(mode === 'order'){
-        // show position + member name together; for order items that may include member lists, handle both cases
         const item = orderList[idx] || {};
         let namePart = formatOrderForDisplay(item);
-        // if item contains members array, render them under the position
         if(item && Array.isArray(item.members) && item.members.length > 0){
           const lines = [`${idx+1}. ${namePart}`, ''];
           item.members.forEach(m => lines.push(typeof m === 'string' ? m : (m.name || m.full_name || JSON.stringify(m))));
@@ -527,7 +564,23 @@
     displayArea.classList.add('bg-black');
     displayArea.classList.remove('bg-white');
     displayInner.style.alignItems = 'center';
+    // restore subtitle/hint
+    if(displaySubtitle) displaySubtitle.style.display = '';
+    if(displayHint) displayHint.style.display = '';
     updateControls();
+  }
+
+  // flash helper (イベント作成ページと同様の表示)
+  function showFlash(text, ms){
+    if(!flashMessageEl) return;
+    flashMessageEl.textContent = text;
+    flashMessageEl.classList.remove('hidden');
+    flashMessageEl.style.opacity = '1';
+    clearTimeout(flashMessageEl._timeout);
+    flashMessageEl._timeout = setTimeout(() => {
+      flashMessageEl.style.opacity = '0';
+      setTimeout(()=> flashMessageEl.classList.add('hidden'), 200);
+    }, ms || 1800);
   }
 
   if(btnReveal) btnReveal.addEventListener('click', () => {
@@ -539,46 +592,97 @@
     hideAll();
   });
   if(btnPrevItem) btnPrevItem.addEventListener('click', () => {
-    if((counts[mode]||0) === 0){
-      // nothing
-      return;
-    }
+    if((counts[mode]||0) === 0) return;
     if(indices[mode] > 0){ indices[mode]--; revealCurrent(false); }
   });
   if(btnNextItem) btnNextItem.addEventListener('click', () => {
     if((counts[mode]||0) === 0) return;
     if(indices[mode] < (counts[mode]-1)){ indices[mode]++; revealCurrent(false); }
+    // if now at last, flash with same wording/style as other pages
+    if(indices[mode] === (counts[mode]-1)){
+      showFlash('最後の結果です', 1800);
+    }
   });
   if(btnStepItem) btnStepItem.addEventListener('click', () => {
-    // step: reveal one item and advance index by one each click (or reveal current if not revealed yet)
+    // when there are no items, show "未実行" even if the display area was black
     if((counts[mode]||0) === 0){
-      // when there are no items, show "未実行" even if the display area was black
-      revealed = true;
-      bulkView = false;
-      displayArea.classList.remove('bg-black');
-      displayArea.classList.add('bg-white');
-      displayItem.style.color = '#6B7280';
-      displayItem.style.fontSize = '1rem';
+      revealed = true; bulkView = false;
+      displayArea.classList.remove('bg-black'); displayArea.classList.add('bg-white');
+      displayItem.style.color = '#6B7280'; displayItem.style.fontSize = '1rem';
       displayItem.textContent = '未実行';
+      // ensure subtitle/hint visible
+      if(displaySubtitle) displaySubtitle.style.display = '';
+      if(displayHint) displayHint.style.display = '';
       updateControls();
       return;
     }
     if(!revealed){
-      // show current index
       revealCurrent(false);
+      // if only one item, flash as last
+      if(counts[mode] === 1){
+        showFlash('最後の結果です', 1800);
+      }
     } else if(indices[mode] < (counts[mode]-1)){
       indices[mode]++; revealCurrent(false);
+      if(indices[mode] === (counts[mode]-1)){
+        showFlash('最後の結果です', 1800);
+      }
     } else {
-      // at end: reveal last
+      // at end: reveal last and flash
       indices[mode] = Math.max(0, counts[mode]-1);
       revealCurrent(false);
+      showFlash('最後の結果です', 1800);
     }
   });
+
+  // fullscreen toggle (shared handler for both buttons)
+  function toggleFullscreen(){
+    document.body.classList.toggle('fullscreen-active');
+    const active = document.body.classList.contains('fullscreen-active');
+    if(btnToggleFullscreen) btnToggleFullscreen.textContent = active ? '全画面解除' : '全画面';
+    if(btnMiniFullscreen) btnMiniFullscreen.textContent = active ? '✕' : '⛶';
+  }
+  if(btnToggleFullscreen) btnToggleFullscreen.addEventListener('click', toggleFullscreen);
+  if(btnMiniFullscreen) btnMiniFullscreen.addEventListener('click', toggleFullscreen);
+
+  // style settings toggle (click toggles show/hide like 統計情報を表示)
+  if(btnToggleStyleSettings && styleSettingsDiv){
+    btnToggleStyleSettings.addEventListener('click', (e) => {
+      if(e) e.preventDefault();
+      styleSettingsDiv.classList.toggle('hidden');
+      const expanded = !styleSettingsDiv.classList.contains('hidden');
+      try { btnToggleStyleSettings.setAttribute('aria-expanded', expanded.toString()); } catch(err){}
+    });
+  }
 
   // init (do not reveal anything on load)
   setMode('groups');
   rebuildListCompact();
   updateDisplay();
+
+  // --- helpers reused from above ---
+  function parseHistoryToGroups(raw){
+    if(!raw) return [];
+    let lines = [];
+    if(Array.isArray(raw)) {
+      lines = raw.map(r => (typeof r === 'string' ? r : (r.name || JSON.stringify(r))));
+    } else if(typeof raw === 'string'){
+      lines = raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+    } else {
+      return [];
+    }
+    const groupsMap = {};
+    for(const line of lines){
+      const name = line.split('#')[0].trim();
+      const m = line.match(/#\d+([A-Z])$/);
+      const id = m ? m[1] : null;
+      const key = id || 'A';
+      if(!groupsMap[key]) groupsMap[key]=[];
+      groupsMap[key].push(name);
+    }
+    const keys = Object.keys(groupsMap).sort();
+    return keys.map(k => ({ label: `グループ ${k}`, members: groupsMap[k] }));
+  }
 
   // --- receive updates from authoring window (BroadcastChannel) and fallback via storage ---
   try {
@@ -590,7 +694,6 @@
           if(!data) return;
           if(data.type === 'init' || data.type === 'update'){
             const p = data.payload || {};
-            // merge/override payload fields when provided
             payload = {
               members_json: safeParse(p.members_json) || p.members_json || payload.members_json,
               results_json: safeParse(p.results_json) || p.results_json || payload.results_json,
@@ -600,7 +703,6 @@
               title: p.title || payload.title
             };
 
-            // update event title if changed
             if(eventTitleEl){
               if(payload.title && payload.title.trim() !== ''){
                 eventTitleEl.textContent = payload.title;
@@ -611,7 +713,6 @@
               }
             }
 
-            // rebuild lists
             const newGroups = normalizeGroups(payload.results_json);
             groupsList.length = 0; Array.prototype.push.apply(groupsList, newGroups);
 
@@ -622,12 +723,10 @@
             const newRoles = (s && Array.isArray(s.role_assignments)) ? s.role_assignments.map(r=>({name:r.name, role:r.role})) : (s && s.roles && typeof s.roles === 'object' ? Object.keys(s.roles).map(k=>({name:k, role:s.roles[k]})) : []);
             rolesList.length = 0; Array.prototype.push.apply(rolesList, newRoles);
 
-            // history
             const parsedHistory = Array.isArray(payload.history_json) ? payload.history_json.slice() : (typeof payload.history_json === 'string' ? (safeParse(payload.history_json) || []) : []);
             history = parsedHistory.length ? parsedHistory : history;
             historyIdx = history.length > 0 ? history.length - 1 : -1;
 
-            // ensure indices remain valid
             if(indices.groups >= groupsList.length) indices.groups = Math.max(0, groupsList.length-1);
             if(indices.order >= orderList.length) indices.order = Math.max(0, orderList.length-1);
             if(indices.roles >= rolesList.length) indices.roles = Math.max(0, rolesList.length-1);
@@ -635,8 +734,6 @@
             rebuildListCompact();
             updateSnapshotUI();
             updateDisplay();
-
-            if(titleEl) titleEl.textContent = payload.title || document.title || 'プレゼンテーション';
           }
         } catch(err){
           console.warn('shuffly_channel handler error', err);
@@ -647,7 +744,7 @@
     console.warn('BroadcastChannel not available', e);
   }
 
-  // storage fallback: listen for presentation_shuffly_event updates
+  // storage fallback
   window.addEventListener('storage', function(e){
     if(!e || !e.key) return;
     if(e.key === 'presentation_shuffly_event'){
@@ -663,7 +760,6 @@
           history_json: safeParse(p.history_json) || p.history_json || payload.history_json,
           title: p.title || payload.title
         };
-        // update event title if changed
         if(eventTitleEl){
           if(payload.title && payload.title.trim() !== ''){
             eventTitleEl.textContent = payload.title;
@@ -689,12 +785,11 @@
         rebuildListCompact();
         updateSnapshotUI();
         updateDisplay();
-        if(titleEl) titleEl.textContent = payload.title || document.title || 'プレゼンテーション';
       } catch(err){ /* ignore parse errors */ }
     }
   });
 
-  // back -> restore pending inputs and go to new (link-style handler)
+  // back / close handlers (unchanged)
   const backBtn = document.getElementById('btn-back-to-settings');
   if(backBtn) backBtn.addEventListener('click', function(e){
     if(e) e.preventDefault();
@@ -718,15 +813,22 @@
     if(window.opener) window.close(); else window.location.href = "<%= root_path %>";
   });
 
-  // keyboard
+  // keyboard (unchanged)
   document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape') document.getElementById('btn-back-to-settings').click();
+    if(e.key === 'Escape') {
+      // if fullscreen active, exit fullscreen first
+      if(document.body.classList.contains('fullscreen-active')){
+        toggleFullscreen();
+        return;
+      }
+      document.getElementById('btn-back-to-settings').click();
+    }
     if(e.key === 'ArrowLeft') document.getElementById('btn-prev-item').click();
     if(e.key === 'ArrowRight') document.getElementById('btn-next-item').click();
     if(e.key === ' '){ e.preventDefault(); revealed ? hideAll() : revealCurrent(false); }
   });
 
-  // style selector persistence (no functional effect now)
+  // style selector persistence (kept but moved)
   try {
     const radios = document.querySelectorAll('input[name="presentationStyle"]');
     const stored = localStorage.getItem('presentation_style');
