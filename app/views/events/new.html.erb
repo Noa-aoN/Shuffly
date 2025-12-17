@@ -16,10 +16,10 @@
     <div class="bg-white rounded-lg shadow-sm p-6">
       <div class="flex items-start gap-3 mb-4">
         <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">1</div>
-        <h2 class="text-lg font-semibold relative top-[3px]">メンバーを入力する</h2>
+        <h2 class="text-2xl font-semibold">メンバーを入力する</h2>
       </div>
 
-      <label class="block font-medium mb-2">メンバー名リスト</label>
+      <label class="block mb-2 font-semibold">メンバー名リスト</label>
 
       <!-- 内部保存用（hidden）: JSON を保持 → この値を基に処理する -->
       <textarea id="membersRaw" rows="10" class="hidden" style="display:none;"><%= begin
@@ -55,36 +55,36 @@
     <div class="bg-white rounded-lg shadow-sm p-6">
       <div class="flex items-start gap-3 mb-4">
         <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">2</div>
-        <h2 class="text-lg font-semibold relative top-[3px]">設定して実行する</h2>
+        <h2 class="text-2xl font-semibold">設定して実行する</h2>
       </div>
 
-      <!-- タブボタン（表示切替） -->
-      <div class="flex justify-center gap-4 mb-4 border-b border-gray-200">
-        <button id="tab-settings-groups" class="px-3 py-2 -mb-px border-b-2 border-blue-500 text-sm font-medium">グループ設定</button>
-        <button id="tab-settings-order"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">順番設定</button>
-        <button id="tab-settings-roles"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">役割設定</button>
+      <!-- タブボタン（表示切替）: 均等配置・リンク風 -->
+      <div class="flex mb-5 border-b border-gray-200">
+        <button id="tab-settings-groups" class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-lg border-blue-500 text-blue-600 font-medium hover:underline">グループ設定</button>
+        <button id="tab-settings-order"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-lg border-transparent text-gray-600 hover:underline">順番設定</button>
+        <button id="tab-settings-roles"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-lg border-transparent text-gray-600 hover:underline">役割設定</button>
       </div>
 
       <!-- グループ設定パネル -->
       <div id="panel-settings-groups" class="settings-panel">
         <div class="mb-4">
-          <label class="block font-medium mb-2">グループ分けオプション</label>
+          <label class="block mb-2 font-semibold">グループ分けオプション</label>
           <div class="flex flex-col gap-3 mb-2">
             <div>
-              <label class="text-xs text-gray-600">グループ数*</label>
+              <label class="text-sm text-gray-600">グループ数*</label>
               <input id="groupCount" type="number" min="1" max="26" value="<%= @event.group_count.presence || 3 %>" class="mt-1 w-full border rounded px-2 py-1 mb-1">
             </div>
             <div>
-              <label class="text-xs text-gray-600">グループ名（任意）</label>
+              <label class="text-sm text-gray-600">グループ名（任意）</label>
               <textarea id="customGroupNames" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
               <p class="text-xs text-gray-500 mb-1">↑改行またはカンマ区切りで入力してください。入力があるとグループ数が自動反映されます。</p>
             </div>
           </div>
 
           <div>
-            <label class="text-xs text-gray-600">分散固定メンバー（任意）</label>
+            <label class="text-sm text-gray-600">分散固定メンバー（任意）</label>
             <textarea id="fixedMembersInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
-            <p class="text-xs text-gray-500 mb-5">入力メンバーは可能な限り分散して各グループに固定されます。</p>
+            <p class="text-xs text-gray-500 mb-5">↑改行またはカンマ区切りで入力してください。入力メンバーは可能な限り分散して各グループに固定されます。</p>
           </div>
 
           <div id="groupSizeHint" class="text-xs text-gray-500 mt-2 bg-yellow-50 border rounded px-2 py-1">（1グループあたり：未計算）</div>
@@ -94,11 +94,11 @@
       <!-- 順番設定パネル -->
       <div id="panel-settings-order" class="settings-panel hidden">
         <div class="mb-4">
-          <label class="block font-medium mb-2">順番決めオプション</label>
+          <label class="block mb-2 font-semibold">順番決めオプション</label>
           <div class="mb-2">
-            <label class="text-xs text-gray-600">順番固定メンバー（任意）</label>
+            <label class="text-sm text-gray-600">順番固定メンバー（任意）</label>
             <textarea id="fixedOrderInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：1:メンバー3, 5:メンバー1, ..."></textarea>
-            <p class="text-xs text-gray-500 mt-1">↑「番号:メンバー名」で固定指定します。無効な指定は無視されます。</p>
+            <p class="text-xs text-gray-500 mt-1">↑改行またはカンマ区切りで「番号:メンバー名」と入力してください。固定指定します。無効な指定は無視されます。</p>
           </div>
           <p class="text-xs text-gray-500 mt-1">固定指定なしなら全員ランダムに順番が決まります。</p>
         </div>
@@ -107,10 +107,10 @@
       <!-- 役割設定パネル -->
       <div id="panel-settings-roles" class="settings-panel hidden">
         <div class="mb-4">
-          <label class="block font-medium mb-2">役割決めオプション</label>
-          <label class="text-xs text-gray-600">役割名*</label>
+          <label class="block mb-2 font-semibold">役割決めオプション</label>
+          <label class="text-sm text-gray-600">役割名*</label>
           <textarea id="rolesInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
-          <p class="text-xs text-gray-500 mt-1">改行またはカンマ区切りで役割名を入力してください。割り当てはランダムです。</p>
+          <p class="text-xs text-gray-500 mt-1">↑改行またはカンマ区切りで役割名を入力してください。割り当てはランダムです。</p>
         </div>
       </div>
 
@@ -160,20 +160,20 @@
       <div class="flex items-start justify-between mb-4">
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
-          <h2 class="text-lg font-semibold relative top-0.5">シャッフル結果を表示する</h2>
+          <h2 class="text-2xl font-semibold">シャッフル結果をみる</h2>
         </div>
       </div>
 
-      <!-- 結果タブ -->
-      <div class="flex justify-center gap-4 mb-4 border-b border-gray-200">
-        <button id="tab-groups" class="px-3 py-2 -mb-px border-b-2 border-blue-500 text-sm font-medium">グループ分け結果</button>
-        <button id="tab-order"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">順番決め結果</button>
-        <button id="tab-roles"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">役割決め結果</button>
+      <!-- 結果タブ: 均等配置・リンク風 -->
+      <div class="flex mb-4 border-b border-gray-200">
+        <button id="tab-groups" class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-lg border-blue-500 text-blue-600 font-medium hover:underline">グループ分け結果</button>
+        <button id="tab-order"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-lg border-transparent text-gray-600 hover:underline">順番決め結果</button>
+        <button id="tab-roles"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-lg border-transparent text-gray-600 hover:underline">役割決め結果</button>
       </div>
 
       <!-- グループ表示パネル -->
       <div id="panel-groups" class="result-panel">
-        <h3 class="font-medium mb-2">グループ表示</h3>
+        <h3 class="mb-2 font-semibold">グループ表示</h3>
 
         <div class="mb-2">
           <div class="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -219,9 +219,9 @@
         <textarea id="groupOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full mt-2 mb-4 text-lg"></textarea>
 
         <!-- 統計情報（折りたたみ） -->
-        <div class="mb-5">
+        <div class="mb-6">
           <div class="flex items-center justify-between mb-2">
-            <h3 class="font-medium"><a href="#" id="btn-toggle-stats" class="hover:underline">統計情報を表示</a></h3>
+            <h3 class="font-semibold"><a href="#" id="btn-toggle-stats" class="hover:underline">統計情報を表示</a></h3>
           </div>
           <div id="statsContainer" class="hidden">
             <textarea id="statsOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full text-sm mb-2"></textarea>
@@ -239,7 +239,7 @@
 
       <!-- 順番表示パネル -->
       <div id="panel-order" class="result-panel hidden">
-        <h3 class="font-medium mb-2">順番表示</h3>
+        <h3 class="font-semibold mb-2">順番表示</h3>
         <textarea id="orderOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-orderoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
@@ -248,7 +248,7 @@
 
       <!-- 役割表示パネル -->
       <div id="panel-roles" class="result-panel hidden">
-        <h3 class="font-medium mb-2">役割表示</h3>
+        <h3 class="font-semibold mb-2">役割表示</h3>
         <textarea id="rolesOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-rolesoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
@@ -260,10 +260,10 @@
     <div class="bg-blue-50 rounded-lg shadow-sm p-6">
       <div class="flex items-start gap-3 mb-4">
         <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">4</div>
-        <h2 class="text-lg font-semibold relative top-[3px]">共有 / 出力 / 保存する</h2>
+        <h2 class="text-2xl font-semibold">共有 / 出力 / 保存する</h2>
       </div>
 
-      <label class="block font-medium mb-2">イベントタイトル（任意）</label>
+      <label class="block font-semibold mb-2">イベントタイトル（任意）</label>
       <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-3 bg-white" placeholder="例：〇〇イベント">
 
       <div class="flex flex-col md:flex-row gap-2 mb-3 items-center justify-center w-full">
