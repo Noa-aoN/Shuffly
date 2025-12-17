@@ -40,7 +40,7 @@
       <!-- 表示用 textarea: ユーザが編集する領域。内部データは membersRaw と同期 -->
       <textarea id="membersInput" rows="10" class="w-full border rounded-md px-3 py-2" placeholder="例：メンバー1, メンバー2, ..."></textarea>
       <p class="text-sm text-gray-500 mb-5">↑改行またはカンマ区切りで、ユニークなメンバー名を入力してください。</p>
-      <div id="memberCountHint" class="text-sm text-gray-500 mt-1 mb-5 bg-yellow-50 border rounded px-2 py-1">（現在のメンバー数：未入力）</div>
+      <div id="memberCountHint" class="text-sm text-gray-500 mt-1 mb-5 bg-yellow-50 border rounded px-2 py-1">現在のメンバー数：未入力</div>
 
       <!-- インポート / ペースト / 履歴クリア用トリガ -->
       <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
@@ -261,7 +261,7 @@
         <h3 class="font-semibold mb-2">順番表示</h3>
         <textarea id="orderOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
         <div class="flex justify-center mt-2 w-full">
-          <a href="#" id="btn-copy-orderoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
+          <a href="#" id="btn-copy-orderoutput" class="text-base text-blue-600 hover:underline">クリップボードにコピー</a>
         </div>
       </div>
 
@@ -270,7 +270,7 @@
         <h3 class="font-semibold mb-2">役割表示</h3>
         <textarea id="rolesOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
         <div class="flex justify-center mt-2 w-full">
-          <a href="#" id="btn-copy-rolesoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
+          <a href="#" id="btn-copy-rolesoutput" class="text-base text-blue-600 hover:underline">クリップボードにコピー</a>
         </div>
       </div>
     </div>
@@ -344,6 +344,7 @@ let shufflyHistory = [], currentHistoryIndex = -1;
 const IS_SIGNED_IN = <%= user_signed_in? ? 'true' : 'false' %>;
 let statsCollapsed = true; // 統計は初期折りたたみ
 let optionsCollapsed = true; // グループ表示オプションは初期折りたたみ（デフォルト閉じる）
+let groupsAssigned = false; // 変更：グループ分け実行が行われたかどうかのフラグ
 
 // アイコンパス（assets pipeline 経由）
 const ICON_EXPAND = "<%= asset_path('icons/expand_more_24dp_1F1F1F.svg') %>";
@@ -586,6 +587,9 @@ function assignGroups(){
   });
 
   setRawAndRefreshDisplay(updated.join("\n"));
+
+  // 変更点：グループ分けが実行されたことをフラグに記録
+  groupsAssigned = true;
 
   try{
     document.getElementById('membersJsonInput').value = JSON.stringify(entries);
@@ -1245,12 +1249,12 @@ window.onload = () => {
   bindIf('tab-order', 'click', ()=>switchResultTab('order'));
   bindIf('tab-roles', 'click', ()=>switchResultTab('roles'));
 
-  // グループ表示オプションの変更
-  bindIf('showGroupLabel', 'change', ()=>{ showGroups(); showStats(); });
-  bindIf('showGroupCount', 'change', ()=>{ showGroups(); showStats(); });
-  bindIf('breakMemberLine', 'change', ()=>{ showGroups(); });
-  bindIf('separatorSelect', 'change', ()=>{ showGroups(); showStats(); });
-  bindIf('groupSeparatorSelect', 'change', ()=>{ showGroups(); showStats(); });
+  // グループ表示オプションの変更（変更してもグループ分け実行前は結果反映しない）
+  bindIf('showGroupLabel', 'change', ()=>{ if(groupsAssigned){ showGroups(); showStats(); } });
+  bindIf('showGroupCount', 'change', ()=>{ if(groupsAssigned){ showGroups(); showStats(); } });
+  bindIf('breakMemberLine', 'change', ()=>{ if(groupsAssigned) showGroups(); });
+  bindIf('separatorSelect', 'change', ()=>{ if(groupsAssigned){ showGroups(); showStats(); } });
+  bindIf('groupSeparatorSelect', 'change', ()=>{ if(groupsAssigned){ showGroups(); showStats(); } });
 
   // コピー / ナビ操作
   bindIf('btn-copy-groupoutput', 'click', (e)=>{ e.preventDefault(); copyGroupOutput(); });
@@ -1274,7 +1278,7 @@ window.onload = () => {
     if(!statsCollapsed) showStats();
   });
 
-  // グループ表示オプション折りたたみトグル（統計と同様の動作）
+  // グループ表示オプション折りたたみトグル（開閉自体は可能だが、結果表示はグループ分け実行後のみ反映）
   bindIf('btn-toggle-options', 'click', (e)=>{
     if(e) e.preventDefault();
     const oc = document.getElementById('optionsContainer');
@@ -1288,7 +1292,8 @@ window.onload = () => {
     textSpan.textContent = optionsCollapsed ? "グループ表示オプションを表示" : "グループ表示オプションを非表示";
     btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
     icon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
-    if(!optionsCollapsed) { showGroups(); showStats(); }
+    // 変更点：グループ分け実行が行われていない限り、開閉時に groupOutput を更新しない
+    if(!optionsCollapsed && groupsAssigned) { showGroups(); showStats(); }
   });
 
   // 結果の履歴移動
