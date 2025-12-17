@@ -1,11 +1,11 @@
 <div class="max-w-6xl mx-auto px-6 pt-2 pb-10">
   <h1 class="text-3xl font-bold mb-8 flex items-center gap-2">
-    <%= image_tag "icons/event_note_24dp_1F1F1F.svg",
+    <%= image_tag "icons/shuffle_24dp_1F1F1F.svg",
           width: 35,
           height: 35,
           class: "block" %>
     <span class="leading-none relative bottom-[2px]">
-      <%= @event.title.presence || "シャッフルイベント" %>
+      <%= @event.title.presence || "新規シャッフルイベント" %>
     </span>
   </h1>
 
@@ -164,7 +164,7 @@
       <div class="flex items-start justify-between mb-4">
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
-          <h2 class="text-lg font-semibold relative top-0.5">シャッフル結果を表示</h2>
+          <h2 class="text-lg font-semibold relative top-0.5">シャッフル結果を表示する</h2>
         </div>
       </div>
 
@@ -267,7 +267,7 @@
     <div class="bg-blue-50 rounded-lg shadow-sm p-6">
       <div class="flex items-start gap-3 mb-4">
         <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">4</div>
-        <h2 class="text-lg font-semibold relative top-[3px]">共有 / 出力 / 保存</h2>
+        <h2 class="text-lg font-semibold relative top-[3px]">共有 / 出力 / 保存する</h2>
       </div>
 
       <label class="block font-medium mb-2">イベントタイトル（任意）</label>
