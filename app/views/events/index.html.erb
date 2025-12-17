@@ -31,65 +31,69 @@
       <h3 class="text-3xl text-center text-blue-600 mb-3 font-bold">できること</h3>
       <p class="text-gray-600 mb-8 text-center">Shufflyで、あらゆる「分ける」「決める」を瞬時に解決。</p>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- グループ分けカード -->
+
         <div>
           <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center text-center">
-            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 text-2xl">
-              <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg",
-                width: 24,
-                height: 24,
-                class: "inline-icon" %>
+            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
+              <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24 %>
             </div>
             <h4 class="font-semibold mb-2">グループ分け</h4>
             <p class="text-sm text-gray-600">メンバーリストから指定した数のグループを、複数回被らないよう自動で作成します。</p>
           </div>
         </div>
 
-        <!-- 順番決めカード -->
         <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center text-center">
-          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 text-2xl">
-            <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg",
-              width: 24,
-              height: 24,
-              class: "inline-icon" %>
+          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
+            <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24 %>
           </div>
           <h4 class="font-semibold mb-2">順番決め</h4>
           <p class="text-sm text-gray-600">発表や作業の順番を、ワンクリックでランダムに決定します。</p>
         </div>
 
-        <!-- 役割決めカード -->
         <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center text-center">
-          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 text-2xl">
-            <%= image_tag "icons/badge_24dp_1F1F1F.svg",
-              width: 24,
-              height: 24,
-              class: "inline-icon" %>
+          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
+            <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24 %>
           </div>
           <h4 class="font-semibold mb-2">役割分担</h4>
           <p class="text-sm text-gray-600">リーダー等の役割を公平に振り分けます。</p>
         </div>
+
       </div>
     </div>
   </section>
 
   <!-- Logged-in benefits (グレー系) -->
-  <section class="py-20 bg-gray-50 w-screen relative left-1/2 -translate-x-1/2">
+  <section class="py-18 bg-gray-50 w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 py-1">
       <h3 class="text-3xl text-center text-blue-600 mb-3 font-bold">ログインしたらできること</h3>
       <p class="text-gray-600 mb-8 text-center">アカウントを作成して、さらに便利な機能を活用しましょう。</p>
+
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
         <div class="p-6 bg-white rounded-lg shadow-sm flex flex-col items-center text-center">
-          <h4 class="font-semibold mb-2">💾　メンバーリストの保存</h4>
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-2xl">
+            <%= image_tag "icons/save_24dp_1F1F1F.svg", width: 24, height: 24 %>
+          </div>
+          <h4 class="font-semibold mb-2">メンバーリストの保存</h4>
           <p class="text-sm text-gray-600">よく使うメンバーリストを保存して、いつでも呼び出せます。</p>
         </div>
+
         <div class="p-6 bg-white rounded-lg shadow-sm flex flex-col items-center text-center">
-          <h4 class="font-semibold mb-2">🔍　シャッフル履歴の確認</h4>
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-2xl">
+            <%= image_tag "icons/content_paste_search_24dp_1F1F1F.svg", width: 24, height: 24 %>
+          </div>
+          <h4 class="font-semibold mb-2">シャッフル履歴の確認</h4>
           <p class="text-sm text-gray-600">過去のグループ分けや順番決めの結果を保存・確認できます。</p>
         </div>
+
         <div class="p-6 bg-white rounded-lg shadow-sm flex flex-col items-center text-center">
-          <h4 class="font-semibold mb-2">🎨　画面スタイルの変更</h4>
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-2xl">
+            <%= image_tag "icons/palette_24dp_1F1F1F.svg", width: 24, height: 24 %>
+          </div>
+          <h4 class="font-semibold mb-2">画面スタイルの変更</h4>
           <p class="text-sm text-gray-600">テーマや表示スタイルを切り替えられます。</p>
         </div>
+
       </div>
     </div>
   </section>
@@ -99,19 +103,22 @@
     <div class="max-w-6xl mx-auto px-6 text-center py-1">
       <h3 class="text-3xl text-center text-blue-600 mb-3 font-bold">使い方</h3>
       <p class="text-gray-600 mb-8 text-center">たった3ステップで、面倒な作業はすべて完了。</p>
+
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center">
-          <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mb-3 font-bold">1</div>
+          <div class="w-15 h-15 bg-blue-500 text-white rounded-full flex items-center justify-center mb-4 font-bold text-xl">1</div>
           <h4 class="font-semibold mb-2">メンバーを入力</h4>
           <p class="text-sm text-gray-600">名前を一人ずつ入力するか、リストを貼り付けます。</p>
         </div>
+
         <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center">
-          <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mb-3 font-bold">2</div>
+          <div class="w-15 h-15 bg-blue-500 text-white rounded-full flex items-center justify-center mb-4 font-bold text-xl">2</div>
           <h4 class="font-semibold mb-2">条件を設定</h4>
           <p class="text-sm text-gray-600">グループ数やグループ名、役割や順番設定を選びます。</p>
         </div>
+
         <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center">
-          <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mb-3 font-bold">3</div>
+          <div class="w-15 h-15 bg-blue-500 text-white rounded-full flex items-center justify-center mb-4 font-bold text-xl">3</div>
           <h4 class="font-semibold mb-2">シャッフル！</h4>
           <p class="text-sm text-gray-600">ボタンを押すだけで結果がすぐに表示されます。</p>
         </div>
