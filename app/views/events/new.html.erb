@@ -7,10 +7,10 @@
     <div class="bg-white rounded-lg shadow-sm p-6">
       <div class="flex items-start gap-3 mb-4">
         <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">1</div>
-        <h2 class="text-lg font-semibold">メンバーを入力</h2>
+        <h2 class="text-lg font-semibold">メンバーを入力する</h2>
       </div>
 
-      <label class="block text-sm font-medium mb-2">メンバー名リスト（改行またはカンマ区切り）</label>
+      <label class="block font-medium mb-2">メンバー名リスト（改行またはカンマ区切り）</label>
 
       <!-- hidden raw data textarea (機能上のデータはここに保持) -->
       <textarea id="membersRaw" rows="10" class="hidden" style="display:none;"><%= begin
@@ -30,8 +30,8 @@
 
       <!-- visible textarea for user (表示はフォーマットして見やすくする) -->
       <textarea id="membersInput" rows="10" class="w-full border rounded-md px-3 py-2" placeholder="例：メンバー1, メンバー2, ..."></textarea>
-      <p class="text-xs text-gray-500 mt-0 mb-1">ユニークなメンバー名を入力してください。</p>
-      <div id="memberCountHint" class="text-xs text-gray-500 mt-1 mb-4 bg-gray-50 border rounded px-2 py-1">（メンバー数：未入力）</div>
+      <p class="text-xs text-gray-500 mb-5">↑ユニークなメンバー名を入力してください。</p>
+      <div id="memberCountHint" class="text-xs text-gray-500 mt-1 mb-5 bg-yellow-50 border rounded px-2 py-1">（現在のメンバー数：未入力）</div>
 
       <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
         <a href="#" id="btn-trigger-import" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">テキスト/CSVから入力</a>
@@ -45,7 +45,7 @@
     <div class="bg-white rounded-lg shadow-sm p-6">
       <div class="flex items-start gap-3 mb-4">
         <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">2</div>
-        <h2 class="text-lg font-semibold">設定 / 実行</h2>
+        <h2 class="text-lg font-semibold">設定して実行する</h2>
       </div>
 
       <!-- タブボタン（カード名の下・中央配置・下線バー風） -->
@@ -58,7 +58,7 @@
       <!-- グループパネル -->
       <div id="panel-settings-groups" class="settings-panel">
         <div class="mb-4">
-          <label class="block font-medium mb-1">グループ分けオプション</label>
+          <label class="block font-medium mb-2">グループ分けオプション</label>
           <div class="flex flex-col gap-3 mb-2">
             <div>
               <label class="text-xs text-gray-600">グループ数</label>
@@ -67,43 +67,43 @@
             <div>
               <label class="text-xs text-gray-600">グループ名（任意：改行またはカンマ区切り）</label>
               <textarea id="customGroupNames" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
-              <p class="text-xs text-gray-500 mb-1">グループ名を入力すると、その数に合わせてグループ数が自動で設定されます。</p>
+              <p class="text-xs text-gray-500 mb-1">↑グループ名を入力すると、その数に合わせてグループ数が自動で設定されます。</p>
             </div>
           </div>
 
           <div>
             <label class="text-xs text-gray-600">分散固定メンバー（任意：改行またはカンマ区切り）</label>
             <textarea id="fixedMembersInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
-            <p class="text-xs text-gray-500 mb-1">入力されたメンバーはグループ分け実行時に可能な限り分散し、グループに固定します。</p>
+            <p class="text-xs text-gray-500 mb-5">↑入力されたメンバーはグループ分け実行時に可能な限り分散し、グループに固定します。</p>
           </div>
 
-          <div id="groupSizeHint" class="text-xs text-gray-500 mt-2 bg-gray-50 border rounded px-2 py-1">（1グループあたり：未計算）</div>
+          <div id="groupSizeHint" class="text-xs text-gray-500 mt-2 bg-yellow-50 border rounded px-2 py-1">（1グループあたり：未計算）</div>
         </div>
       </div>
 
       <!-- 順番パネル -->
       <div id="panel-settings-order" class="settings-panel hidden">
         <div class="mb-4">
-          <label class="block font-medium mb-1">順番決めオプション</label>
+          <label class="block font-medium mb-2">順番決めオプション</label>
 
           <div class="mb-2">
             <label class="text-xs text-gray-600">順番固定メンバー（任意：改行またはカンマ区切り）</label>
             <textarea id="fixedOrderInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：1:メンバー3, 5:メンバー1, ..."></textarea>
-            <p class="text-xs text-gray-500 mt-1">「固定する番号:メンバー名」を入力してください。順番決め実行時にその番号に対応するメンバーが固定され、残りのメンバーはランダムに割り当てられます。</p>
+            <p class="text-xs text-gray-500 mt-1">↑「固定する番号:メンバー名」を入力してください。順番決め実行時にその番号に対応するメンバーが固定され、残りのメンバーはランダムに割り当てられます。</p>
           </div>
 
-          <p class="text-xs text-gray-500 mt-2">固定を使わない場合は空欄のまま「順番決め実行」を押すと全員の順番がランダムに決まります。</p>
+          <p class="text-xs text-gray-500 mt-1">固定を使わない場合は空欄のまま「順番決め実行」を押すと全員の順番がランダムに決まります。</p>
         </div>
       </div>
 
       <!-- 役割パネル（オプションは除去。役割は常にランダムかつ一意に割り当てられます） -->
       <div id="panel-settings-roles" class="settings-panel hidden">
         <div class="mb-4">
-          <label class="block font-medium mb-1">役割決めオプション</label>
+          <label class="block font-medium mb-2">役割決めオプション</label>
           <label class="text-xs text-gray-600">役割名（改行またはカンマ区切り）</label>
           <textarea id="rolesInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
 
-          <p class="text-xs text-gray-500 mt-2">複数の役割をカンマまたは改行で入力してください。役割の割り当ては常にランダムに行われ、各役割は可能な限り異なるメンバーに一意に割り当てられます。</p>
+          <p class="text-xs text-gray-500 mt-1">↑複数の役割をカンマまたは改行で入力してください。役割の割り当ては常にランダムに行われ、各役割は可能な限り異なるメンバーに一意に割り当てられます。</p>
         </div>
       </div>
 
@@ -162,9 +162,9 @@
 
       <!-- タブボタン（カード名の下・中央配置・下線バー風） -->
       <div class="flex justify-center gap-4 mb-4 border-b border-gray-200">
-        <button id="tab-groups" class="px-3 py-2 -mb-px border-b-2 border-blue-500 text-sm font-medium">グループ表示</button>
-        <button id="tab-order"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">順番表示</button>
-        <button id="tab-roles"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">役割表示</button>
+        <button id="tab-groups" class="px-3 py-2 -mb-px border-b-2 border-blue-500 text-sm font-medium">グループ分け結果</button>
+        <button id="tab-order"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">順番決め結果</button>
+        <button id="tab-roles"  class="px-3 py-2 -mb-px border-b-2 border-transparent text-sm">役割決め結果</button>
       </div>
 
       <!-- グループ表示＋統計（デフォルト表示） -->
@@ -213,14 +213,16 @@
 
         <!-- 結果表示フォーム色を薄いグレー系に変更 -->
         <!-- 初期は空。グループ分け実行ボタン押下後に初回表示される -->
-        <textarea id="groupOutput" rows="10" readonly class="bg-gray-50 text-gray-500 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
+        <textarea id="groupOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full mt-2 mb-4 text-lg"></textarea>
 
         <!-- 統計情報（折りたたみ可能・デフォルトは折りたたみ） -->
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="font-medium"><a href="#" id="btn-toggle-stats" class="hover:underline">統計情報を表示</a></h3>
-        </div>
-        <div id="statsContainer" class="hidden">
-          <textarea id="statsOutput" rows="10" readonly class="bg-gray-50 text-gray-500 border rounded-md px-3 py-2 w-full text-sm mb-3"></textarea>
+        <div class="mb-5">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-medium"><a href="#" id="btn-toggle-stats" class="hover:underline">統計情報を表示</a></h3>
+          </div>
+          <div id="statsContainer" class="hidden">
+            <textarea id="statsOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full text-sm mb-2"></textarea>
+          </div>
         </div>
 
         <!-- クリップボードコピー / 履歴移動（リンクスタイル） -->
@@ -235,7 +237,7 @@
       <!-- 順番表示パネル -->
       <div id="panel-order" class="result-panel hidden">
         <h3 class="font-medium mb-2">順番表示</h3>
-        <textarea id="orderOutput" rows="10" readonly class="bg-gray-50 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
+        <textarea id="orderOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
 
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-orderoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
@@ -245,7 +247,7 @@
       <!-- 役割表示パネル -->
       <div id="panel-roles" class="result-panel hidden">
         <h3 class="font-medium mb-2">役割表示</h3>
-        <textarea id="rolesOutput" rows="10" readonly class="bg-gray-50 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
+        <textarea id="rolesOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
 
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-rolesoutput" class="text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
@@ -260,7 +262,7 @@
         <h2 class="text-lg font-semibold">共有 / 出力 / 保存</h2>
       </div>
 
-      <label class="block text-sm font-medium mb-2">イベントタイトル（任意）</label>
+      <label class="block font-medium mb-2">イベントタイトル（任意）</label>
       <!-- イベントタイトルフォームの色を白系に戻す -->
       <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-3 bg-white" placeholder="例：〇〇イベント">
 
@@ -792,16 +794,16 @@ function updateParticipantCount(){
 
   // update member count hint (常時表示)
   if(memberSpan){
-    memberSpan.textContent = count ? `メンバー数：${count}人` : 'メンバー数：未入力';
+    memberSpan.textContent = count ? `現在のメンバー数：${count}人` : '現在のメンバー数：未入力';
   }
 
   // update group size hint (常時表示)
   if(span){
     if(count === 0){
-      span.textContent = '1グループあたり：未計算';
+      span.textContent = '現在の1グループあたり：未計算';
     } else {
       const min=Math.floor(count/groupCount), max=Math.ceil(count/groupCount);
-      span.textContent = min===max?`1グループあたり：${min}人`:`1グループあたり：${min}〜${max}人`;
+      span.textContent = min===max?`現在の1グループあたり：${min}人`:`現在の1グループあたり：${min}〜${max}人`;
     }
   }
 }

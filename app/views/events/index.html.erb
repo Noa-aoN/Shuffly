@@ -4,11 +4,11 @@
   <section class="py-4 pb-18 w-full">
     <div class="max-w-5xl mx-auto text-center px-6 py-16">
       <h2 class="text-5xl font-extrabold mb-4">Shuffly</h2>
-      <p class="text-gray-600 mb-8">グループ・順番・役割決めが、驚くほど簡単かつスピーディに。</p>
+      <p class="text-gray-600 mb-8"><b>グループ・順番・役割決め</b>が、驚くほど簡単かつスピーディに。</p>
 
       <div class="flex items-center justify-center">
         <div class="w-full max-w-md flex flex-col sm:flex-row gap-4 items-center">
-          <%= link_to "ゲストで使う", new_event_path, class: "w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600" %>
+          <%= link_to "すぐに使う", new_event_path, class: "w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600" %>
 
           <% if user_signed_in? %>
             <%= link_to "イベントを作成・確認する", new_event_path, class: "w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50" %>
@@ -26,17 +26,17 @@
   </section>
 
   <!-- Features (白系) -->
-  <section class="py-14 bg-white w-screen relative left-1/2 -translate-x-1/2">
+  <section class="py-18 bg-white w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 py-1">
-      <h3 class="text-3xl text-center text-blue-600 mb-3">できること</h3>
-      <p class="text-gray-600 mb-14 text-center">Shufflyで、あらゆる「分ける」「決める」を瞬時に解決。</p>
+      <h3 class="text-3xl text-center text-blue-600 mb-3 font-bold">できること</h3>
+      <p class="text-gray-600 mb-8 text-center">Shufflyで、あらゆる「分ける」「決める」を瞬時に解決。</p>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- グループ分けカード -->
         <div>
           <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center text-center">
             <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 text-2xl">📦</div>
             <h4 class="font-semibold mb-2">グループ分け</h4>
-            <p class="text-sm text-gray-600">メンバーリストから指定した数のグループを、複数回被らず自動で作成します。</p>
+            <p class="text-sm text-gray-600">メンバーリストから指定した数のグループを、複数回被らないよう自動で作成します。</p>
           </div>
         </div>
 
@@ -58,10 +58,10 @@
   </section>
 
   <!-- Logged-in benefits (グレー系) -->
-  <section class="py-16 bg-gray-50 w-screen relative left-1/2 -translate-x-1/2">
+  <section class="py-20 bg-gray-50 w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 py-1">
-      <h3 class="text-3xl text-center text-blue-600 mb-3">ログインしたらできること</h3>
-      <p class="text-gray-600 mb-14 text-center">アカウントを作成して、さらに便利な機能を活用しましょう。</p>
+      <h3 class="text-3xl text-center text-blue-600 mb-3 font-bold">ログインしたらできること</h3>
+      <p class="text-gray-600 mb-8 text-center">アカウントを作成して、さらに便利な機能を活用しましょう。</p>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="p-6 bg-white rounded-lg shadow-sm flex flex-col items-center text-center">
           <h4 class="font-semibold mb-2">💾　メンバーリストの保存</h4>
@@ -80,10 +80,10 @@
   </section>
 
   <!-- How to use (白系) -->
-  <section class="py-14 bg-white w-screen relative left-1/2 -translate-x-1/2">
+  <section class="py-18 bg-white w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 text-center py-1">
-      <h3 class="text-3xl text-center text-blue-600 mb-3">使い方</h3>
-      <p class="text-gray-600 mb-14 text-center">たった3ステップで、面倒な作業はすべて完了。</p>
+      <h3 class="text-3xl text-center text-blue-600 mb-3 font-bold">使い方</h3>
+      <p class="text-gray-600 mb-8 text-center">たった3ステップで、面倒な作業はすべて完了。</p>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center">
           <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mb-3 font-bold">1</div>
