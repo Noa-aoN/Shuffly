@@ -1,6 +1,6 @@
 <div class="min-h-screen pb-10">
 
-  <!-- Main hero content -->
+  <!-- メインヒーロー：タイトルとCTA -->
   <section class="py-24 pb-30 w-full">
     <div class="max-w-5xl mx-auto text-center px-6 py-16">
       <h2 class="text-5xl font-extrabold mb-4">Shuffly</h2>
@@ -25,15 +25,17 @@
     </div>
   </section>
 
-  <!-- Features (白系) -->
+  <!-- セクション：特徴（白背景） -->
   <section class="py-20 bg-white w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 py-1">
       <h3 class="text-3xl text-center text-blue-600 mb-3 font-bold">できること</h3>
       <p class="text-gray-600 mb-8 text-center">Shufflyで、あらゆる「分ける」「決める」を瞬時に解決。</p>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
+        <!-- 特徴：グループ分け -->
         <div>
           <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center text-center">
+            <!-- アイコン：白い丸枠内にSVGを表示 -->
             <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
               <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24 %>
             </div>
@@ -42,6 +44,7 @@
           </div>
         </div>
 
+        <!-- 特徴：順番決め -->
         <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center text-center">
           <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
             <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24 %>
@@ -50,6 +53,7 @@
           <p class="text-sm text-gray-600">発表や作業の順番を、ワンクリックでランダムに決定します。</p>
         </div>
 
+        <!-- 特徴：役割分担 -->
         <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center text-center">
           <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
             <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24 %>
@@ -62,7 +66,7 @@
     </div>
   </section>
 
-  <!-- Logged-in benefits (グレー系) -->
+  <!-- セクション：ログイン時特徴（グレー背景） -->
   <section class="py-20 bg-gray-50 w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 py-1">
       <h3 class="text-3xl text-center text-blue-600 mb-3 font-bold">ログインするとできること</h3>
@@ -70,24 +74,27 @@
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
+        <!-- ログイン時特徴：メンバーリストの保存 -->
         <div class="p-6 bg-white rounded-lg shadow-sm flex flex-col items-center text-center">
-          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-2xl">
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <%= image_tag "icons/save_24dp_1F1F1F.svg", width: 24, height: 24 %>
           </div>
           <h4 class="font-semibold mb-2">メンバーリストの保存</h4>
           <p class="text-sm text-gray-600">よく使うメンバーリストを保存して、いつでも呼び出せます。</p>
         </div>
 
+        <!-- ログイン時特徴：シャッフル履歴の確認 -->
         <div class="p-6 bg-white rounded-lg shadow-sm flex flex-col items-center text-center">
-          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-2xl">
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <%= image_tag "icons/content_paste_search_24dp_1F1F1F.svg", width: 24, height: 24 %>
           </div>
           <h4 class="font-semibold mb-2">シャッフル履歴の確認</h4>
           <p class="text-sm text-gray-600">過去のグループ分けや順番決めの結果を保存・確認できます。</p>
         </div>
 
+        <!-- ログイン時特徴：画面スタイルの変更 -->
         <div class="p-6 bg-white rounded-lg shadow-sm flex flex-col items-center text-center">
-          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-2xl">
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <%= image_tag "icons/palette_24dp_1F1F1F.svg", width: 24, height: 24 %>
           </div>
           <h4 class="font-semibold mb-2">画面スタイルの変更</h4>
@@ -98,13 +105,14 @@
     </div>
   </section>
 
-  <!-- How to use (白系) -->
+  <!-- セクション：使い方（白背景） -->
   <section class="py-20 bg-white w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 text-center py-1">
       <h3 class="text-3xl text-center text-blue-600 mb-3 font-bold">使い方</h3>
       <p class="text-gray-600 mb-8 text-center">たった3ステップで、面倒な作業はすべて完了。</p>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
         <div class="p-6 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center">
           <div class="w-15 h-15 bg-blue-500 text-white rounded-full flex items-center justify-center mb-4 font-bold text-xl">1</div>
           <h4 class="font-semibold mb-2">メンバーを入力</h4>
