@@ -175,19 +175,34 @@
       <div id="panel-groups" class="result-panel">
         <h3 class="mb-2 font-semibold">グループ表示</h3>
 
-        <div class="mb-2">
+        <!-- グループ結果出力（初期は空。実行後に内容が入る） -->
+        <textarea id="groupOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
+
+        <!-- 統計情報（折りたたみ） -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold"><a href="#" id="btn-toggle-stats" class="hover:underline">統計情報を表示</a></h3>
+          </div>
+          <div id="statsContainer" class="hidden">
+            <textarea id="statsOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full text-sm mb-2"></textarea>
+          </div>
+        </div>
+
+        <!-- グループ表示オプション -->
+        <div class="mb-6">
+          <h3 class="mb-2 font-semibold">グループ表示オプション</h3>
           <div class="flex flex-col sm:flex-row sm:items-center gap-2">
             <label class="inline-flex items-center gap-1 mt-2">
               <input type="checkbox" id="showGroupLabel" checked class="rounded border-gray-300">
-              <span class="text-sm ml-2">グループ名表示</span>
+              <span class="text-sm ml-1 mr-3">グループ名表示</span>
             </label>
             <label class="inline-flex items-center gap-1 mt-2">
               <input type="checkbox" id="showGroupCount" checked class="rounded border-gray-300">
-              <span class="text-sm ml-2">グループ人数表示</span>
+              <span class="text-sm ml-1 mr-3">グループ人数表示</span>
             </label>
             <label class="inline-flex items-center gap-1 mt-2">
               <input type="checkbox" id="breakMemberLine" checked class="rounded border-gray-300">
-              <span class="text-sm ml-2">メンバーを改行表示</span>
+              <span class="text-sm ml-1 mr-3">メンバーを改行表示</span>
             </label>
           </div>
 
@@ -212,19 +227,6 @@
                 <option value="wave">波線</option>
               </select>
             </div>
-          </div>
-        </div>
-
-        <!-- グループ結果出力（初期は空。実行後に内容が入る） -->
-        <textarea id="groupOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full mt-2 mb-4 text-lg"></textarea>
-
-        <!-- 統計情報（折りたたみ） -->
-        <div class="mb-6">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="font-semibold"><a href="#" id="btn-toggle-stats" class="hover:underline">統計情報を表示</a></h3>
-          </div>
-          <div id="statsContainer" class="hidden">
-            <textarea id="statsOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full text-sm mb-2"></textarea>
           </div>
         </div>
 
