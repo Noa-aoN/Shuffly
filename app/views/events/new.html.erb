@@ -9,7 +9,7 @@
     </span>
   </h1>
 
-  <div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-8">
 
     <!-- ① メンバーを追加 -->
     <div class="bg-white rounded-lg shadow-sm p-6">
@@ -69,20 +69,20 @@
           <label class="block font-medium mb-2">グループ分けオプション</label>
           <div class="flex flex-col gap-3 mb-2">
             <div>
-              <label class="text-xs text-gray-600">グループ数</label>
+              <label class="text-xs text-gray-600">グループ数*</label>
               <input id="groupCount" type="number" min="1" max="26" value="<%= @event.group_count.presence || 3 %>" class="mt-1 w-full border rounded px-2 py-1 mb-1">
             </div>
             <div>
-              <label class="text-xs text-gray-600">グループ名（任意：改行またはカンマ区切り）</label>
-              <textarea id="customGroupNames" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
-              <p class="text-xs text-gray-500 mb-1">↑グループ名を入力すると、その数に合わせてグループ数が自動で設定されます。</p>
+              <label class="text-xs text-gray-600">グループ名（任意）</label>
+              <textarea id="customGroupNames" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
+              <p class="text-xs text-gray-500 mb-1">↑改行またはカンマ区切りで入力して下さい。グループ名を入力すると、グループ数が自動で設定されます。</p>
             </div>
           </div>
 
           <div>
-            <label class="text-xs text-gray-600">分散固定メンバー（任意：改行またはカンマ区切り）</label>
-            <textarea id="fixedMembersInput" rows="2" class="w-full border rounded px-2 py-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
-            <p class="text-xs text-gray-500 mb-5">↑入力されたメンバーはグループ分け実行時に可能な限り分散し、グループに固定します。</p>
+            <label class="text-xs text-gray-600">分散固定メンバー（任意）</label>
+            <textarea id="fixedMembersInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
+            <p class="text-xs text-gray-500 mb-5">↑改行またはカンマ区切りで入力して下さい。入力されたメンバーはグループ分け実行時に可能な限り分散し、グループに固定します。</p>
           </div>
 
           <div id="groupSizeHint" class="text-xs text-gray-500 mt-2 bg-yellow-50 border rounded px-2 py-1">（1グループあたり：未計算）</div>
@@ -95,9 +95,9 @@
           <label class="block font-medium mb-2">順番決めオプション</label>
 
           <div class="mb-2">
-            <label class="text-xs text-gray-600">順番固定メンバー（任意：改行またはカンマ区切り）</label>
+            <label class="text-xs text-gray-600">順番固定メンバー（任意）</label>
             <textarea id="fixedOrderInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：1:メンバー3, 5:メンバー1, ..."></textarea>
-            <p class="text-xs text-gray-500 mt-1">↑「固定する番号:メンバー名」を入力してください。順番決め実行時にその番号に対応するメンバーが固定され、残りのメンバーはランダムに割り当てられます。</p>
+            <p class="text-xs text-gray-500 mt-1">↑改行またはカンマ区切りで「固定する番号:メンバー名」と入力してください。順番決め実行時にその番号に対応するメンバーが固定され、残りのメンバーはランダムに割り当てられます。</p>
           </div>
 
           <p class="text-xs text-gray-500 mt-1">固定を使わない場合は空欄のまま「順番決め実行」を押すと全員の順番がランダムに決まります。</p>
@@ -108,10 +108,10 @@
       <div id="panel-settings-roles" class="settings-panel hidden">
         <div class="mb-4">
           <label class="block font-medium mb-2">役割決めオプション</label>
-          <label class="text-xs text-gray-600">役割名（改行またはカンマ区切り）</label>
+          <label class="text-xs text-gray-600">役割名*</label>
           <textarea id="rolesInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
 
-          <p class="text-xs text-gray-500 mt-1">↑複数の役割をカンマまたは改行で入力してください。役割の割り当ては常にランダムに行われ、各役割は可能な限り異なるメンバーに一意に割り当てられます。</p>
+          <p class="text-xs text-gray-500 mt-1">↑改行またはカンマ区切りで、必要な役割名を入力してください。役割の割り当ては常にランダムに行われ、各役割は可能な限り異なるメンバーに一意に割り当てられます。</p>
         </div>
       </div>
 
