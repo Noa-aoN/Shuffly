@@ -39,15 +39,15 @@
 
       <!-- 表示用 textarea: ユーザが編集する領域。内部データは membersRaw と同期 -->
       <textarea id="membersInput" rows="10" class="w-full border rounded-md px-3 py-2" placeholder="例：メンバー1, メンバー2, ..."></textarea>
-      <p class="text-xs text-gray-500 mb-5">↑改行またはカンマ区切りで、ユニークなメンバー名を入力してください。</p>
-      <div id="memberCountHint" class="text-xs text-gray-500 mt-1 mb-5 bg-yellow-50 border rounded px-2 py-1">（現在のメンバー数：未入力）</div>
+      <p class="text-sm text-gray-500 mb-5">↑改行またはカンマ区切りで、ユニークなメンバー名を入力してください。</p>
+      <div id="memberCountHint" class="text-sm text-gray-500 mt-1 mb-5 bg-yellow-50 border rounded px-2 py-1">（現在のメンバー数：未入力）</div>
 
       <!-- インポート / ペースト / 履歴クリア用トリガ -->
       <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
-        <a href="#" id="btn-trigger-import" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">テキスト/CSVから入力</a>
+        <a href="#" id="btn-trigger-import" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">テキスト/CSVから入力</a>
         <input id="importFile" type="file" accept=".txt,.csv" class="hidden">
-        <a href="#" id="btn-paste-clipboard" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">クリップボードから入力</a>
-        <a href="#" id="btn-clear-history" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">履歴をクリア</a>
+        <a href="#" id="btn-paste-clipboard" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">クリップボードから入力</a>
+        <a href="#" id="btn-clear-history" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">履歴をクリア</a>
       </div>
     </div>
 
@@ -77,17 +77,17 @@
             <div>
               <label class="text-sm text-gray-600">グループ名（任意）</label>
               <textarea id="customGroupNames" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
-              <p class="text-xs text-gray-500 mb-1">↑改行またはカンマ区切りで入力してください。入力があるとグループ数が自動反映されます。</p>
+              <p class="text-sm text-gray-500 mb-1">↑改行またはカンマ区切りで入力してください。入力があるとグループ数が自動反映されます。</p>
             </div>
           </div>
 
           <div>
             <label class="text-sm text-gray-600">分散固定メンバー（任意）</label>
             <textarea id="fixedMembersInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
-            <p class="text-xs text-gray-500 mb-5">↑改行またはカンマ区切りで入力してください。入力メンバーは可能な限り分散して各グループに固定されます。</p>
+            <p class="text-sm text-gray-500 mb-5">↑改行またはカンマ区切りで入力してください。入力メンバーは可能な限り分散して各グループに固定されます。</p>
           </div>
 
-          <div id="groupSizeHint" class="text-xs text-gray-500 mt-2 bg-yellow-50 border rounded px-2 py-1">（1グループあたり：未計算）</div>
+          <div id="groupSizeHint" class="text-sm text-gray-500 mt-2 bg-yellow-50 border rounded px-2 py-1">（1グループあたり：未計算）</div>
         </div>
       </div>
 
@@ -98,9 +98,9 @@
           <div class="mb-2">
             <label class="text-sm text-gray-600">順番固定メンバー（任意）</label>
             <textarea id="fixedOrderInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：1:メンバー3, 5:メンバー1, ..."></textarea>
-            <p class="text-xs text-gray-500 mt-1">↑改行またはカンマ区切りで「番号:メンバー名」と入力してください。固定指定します。無効な指定は無視されます。</p>
+            <p class="text-sm text-gray-500 mt-1">↑改行またはカンマ区切りで「番号:メンバー名」と入力してください。固定指定します。無効な指定は無視されます。</p>
           </div>
-          <p class="text-xs text-gray-500 mt-1">固定指定なしなら全員ランダムに順番が決まります。</p>
+          <p class="text-sm text-gray-500 mt-1">固定指定なしなら全員ランダムに順番が決まります。</p>
         </div>
       </div>
 
@@ -110,7 +110,7 @@
           <label class="block mb-2 font-semibold">役割決めオプション</label>
           <label class="text-sm text-gray-600">役割名*</label>
           <textarea id="rolesInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
-          <p class="text-xs text-gray-500 mt-1">↑改行またはカンマ区切りで役割名を入力してください。割り当てはランダムです。</p>
+          <p class="text-sm text-gray-500 mt-1">↑改行またはカンマ区切りで役割名を入力してください。割り当てはランダムです。</p>
         </div>
       </div>
 
@@ -230,9 +230,9 @@
 
         <!-- 結果操作リンク -->
         <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
-          <a href="#" id="btn-prev-group" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">前回のグループ分けへ</a>
-          <a href="#" id="btn-next-group" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">次回のグループ分けへ</a>
-          <a href="#" id="btn-copy-groupoutput" class="w-full sm:flex-1 text-center text-sm text-blue-600 hover:underline">クリップボードにコピー</a>
+          <a href="#" id="btn-prev-group" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">前回のグループ分けへ</a>
+          <a href="#" id="btn-next-group" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">次回のグループ分けへ</a>
+          <a href="#" id="btn-copy-groupoutput" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">クリップボードにコピー</a>
         </div>
 
       </div>
@@ -293,7 +293,7 @@
               extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
       </div>
 
-      <p class="text-xs text-gray-500">イベント保存にはログインが必要です。</p>
+      <p class="text-sm text-gray-500">イベント保存にはログインが必要です。</p>
 
       <!-- 非表示の保存フォーム（JS が submit を呼ぶ） -->
       <%= form_with(model: @event, local: true, html: { id: 'saveForm', style: 'display:none' }) do |f| %>
