@@ -1,4 +1,3 @@
-<%# filepath: /Users/n/workspace/Shuffly/app/views/events/new.html.erb %>
 <div class="max-w-6xl mx-auto px-6 pt-2 pb-10">
   <!-- ヘッダ：アイコン + タイトル -->
   <h1 class="text-3xl font-bold mb-8 flex items-center gap-2">
@@ -496,16 +495,49 @@ function assignGroups(){
 
   function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
+  // 変更点：分散固定メンバーは初回はランダムに各グループへ割当てるが、
+  // 2回目以降はできるかぎり直前の割当（履歴の最後のグループ）に固定する。
+  // ただしバランスが大きく崩れる場合は空きグループや最小グループへ割当てる。
   for(const p of fixedEntries){
     const emptyGroups = groupIds.filter(g=>groups[g].length===0);
-    let chosen;
-    if(emptyGroups.length>0){
-      chosen = pickRandom(emptyGroups);
+    let chosen = null;
+
+    // 最後の履歴から直前のグループを取得
+    const last = p.history.at(-1);
+    const m = last ? last.match(/#\d+([A-Z])$/) : null;
+    const preferred = m ? m[1] : null;
+
+    if(preferred && groupIds.includes(preferred)){
+      // 現在の最小グループサイズを取得
+      const minSize = Math.min(...groupIds.map(g=>groups[g].length));
+      // できるだけ同じグループに戻す：ただしそのグループが最小サイズよりも大きすぎるときは避ける
+      // （バランスを保つために minSize + 1 を許容上限とする）
+      if(groups[preferred].length <= minSize + 1){
+        chosen = preferred;
+      } else if(emptyGroups.length > 0){
+        chosen = pickRandom(emptyGroups);
+      } else {
+        const candidates = groupIds.filter(g=>groups[g].length===minSize);
+        chosen = pickRandom(candidates);
+      }
     } else {
+      // preferred が無い（初回）または無効な場合は既存のルールに従う
+      if(emptyGroups.length>0){
+        chosen = pickRandom(emptyGroups);
+      } else {
+        const minSize = Math.min(...groupIds.map(g=>groups[g].length));
+        const candidates = groupIds.filter(g=>groups[g].length===minSize);
+        chosen = pickRandom(candidates);
+      }
+    }
+
+    if(!chosen){
+      // 最終手段：最小グループに入れる
       const minSize = Math.min(...groupIds.map(g=>groups[g].length));
       const candidates = groupIds.filter(g=>groups[g].length===minSize);
       chosen = pickRandom(candidates);
     }
+
     groups[chosen].push(p);
     p.assignedGroup = chosen;
   }
