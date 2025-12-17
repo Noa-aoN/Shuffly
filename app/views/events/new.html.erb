@@ -19,7 +19,7 @@
         <h2 class="text-2xl font-semibold">メンバーを入力する</h2>
       </div>
 
-      <label class="block mb-2 font-semibold">メンバー名リスト</label>
+      <label class="block mb-2 font-semibold">メンバーリスト</label>
 
       <!-- 内部保存用（hidden）: JSON を保持 → この値を基に処理する -->
       <textarea id="membersRaw" rows="10" class="hidden" style="display:none;"><%= begin
@@ -178,55 +178,72 @@
         <!-- グループ結果出力（初期は空。実行後に内容が入る） -->
         <textarea id="groupOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
 
-        <!-- 統計情報（折りたたみ） -->
+        <!-- グループ表示オプション -->
         <div class="mb-6">
           <div class="flex items-center justify-between mb-2">
-            <h3 class="font-semibold"><a href="#" id="btn-toggle-stats" class="hover:underline">統計情報を表示</a></h3>
+            <h3 class="font-semibold">
+              <a href="#" id="btn-toggle-options" class="inline-flex items-center gap-2 hover:underline" aria-expanded="false">
+                <span id="btn-toggle-options-text">グループ表示オプションを表示</span>
+                <%= image_tag "icons/expand_more_24dp_1F1F1F.svg", width: 20, height: 20, id: "btn-toggle-options-icon", class: "inline-block" %>
+              </a>
+            </h3>
           </div>
-          <div id="statsContainer" class="hidden">
-            <textarea id="statsOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full text-sm mb-2"></textarea>
+
+          <!-- このコンテナを折りたたむ／表示する -->
+          <div id="optionsContainer" class="hidden">
+            <h3 class="mb-2 font-semibold sr-only">グループ表示オプション（詳細）</h3>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+              <label class="inline-flex items-center gap-1 mt-2">
+                <input type="checkbox" id="showGroupLabel" checked class="rounded border-gray-300">
+                <span class="text-sm ml-1 mr-3">グループ名表示</span>
+              </label>
+              <label class="inline-flex items-center gap-1 mt-2">
+                <input type="checkbox" id="showGroupCount" checked class="rounded border-gray-300">
+                <span class="text-sm ml-1 mr-3">グループ人数表示</span>
+              </label>
+              <label class="inline-flex items-center gap-1 mt-2">
+                <input type="checkbox" id="breakMemberLine" checked class="rounded border-gray-300">
+                <span class="text-sm ml-1 mr-3">メンバーを改行表示</span>
+              </label>
+            </div>
+
+            <div class="mt-2 flex flex-col sm:flex-row sm:items-start gap-3">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full sm:w-auto">
+                <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0">メンバーの区切り方 :</label>
+                <select id="separatorSelect" class="border rounded-md px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto min-w-40">
+                  <option value="," selected>カンマ</option>
+                  <option value=" " >スペース</option>
+                  <option value="  ">ダブルスペース</option>
+                  <option value="\\t">タブ</option>
+                  <option value="\\n">改行</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full sm:w-auto">
+                <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0">グループの区切り方 :</label>
+                <select id="groupSeparatorSelect" class="border rounded-md px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto min-w-40">
+                  <option value="none" selected>なし</option>
+                  <option value="space">空行</option>
+                  <option value="line">線</option>
+                  <option value="wave">波線</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- グループ表示オプション -->
+        <!-- 統計情報（折りたたみ） -->
         <div class="mb-6">
-          <h3 class="mb-2 font-semibold">グループ表示オプション</h3>
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <label class="inline-flex items-center gap-1 mt-2">
-              <input type="checkbox" id="showGroupLabel" checked class="rounded border-gray-300">
-              <span class="text-sm ml-1 mr-3">グループ名表示</span>
-            </label>
-            <label class="inline-flex items-center gap-1 mt-2">
-              <input type="checkbox" id="showGroupCount" checked class="rounded border-gray-300">
-              <span class="text-sm ml-1 mr-3">グループ人数表示</span>
-            </label>
-            <label class="inline-flex items-center gap-1 mt-2">
-              <input type="checkbox" id="breakMemberLine" checked class="rounded border-gray-300">
-              <span class="text-sm ml-1 mr-3">メンバーを改行表示</span>
-            </label>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold">
+              <a href="#" id="btn-toggle-stats" class="inline-flex items-center gap-2 hover:underline" aria-expanded="false">
+                <span id="btn-toggle-stats-text">統計情報を表示</span>
+                <%= image_tag "icons/expand_more_24dp_1F1F1F.svg", width: 20, height: 20, id: "btn-toggle-stats-icon", class: "inline-block" %>
+              </a>
+            </h3>
           </div>
-
-          <div class="mt-2 flex flex-col sm:flex-row sm:items-start gap-3">
-            <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full sm:w-auto">
-              <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0">メンバーの区切り方 :</label>
-              <select id="separatorSelect" class="border rounded-md px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto min-w-40">
-                <option value="," selected>カンマ</option>
-                <option value=" " >スペース</option>
-                <option value="  ">ダブルスペース</option>
-                <option value="\\t">タブ</option>
-                <option value="\\n">改行</option>
-              </select>
-            </div>
-
-            <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full sm:w-auto">
-              <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0">グループの区切り方 :</label>
-              <select id="groupSeparatorSelect" class="border rounded-md px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto min-w-40">
-                <option value="none" selected>なし</option>
-                <option value="space">空行</option>
-                <option value="line">線</option>
-                <option value="wave">波線</option>
-              </select>
-            </div>
+          <div id="statsContainer" class="hidden">
+            <textarea id="statsOutput" rows="10" readonly class="bg-yellow-50 text-gray-500 border rounded-md px-3 py-2 w-full text-sm mb-2"></textarea>
           </div>
         </div>
 
@@ -326,6 +343,11 @@
 let shufflyHistory = [], currentHistoryIndex = -1;
 const IS_SIGNED_IN = <%= user_signed_in? ? 'true' : 'false' %>;
 let statsCollapsed = true; // 統計は初期折りたたみ
+let optionsCollapsed = true; // グループ表示オプションは初期折りたたみ（デフォルト閉じる）
+
+// アイコンパス（assets pipeline 経由）
+const ICON_EXPAND = "<%= asset_path('icons/expand_more_24dp_1F1F1F.svg') %>";
+const ICON_COLLAPSE = "<%= asset_path('icons/keyboard_arrow_up_24dp_1F1F1F.svg') %>";
 
 // --- ユーティリティ ---
 function clampGroupCount(v){
@@ -473,16 +495,49 @@ function assignGroups(){
 
   function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
+  // 変更点：分散固定メンバーは初回はランダムに各グループへ割当てるが、
+  // 2回目以降はできるかぎり直前の割当（履歴の最後のグループ）に固定する。
+  // ただしバランスが大きく崩れる場合は空きグループや最小グループへ割当てる。
   for(const p of fixedEntries){
     const emptyGroups = groupIds.filter(g=>groups[g].length===0);
-    let chosen;
-    if(emptyGroups.length>0){
-      chosen = pickRandom(emptyGroups);
+    let chosen = null;
+
+    // 最後の履歴から直前のグループを取得
+    const last = p.history.at(-1);
+    const m = last ? last.match(/#\d+([A-Z])$/) : null;
+    const preferred = m ? m[1] : null;
+
+    if(preferred && groupIds.includes(preferred)){
+      // 現在の最小グループサイズを取得
+      const minSize = Math.min(...groupIds.map(g=>groups[g].length));
+      // できるだけ同じグループに戻す：ただしそのグループが最小サイズよりも大きすぎるときは避ける
+      // （バランスを保つために minSize + 1 を許容上限とする）
+      if(groups[preferred].length <= minSize + 1){
+        chosen = preferred;
+      } else if(emptyGroups.length > 0){
+        chosen = pickRandom(emptyGroups);
+      } else {
+        const candidates = groupIds.filter(g=>groups[g].length===minSize);
+        chosen = pickRandom(candidates);
+      }
     } else {
+      // preferred が無い（初回）または無効な場合は既存のルールに従う
+      if(emptyGroups.length>0){
+        chosen = pickRandom(emptyGroups);
+      } else {
+        const minSize = Math.min(...groupIds.map(g=>groups[g].length));
+        const candidates = groupIds.filter(g=>groups[g].length===minSize);
+        chosen = pickRandom(candidates);
+      }
+    }
+
+    if(!chosen){
+      // 最終手段：最小グループに入れる
       const minSize = Math.min(...groupIds.map(g=>groups[g].length));
       const candidates = groupIds.filter(g=>groups[g].length===minSize);
       chosen = pickRandom(candidates);
     }
+
     groups[chosen].push(p);
     p.assignedGroup = chosen;
   }
@@ -1090,13 +1145,37 @@ window.onload = () => {
 
   const sc = document.getElementById('statsContainer');
   const btn = document.getElementById('btn-toggle-stats');
-  if(sc && btn){
+  const textSpan = document.getElementById('btn-toggle-stats-text');
+  const icon = document.getElementById('btn-toggle-stats-icon');
+  if(sc && btn && textSpan && icon){
     if(statsCollapsed){
       sc.classList.add('hidden');
-      btn.textContent = "統計情報を表示";
+      textSpan.textContent = "統計情報を表示";
+      btn.setAttribute('aria-expanded', 'false');
+      icon.src = ICON_EXPAND;
     } else {
       sc.classList.remove('hidden');
-      btn.textContent = "統計情報を非表示";
+      textSpan.textContent = "統計情報を非表示";
+      btn.setAttribute('aria-expanded', 'true');
+      icon.src = ICON_COLLAPSE;
+    }
+  }
+
+  const oc = document.getElementById('optionsContainer');
+  const obtn = document.getElementById('btn-toggle-options');
+  const otext = document.getElementById('btn-toggle-options-text');
+  const oicon = document.getElementById('btn-toggle-options-icon');
+  if(oc && obtn && otext && oicon){
+    if(optionsCollapsed){
+      oc.classList.add('hidden');
+      otext.textContent = "グループ表示オプションを表示";
+      obtn.setAttribute('aria-expanded', 'false');
+      oicon.src = ICON_EXPAND;
+    } else {
+      oc.classList.remove('hidden');
+      otext.textContent = "グループ表示オプションを非表示";
+      obtn.setAttribute('aria-expanded', 'true');
+      oicon.src = ICON_COLLAPSE;
     }
   }
 
@@ -1183,11 +1262,33 @@ window.onload = () => {
     if(e) e.preventDefault();
     const sc = document.getElementById('statsContainer');
     const btn = document.getElementById('btn-toggle-stats');
-    if(!sc || !btn) return;
+    const textSpan = document.getElementById('btn-toggle-stats-text');
+    const icon = document.getElementById('btn-toggle-stats-icon');
+    if(!sc || !btn || !textSpan || !icon) return;
     sc.classList.toggle('hidden');
+    const expanded = !sc.classList.contains('hidden');
     statsCollapsed = sc.classList.contains('hidden');
-    btn.textContent = statsCollapsed ? "統計情報を表示" : "統計情報を非表示";
+    textSpan.textContent = statsCollapsed ? "統計情報を表示" : "統計情報を非表示";
+    btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    icon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
     if(!statsCollapsed) showStats();
+  });
+
+  // グループ表示オプション折りたたみトグル（統計と同様の動作）
+  bindIf('btn-toggle-options', 'click', (e)=>{
+    if(e) e.preventDefault();
+    const oc = document.getElementById('optionsContainer');
+    const btn = document.getElementById('btn-toggle-options');
+    const textSpan = document.getElementById('btn-toggle-options-text');
+    const icon = document.getElementById('btn-toggle-options-icon');
+    if(!oc || !btn || !textSpan || !icon) return;
+    oc.classList.toggle('hidden');
+    const expanded = !oc.classList.contains('hidden');
+    optionsCollapsed = oc.classList.contains('hidden');
+    textSpan.textContent = optionsCollapsed ? "グループ表示オプションを表示" : "グループ表示オプションを非表示";
+    btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    icon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
+    if(!optionsCollapsed) { showGroups(); showStats(); }
   });
 
   // 結果の履歴移動
