@@ -1,10 +1,90 @@
 <div class="min-h-screen pb-10">
 
+  <!-- 背景アニメーションレイヤー -->
+  <div class="pointer-events-none fixed inset-0 z-0 bg-icons-animation"></div>
+
+  <style>
+    .bg-icons-animation {
+      background-image: url("/assets/icons/shuffle_24dp_1F1F1F.svg");
+      background-size: 57px 57px;
+      background-repeat: repeat;
+      opacity: 0.06;
+      animation:
+        moveRight 70s linear infinite,
+        diagonalFlip 6s ease-in-out infinite,
+        scatterEffect 60s ease-in-out infinite;
+      will-change: transform, background-position;
+    }
+
+    /* 基本移動を右方向に変更。途中で小さな乱れ（シャッフル）を入れる */
+    @keyframes moveRight {
+      0% {
+        background-position: 0 0;
+      }
+      70% {
+        background-position: 2100px 0;
+      }
+      /* たまにシャッフルされるジャークを入れる（短いタイミングで位置が乱れる） */
+      78% {
+        background-position: 2150px -8px;
+      }
+      80% {
+        background-position: 2080px 6px;
+      }
+      82% {
+        background-position: 2220px -4px;
+      }
+      84% {
+        background-position: 2180px 3px;
+      }
+      100% {
+        background-position: 3000px 0;
+      }
+    }
+
+    @keyframes diagonalFlip {
+      0%, 100% {
+        transform: translate(0, 0);
+      }
+      50% {
+        transform: translate(-40px, 40px);
+      }
+    }
+
+    @keyframes scatterEffect {
+      0%, 92%, 100% {
+        transform: scale(1) rotate(0deg);
+      }
+      94% {
+        transform: scale(1.03) rotate(1.2deg) translate(8px, -12px);
+      }
+      96% {
+        transform: scale(0.985) rotate(-0.9deg) translate(-10px, 8px);
+      }
+    }
+
+    /* 各カード（9枚想定）にマウスオーバーでピクッと動く動作を付与 */
+    /* 対象は p-6 + rounded-lg + shadow-sm を持つカード群（既存のカード要素に影響） */
+    .p-6.rounded-lg.shadow-sm {
+      transition: transform 140ms cubic-bezier(.2,.8,.2,1), box-shadow 140ms;
+      will-change: transform;
+    }
+    .p-6.rounded-lg.shadow-sm:hover {
+      transform: translateY(-6px) rotate(-0.6deg);
+      box-shadow: 0 12px 28px rgba(10, 25, 47, 0.08);
+    }
+    /* 少し短い急なピクッのバリエーション（マウスエンター直後の感触向上） */
+    .p-6.rounded-lg.shadow-sm:active {
+      transform: translateY(-2px) rotate(-0.2deg);
+      transition-duration: 80ms;
+    }
+  </style>
+
   <!-- メインヒーロー：タイトルとCTA -->
   <section class="py-24 pb-30 w-full">
     <div class="max-w-5xl mx-auto text-center px-6 py-16">
-      <h2 class="text-5xl font-extrabold mb-4">Shuffly</h2>
-      <p class="text-gray-600 mb-8"><span class="bg-yellow-100 px-1"><b>グループ・順番・役割決め</b></span>が、驚くほど簡単かつスピーディに。</p>
+      <h2 class="text-6xl font-extrabold mb-4 tracking-wider">Shuffly</h2>
+      <p class="mb-8"><span class="bg-yellow-100 px-1"><b>グループ・順番・役割決め</b></span>が、驚くほど簡単かつスピーディに。</p>
 
       <div class="flex items-center justify-center">
         <div class="w-full max-w-md flex flex-col sm:flex-row gap-4 items-center">
@@ -18,7 +98,7 @@
               <%= link_to "ログアウト", destroy_user_session_path, method: :delete, data: { confirm: "ログアウトしますか？" }, class: "px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600" %>
             </div>
           <% else %>
-            <%= link_to "ログインして使う", new_user_session_path, class: "w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50" %>
+            <%= link_to "ログインして使う", new_user_session_path, class: "w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50 z-0" %>
           <% end %>
         </div>
       </div>
@@ -67,7 +147,7 @@
   </section>
 
   <!-- セクション：ログイン時特徴（グレー背景） -->
-  <section class="py-20 bg-gray-50 w-screen relative left-1/2 -translate-x-1/2">
+  <section class="py-20 w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 py-1">
       <h3 class="text-2xl md:text-3xl text-center text-blue-600 mb-3 font-bold">ログインするとできること</h3>
       <p class="text-gray-600 mb-8 text-center">アカウントを作成して、さらに便利な機能を活用しましょう。</p>
