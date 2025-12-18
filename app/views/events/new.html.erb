@@ -267,6 +267,9 @@
           </div>
         </div>
 
+        <!-- グループ分けの回次表示（memberCountHint と同じスタイル） -->
+        <div id="groupRoundHint" class="text-sm text-gray-500 mt-1 mb-6 bg-yellow-100 border rounded px-2 py-1">現在のグループ分け表示：未実施</div>
+
         <!-- 結果操作リンク -->
         <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
           <a href="#" id="btn-prev-group" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">前回のグループ分けへ</a>
@@ -399,6 +402,16 @@ function getCoOccurrenceMap(entries, ignoreLast=true){
     }
   }
   return map;
+}
+
+// 新規: 履歴内で「1回目のグループ割当」が最初に発生したインデックスを返す
+function findFirstGroupHistoryIndex(){
+  for(let i=0;i<shufflyHistory.length;i++){
+    const v = shufflyHistory[i] || "";
+    if(/#1[A-Z]/.test(v)) return i;
+  }
+  // 無ければ 0 を返し、従来の振る舞い（先頭まで戻れる）と互換性を保つ
+  return 0;
 }
 
 // グループIDと表示名を決定（A,B,C...）
@@ -815,6 +828,9 @@ function showGroups(){
 
   const display = parts.join(groupSep);
   document.getElementById('groupOutput').value=display.trim();
+
+  // 回次表示を更新
+  updateGroupRoundDisplay();
 }
 
 function showStats(){
@@ -863,6 +879,39 @@ function showStats(){
   }
 
   document.getElementById('statsOutput').value = parts.join(groupSep).trim();
+
+  // 回次表示を更新
+  updateGroupRoundDisplay();
+}
+
+// 新規: グループ分け回次を計算して表示するヘルパ
+function getDisplayRound(entries){
+  let max = 0;
+  let found = false;
+  for(const e of entries){
+    for(const h of e.history){
+      const m = h.match(/^#(\d+)/);
+      if(m){
+        found = true;
+        const num = parseInt(m[1],10);
+        if(num > max) max = num;
+      }
+    }
+  }
+  return found ? max : null;
+}
+function updateGroupRoundDisplay(){
+  const el = document.getElementById('groupRoundHint');
+  if(!el) return;
+  const raw = getRawValue().trim();
+  const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+  const entries = rawList.map(parseEntry);
+  const round = getDisplayRound(entries);
+  if(round === null){
+    el.textContent = '現在のグループ分け表示：未実施';
+  } else {
+    el.textContent = `現在のグループ分け表示：${round}回目`;
+  }
 }
 
 function updateParticipantCount(){
@@ -894,14 +943,35 @@ function updateParticipantCount(){
       span.textContent = min===max?`現在の1グループあたり：${min}人`:`現在の1グループあたり：${min}〜${max}人`;
     }
   }
+
+  // 回次表示を更新（メンバーや履歴が変わったときに反映）
+  updateGroupRoundDisplay();
 }
 
 function copyGroupOutput(){ navigator.clipboard.writeText(document.getElementById('groupOutput').value).then(()=>showToast("コピーしました！")).catch(()=>showToast("コピーに失敗しました")); }
 function copyOrderOutput(){ navigator.clipboard.writeText(document.getElementById('orderOutput').value).then(()=>showToast("コピーしました！")).catch(()=>showToast("コピーに失敗しました")); }
 function copyRolesOutput(){ navigator.clipboard.writeText(document.getElementById('rolesOutput').value).then(()=>showToast("コピーしました！")).catch(()=>showToast("コピーに失敗しました")); }
 
+// showToast の位置をフッター高さに合わせて上に出すように変更
 function showToast(msg){
   const toast=document.getElementById('toast');
+  if(!toast) return;
+  // フッターを探して高さを取得。無ければデフォルトマージンを使用
+  let bottomPx = 24; // デフォルト 24px
+  const footer = document.querySelector('footer');
+  if(footer){
+    try{
+      const rect = footer.getBoundingClientRect();
+      bottomPx = Math.max(24, rect.height + 16);
+    }catch(e){}
+  } else {
+    // 代替セレクタ（role/contentinfo 等）
+    const f2 = document.querySelector('[role="contentinfo"], .footer, .site-footer');
+    if(f2){
+      try { bottomPx = Math.max(24, f2.getBoundingClientRect().height + 16); }catch(e){}
+    }
+  }
+  toast.style.bottom = `${bottomPx}px`;
   toast.textContent=msg;
   toast.classList.remove("opacity-0");
   setTimeout(()=>toast.classList.add("opacity-0"),1200);
@@ -909,6 +979,8 @@ function showToast(msg){
 
 function pushToHistory(){
   const text = getRawValue();
+  // 変更: 履歴が空で現在の raw が空文字列の場合は履歴に追加しない
+  if (shufflyHistory.length === 0 && text.trim() === "") return;
   if(currentHistoryIndex>=0 && shufflyHistory[currentHistoryIndex]===text) return;
   shufflyHistory = shufflyHistory.slice(0,currentHistoryIndex+1);
   shufflyHistory.push(text);
@@ -918,20 +990,41 @@ function pushToHistory(){
 }
 
 function undoHistory(){
-  if(currentHistoryIndex>0){
-    currentHistoryIndex--;
-    const val = shufflyHistory[currentHistoryIndex];
-    setRawAndRefreshDisplay(val);
+  const firstIndex = findFirstGroupHistoryIndex();
+  // 1回目より前へは戻れない（安全策）
+  if(currentHistoryIndex <= firstIndex){
+    showToast("これ以上戻れません");
+    return;
+  }
+  currentHistoryIndex--;
+  const val = shufflyHistory[currentHistoryIndex];
+  // もし new index が 1回目より前になってしまった場合の安全策（念のため）
+  if(currentHistoryIndex < firstIndex){
+    // グループ表示領域をクリア／非表示化する
+    const gOut = document.getElementById('groupOutput');
+    const sOut = document.getElementById('statsOutput');
+    const gr = document.getElementById('groupRoundHint');
+    if(gOut) gOut.value = "";
+    if(sOut) sOut.value = "";
+    if(gr) gr.textContent = ''; // 非表示にする安全策
+    // 内部 raw は履歴値に戻すが、グループ表示は表示しない
+    setRawAndRefreshDisplay(val || "");
     updateParticipantCount();
-    showGroups();
-    showStats();
-    try{
-      const entries = val ? val.split(/[\r\n,]+/).map(s=>parseEntry(s.trim())) : [];
-      if(document.getElementById('membersJsonInput')) document.getElementById('membersJsonInput').value = JSON.stringify(entries);
-    }catch(e){}
     showToast("1ステップ戻しました");
     switchResultTab('groups');
-  } else showToast("これ以上戻れません");
+    return;
+  }
+
+  setRawAndRefreshDisplay(val);
+  updateParticipantCount();
+  showGroups();
+  showStats();
+  try{
+    const entries = val ? val.split(/[\r\n,]+/).map(s=>parseEntry(s.trim())) : [];
+    if(document.getElementById('membersJsonInput')) document.getElementById('membersJsonInput').value = JSON.stringify(entries);
+  }catch(e){}
+  showToast("1ステップ戻しました");
+  switchResultTab('groups');
 }
 
 function redoHistory(){
@@ -1073,8 +1166,28 @@ function clearMemberHistories(){
     if(mj) mj.value = JSON.stringify(entries);
   }catch(e){}
 
+  // 履歴配列を再初期化して同期する（履歴をクリアしたら内部履歴も消す）
+  if(cleaned.length === 0){
+    shufflyHistory = [];
+    currentHistoryIndex = -1;
+  } else {
+    const currentRaw = getRawValue().trim();
+    shufflyHistory = [ currentRaw ];
+    currentHistoryIndex = 0;
+  }
+  const histField = document.getElementById('historyJsonInput');
+  if(histField) histField.value = shufflyHistory.length ? JSON.stringify(shufflyHistory) : "";
+
+  // グループ表示は安全に非表示化（文言を消す）
+  const gOut = document.getElementById('groupOutput');
+  const sOut = document.getElementById('statsOutput');
+  const gr = document.getElementById('groupRoundHint');
+  if(gOut) gOut.value = "";
+  if(sOut) sOut.value = "";
+  if(gr) gr.textContent = '';
+
   updateParticipantCount();
-  pushToHistory();
+  // pushToHistory() は不要（既に同期済み）
   showToast("履歴をクリアしました");
 }
 
@@ -1210,7 +1323,8 @@ window.onload = () => {
     updateDisplayFromRaw();
   }
   updateParticipantCount();
-  if(shufflyHistory.length === 0) pushToHistory();
+  // 変更: 初回 push は現在の raw が空でない場合のみ行う（空状態を履歴に残さない）
+  if(shufflyHistory.length === 0 && getRawValue().trim() !== "") pushToHistory();
   switchResultTab('groups');
   switchSettingsTab('groups');
 
@@ -1326,7 +1440,7 @@ window.onload = () => {
   // コピー / ナビ操作
   bindIf('btn-copy-groupoutput', 'click', (e)=>{ e.preventDefault(); copyGroupOutput(); });
   bindIf('btn-copy-orderoutput', (e)=>{ e.preventDefault(); copyOrderOutput(); });
-  bindIf('btn-copy-rolesoutput', 'click', (e)=>{ e.preventDefault(); copyRolesOutput(); });
+  bindIf('btn-copy-rolesoutput', (e)=>{ e.preventDefault(); copyRolesOutput(); });
 
   // 統計表示トグル
   bindIf('btn-toggle-stats', 'click', (e)=>{
@@ -1366,7 +1480,8 @@ window.onload = () => {
   // 結果の履歴移動
   bindIf('btn-prev-group', 'click', (e)=>{
     if(e) e.preventDefault();
-    if(currentHistoryIndex <= 0){
+    const firstIndex = findFirstGroupHistoryIndex();
+    if(currentHistoryIndex <= firstIndex){
       showToast("これ以上戻れません");
       return;
     }
