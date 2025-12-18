@@ -43,11 +43,11 @@
       <p class="text-sm text-gray-500 mb-5">↑改行またはカンマ区切りで、ユニークなメンバー名を入力してください。</p>
       <div id="memberCountHint" class="text-sm text-gray-500 mt-1 mb-5 bg-yellow-100 border rounded px-2 py-1">現在のメンバー数：未入力</div>
 
-      <!-- インポート / ペースト / 履歴クリア用トリガ -->
+      <!-- インポート / サンプルデータ入力 / 履歴クリア用トリガ -->
       <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
+        <a href="#" id="btn-insert-sample" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">サンプルデータを入力</a>
         <a href="#" id="btn-trigger-import" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">テキスト/CSVから入力</a>
         <input id="importFile" type="file" accept=".txt,.csv" class="hidden">
-        <a href="#" id="btn-paste-clipboard" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">クリップボードから入力</a>
         <a href="#" id="btn-clear-history" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">履歴をクリア</a>
       </div>
     </div>
@@ -74,6 +74,7 @@
             <div>
               <label class="text-sm text-gray-600">グループ数*</label>
               <input id="groupCount" type="number" min="1" max="26" value="<%= @event.group_count.presence || 3 %>" class="mt-1 w-full border rounded px-2 py-1 mb-1">
+              <p class="text-sm text-gray-500 mb-1">↑26グループが最大です。</p>
             </div>
             <div>
               <label class="text-sm text-gray-600">グループ名（任意）</label>
@@ -157,7 +158,7 @@
     </div>
 
     <!-- ③ 結果表示カード：グループ / 順番 / 役割 の切替表示 -->
-    <div id="resultsCard" class="bg-blue-50 rounded-lg shadow-sm p-6">
+    <div id="resultsCard" class="bg-gray-100 rounded-lg shadow-sm p-6">
       <div class="flex items-start justify-between mb-4">
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
@@ -277,7 +278,7 @@
     </div>
 
     <!-- ④ 出力 / 共有 / 保存 -->
-    <div class="bg-blue-50 rounded-lg shadow-sm p-6">
+    <div class="bg-gray-100 rounded-lg shadow-sm p-6">
       <div class="flex items-start gap-3 mb-4">
         <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">4</div>
         <h2 class="text-xl md:text-2xl font-semibold">共有 / 出力 / 保存する</h2>
@@ -993,8 +994,55 @@ function pasteFromClipboard(){
   }).catch(()=>showToast("クリップボードにアクセスできません"));
 }
 
+/* --- 追加: サンプルデータ挿入機能（15人プール、ランダムで10人選択） --- */
+function insertSampleData(){
+  const confirmed = window.confirm("メンバーリスト欄にサンプルデータ10人分を上書きします。よろしいですか？");
+  if(!confirmed) return;
+
+  const samplePool = [
+    "佐藤 太郎",
+    "鈴木 花子",
+    "高橋 一郎",
+    "田中 愛",
+    "伊藤 健",
+    "渡辺 真由美",
+    "山本 大輔",
+    "中村 彩",
+    "小林 翼",
+    "加藤 恵",
+    "斎藤 翔",
+    "井上 真由",
+    "木村 拓也",
+    "清水 直子",
+    "長谷川 智子"
+  ];
+
+  // Fisher-Yates shuffle
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  const chosen = shuffle(samplePool).slice(0,10);
+  const sample = chosen.join("\n");
+
+  setRawAndRefreshDisplay(sample);
+  updateParticipantCount();
+  pushToHistory();
+  try{
+    const entries = sample.split(/[\r\n,]+/).map(s=>parseEntry(s.trim()));
+    if(document.getElementById('membersJsonInput')) document.getElementById('membersJsonInput').value = JSON.stringify(entries);
+  }catch(e){}
+  showToast("サンプルデータを入力しました");
+}
+/* --- end 追加 --- */
+
 function clearMemberHistories(){
-  const confirmed = window.confirm("メンバー名リストに含まれる全メンバーの履歴を一括で削除します。よろしいですか？");
+  const confirmed = window.confirm("メンバーリストに含まれる全メンバーの履歴を一括で削除します。よろしいですか？");
   if(!confirmed) return;
 
   const cur = getRawValue() || "";
@@ -1235,10 +1283,10 @@ window.onload = () => {
     });
   });
 
-  // インポート / ペースト / クリア
+  // インポート / サンプルデータ / クリア
   bindIf('btn-trigger-import', 'click', (e)=>{ e.preventDefault(); triggerImport(); });
   bindIf('importFile', 'change', handleImportFile);
-  bindIf('btn-paste-clipboard', 'click', (e)=>{ e.preventDefault(); pasteFromClipboard(); });
+  bindIf('btn-insert-sample', 'click', (e)=>{ e.preventDefault(); insertSampleData(); });
   bindIf('btn-clear-history', 'click', (e)=>{ e.preventDefault(); clearMemberHistories(); });
 
   // タブ操作
