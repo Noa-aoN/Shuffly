@@ -290,16 +290,8 @@
       <div class="flex flex-col md:flex-row gap-2 mb-3 items-center justify-center w-full">
         <%= render 'shared/button',
               f: nil,
-              button_text: '画面共有表示',
+              button_text: '結果共有表示',
               id: 'btn-toggle-presentation',
-              path: '#',
-              variant: 'secondary',
-              full_mobile: false,
-              extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
-        <%= render 'shared/button',
-              f: nil,
-              button_text: 'テキスト出力',
-              id: 'btn-export-results',
               path: '#',
               variant: 'secondary',
               full_mobile: false,
@@ -312,6 +304,14 @@
               variant: 'primary',
               full_mobile: false,
               extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
+        <%= render 'shared/button',
+              f: nil,
+              button_text: 'テキスト出力',
+              id: 'btn-export-results',
+              path: '#',
+              variant: 'secondary',
+              full_mobile: false,
+              extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
       </div>
 
       <p class="text-sm text-gray-500">イベント保存にはログインが必要です。</p>
