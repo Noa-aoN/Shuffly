@@ -305,7 +305,7 @@
       <label class="block font-semibold mb-2">● イベントタイトル（任意）</label>
       <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-3 bg-white" placeholder="例：〇〇イベント">
 
-      <div class="flex flex-col md:flex-row gap-2 mb-3 items-center justify-center w-full">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3 w-full place-items-center">
         <%= render 'shared/button',
               f: nil,
               button_text: '結果共有表示',
@@ -313,7 +313,7 @@
               path: '#',
               variant: 'secondary',
               full_mobile: false,
-              extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+              extra_class: 'text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
         <%= render 'shared/button',
               f: nil,
               button_text: 'イベント保存',
@@ -321,7 +321,7 @@
               path: '#',
               variant: 'primary',
               full_mobile: false,
-              extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
+              extra_class: 'text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
         <%= render 'shared/button',
               f: nil,
               button_text: 'テキスト出力',
@@ -329,7 +329,7 @@
               path: '#',
               variant: 'secondary',
               full_mobile: false,
-              extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+              extra_class: 'text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
       </div>
 
       <p class="text-sm text-gray-500">イベント保存にはログインが必要です。</p>
