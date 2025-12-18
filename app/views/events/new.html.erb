@@ -61,9 +61,18 @@
 
       <!-- タブボタン（表示切替）: 均等配置・リンク風 -->
       <div class="flex mb-5 border-b border-gray-200">
-        <button id="tab-settings-groups" class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-blue-500 text-blue-600 font-medium hover:underline">グループ設定</button>
-        <button id="tab-settings-order"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">順番設定</button>
-        <button id="tab-settings-roles"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">役割設定</button>
+        <button id="tab-settings-groups" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-blue-500 text-blue-600 font-medium hover:underline">
+          <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+          <span class="leading-none">グループ設定</span>
+        </button>
+        <button id="tab-settings-order"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">
+          <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+          <span class="leading-none">順番設定</span>
+        </button>
+        <button id="tab-settings-roles"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">
+          <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+          <span class="leading-none">役割設定</span>
+        </button>
       </div>
 
       <!-- グループ設定パネル -->
@@ -167,10 +176,19 @@
       </div>
 
       <!-- 結果タブ: 均等配置・リンク風 -->
-      <div class="flex mb-4 border-b border-gray-200">
-        <button id="tab-groups" class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-blue-500 text-blue-600 font-medium hover:underline">グループ分け結果</button>
-        <button id="tab-order"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">順番決め結果</button>
-        <button id="tab-roles"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">役割決め結果</button>
+      <div class="flex mb-5 border-b border-gray-200">
+        <button id="tab-groups" class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-blue-500 text-blue-600 font-medium hover:underline">
+          <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+          <span class="leading-none">グループ分け結果</span>
+        </button>
+        <button id="tab-order"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">
+          <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+          <span class="leading-none">順番決め結果</span>
+        </button>
+        <button id="tab-roles"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">
+          <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+          <span class="leading-none">役割決め結果</span>
+        </button>
       </div>
 
       <!-- グループ表示パネル -->
