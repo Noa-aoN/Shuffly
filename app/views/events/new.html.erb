@@ -20,7 +20,7 @@
         <h2 class="text-xl md:text-2xl font-semibold">メンバーを入力する</h2>
       </div>
 
-      <label class="block mb-2 font-semibold">メンバーリスト</label>
+      <label class="block mb-2 font-semibold">● メンバーリスト</label>
 
       <!-- 内部保存用（hidden）: JSON を保持 → この値を基に処理する -->
       <textarea id="membersRaw" rows="10" class="hidden" style="display:none;"><%= begin
@@ -61,15 +61,15 @@
 
       <!-- タブボタン（表示切替）: 均等配置・リンク風 -->
       <div class="flex mb-5 border-b border-gray-200">
-        <button id="tab-settings-groups" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-blue-500 text-blue-600 font-medium hover:underline">
+        <button id="tab-settings-groups" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-blue-500 text-blue-600 font-semibold hover:underline">
           <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
           <span class="leading-none">グループ設定</span>
         </button>
-        <button id="tab-settings-order"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">
+        <button id="tab-settings-order"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 font-semibold hover:underline">
           <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
           <span class="leading-none">順番設定</span>
         </button>
-        <button id="tab-settings-roles"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">
+        <button id="tab-settings-roles"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 font-semibold hover:underline">
           <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
           <span class="leading-none">役割設定</span>
         </button>
@@ -78,7 +78,7 @@
       <!-- グループ設定パネル -->
       <div id="panel-settings-groups" class="settings-panel">
         <div class="mb-4">
-          <label class="block mb-2 font-semibold">グループ分けオプション</label>
+          <label class="block mb-2 font-semibold">● グループ分けオプション</label>
           <div class="flex flex-col gap-3 mb-2">
             <div>
               <label class="text-sm text-gray-600">グループ数*</label>
@@ -105,7 +105,7 @@
       <!-- 順番設定パネル -->
       <div id="panel-settings-order" class="settings-panel hidden">
         <div class="mb-4">
-          <label class="block mb-2 font-semibold">順番決めオプション</label>
+          <label class="block mb-2 font-semibold">● 順番決めオプション</label>
           <div class="mb-2">
             <label class="text-sm text-gray-600">順番固定メンバー（任意）</label>
             <textarea id="fixedOrderInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：1:メンバー3, 5:メンバー1, ..."></textarea>
@@ -118,7 +118,7 @@
       <!-- 役割設定パネル -->
       <div id="panel-settings-roles" class="settings-panel hidden">
         <div class="mb-4">
-          <label class="block mb-2 font-semibold">役割決めオプション</label>
+          <label class="block mb-2 font-semibold">● 役割決めオプション</label>
           <label class="text-sm text-gray-600">役割名*</label>
           <textarea id="rolesInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
           <p class="text-sm text-gray-500 mt-1">↑改行またはカンマ区切りで役割名を入力してください。割り当てはランダムです。</p>
@@ -193,7 +193,7 @@
 
       <!-- グループ表示パネル -->
       <div id="panel-groups" class="result-panel">
-        <h3 class="mb-2 font-semibold">グループ表示</h3>
+        <h3 class="mb-2 font-semibold">● グループ表示</h3>
 
         <!-- グループ結果出力（初期は空。実行後に内容が入る） -->
         <textarea id="groupOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
@@ -203,7 +203,7 @@
           <div class="flex items-center justify-between mb-2">
             <h3 class="font-semibold">
               <a href="#" id="btn-toggle-options" class="inline-flex items-center gap-2 hover:underline" aria-expanded="false">
-                <span id="btn-toggle-options-text">グループ表示オプションを表示</span>
+                <span id="btn-toggle-options-text">● グループ表示オプション</span>
                 <%= image_tag "icons/expand_more_24dp_1F1F1F.svg", width: 20, height: 20, id: "btn-toggle-options-icon", class: "inline-block" %>
               </a>
             </h3>
@@ -257,7 +257,7 @@
           <div class="flex items-center justify-between mb-2">
             <h3 class="font-semibold">
               <a href="#" id="btn-toggle-stats" class="inline-flex items-center gap-2 hover:underline" aria-expanded="false">
-                <span id="btn-toggle-stats-text">統計情報を表示</span>
+                <span id="btn-toggle-stats-text">● 統計情報</span>
                 <%= image_tag "icons/expand_more_24dp_1F1F1F.svg", width: 20, height: 20, id: "btn-toggle-stats-icon", class: "inline-block" %>
               </a>
             </h3>
@@ -278,7 +278,7 @@
 
       <!-- 順番表示パネル -->
       <div id="panel-order" class="result-panel hidden">
-        <h3 class="font-semibold mb-2">順番表示</h3>
+        <h3 class="font-semibold mb-2">● 順番表示</h3>
         <textarea id="orderOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-orderoutput" class="text-base text-blue-600 hover:underline">クリップボードにコピー</a>
@@ -287,7 +287,7 @@
 
       <!-- 役割表示パネル -->
       <div id="panel-roles" class="result-panel hidden">
-        <h3 class="font-semibold mb-2">役割表示</h3>
+        <h3 class="font-semibold mb-2">● 役割表示</h3>
         <textarea id="rolesOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-rolesoutput" class="text-base text-blue-600 hover:underline">クリップボードにコピー</a>
@@ -302,7 +302,7 @@
         <h2 class="text-xl md:text-2xl font-semibold">共有 / 出力 / 保存する</h2>
       </div>
 
-      <label class="block font-semibold mb-2">イベントタイトル（任意）</label>
+      <label class="block font-semibold mb-2">● イベントタイトル（任意）</label>
       <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-3 bg-white" placeholder="例：〇〇イベント">
 
       <div class="flex flex-col md:flex-row gap-2 mb-3 items-center justify-center w-full">
@@ -955,26 +955,26 @@ function switchResultTab(name){
   document.querySelectorAll('.result-panel').forEach(el=>el.classList.add('hidden'));
 
   document.querySelectorAll('#tab-groups, #tab-order, #tab-roles').forEach(b=>{
-    b.classList.remove('border-blue-500','text-blue-600','font-medium');
+    b.classList.remove('border-blue-500','text-blue-600','font-semibold');
     b.classList.add('border-transparent','text-gray-600');
   });
 
-  if(name==='groups'){ document.getElementById('panel-groups').classList.remove('hidden'); const el=document.getElementById('tab-groups'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-medium'); }
-  if(name==='order'){ document.getElementById('panel-order').classList.remove('hidden'); const el=document.getElementById('tab-order'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-medium'); }
-  if(name==='roles'){ document.getElementById('panel-roles').classList.remove('hidden'); const el=document.getElementById('tab-roles'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-medium'); }
+  if(name==='groups'){ document.getElementById('panel-groups').classList.remove('hidden'); const el=document.getElementById('tab-groups'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-semibold'); }
+  if(name==='order'){ document.getElementById('panel-order').classList.remove('hidden'); const el=document.getElementById('tab-order'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-semibold'); }
+  if(name==='roles'){ document.getElementById('panel-roles').classList.remove('hidden'); const el=document.getElementById('tab-roles'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-semibold'); }
 }
 
 function switchSettingsTab(name){
   document.querySelectorAll('.settings-panel').forEach(el=>el.classList.add('hidden'));
 
   document.querySelectorAll('#tab-settings-groups, #tab-settings-order, #tab-settings-roles').forEach(b=>{
-    b.classList.remove('border-blue-500','text-blue-600','font-medium');
+    b.classList.remove('border-blue-500','text-blue-600','font-semibold');
     b.classList.add('border-transparent','text-gray-600');
   });
 
-  if(name==='groups'){ document.getElementById('panel-settings-groups').classList.remove('hidden'); const el=document.getElementById('tab-settings-groups'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-medium'); }
-  if(name==='order'){ document.getElementById('panel-settings-order').classList.remove('hidden'); const el=document.getElementById('tab-settings-order'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-medium'); }
-  if(name==='roles'){ document.getElementById('panel-settings-roles').classList.remove('hidden'); const el=document.getElementById('tab-settings-roles'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-medium'); }
+  if(name==='groups'){ document.getElementById('panel-settings-groups').classList.remove('hidden'); const el=document.getElementById('tab-settings-groups'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-semibold'); }
+  if(name==='order'){ document.getElementById('panel-settings-order').classList.remove('hidden'); const el=document.getElementById('tab-settings-order'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-semibold'); }
+  if(name==='roles'){ document.getElementById('panel-settings-roles').classList.remove('hidden'); const el=document.getElementById('tab-settings-roles'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-semibold'); }
 
   const gAct = document.getElementById('settings-action-groups');
   const oAct = document.getElementById('settings-action-order');
@@ -1221,12 +1221,12 @@ window.onload = () => {
   if(sc && btn && textSpan && icon){
     if(statsCollapsed){
       sc.classList.add('hidden');
-      textSpan.textContent = "統計情報を表示";
+      textSpan.textContent = "● 統計情報";
       btn.setAttribute('aria-expanded', 'false');
       icon.src = ICON_EXPAND;
     } else {
       sc.classList.remove('hidden');
-      textSpan.textContent = "統計情報を非表示";
+      textSpan.textContent = "● 統計情報";
       btn.setAttribute('aria-expanded', 'true');
       icon.src = ICON_COLLAPSE;
     }
@@ -1239,12 +1239,12 @@ window.onload = () => {
   if(oc && obtn && otext && oicon){
     if(optionsCollapsed){
       oc.classList.add('hidden');
-      otext.textContent = "グループ表示オプションを表示";
+      otext.textContent = "● グループ表示オプション";
       obtn.setAttribute('aria-expanded', 'false');
       oicon.src = ICON_EXPAND;
     } else {
       oc.classList.remove('hidden');
-      otext.textContent = "グループ表示オプションを非表示";
+      otext.textContent = "● グループ表示オプション";
       obtn.setAttribute('aria-expanded', 'true');
       oicon.src = ICON_COLLAPSE;
     }
@@ -1339,7 +1339,7 @@ window.onload = () => {
     sc.classList.toggle('hidden');
     const expanded = !sc.classList.contains('hidden');
     statsCollapsed = sc.classList.contains('hidden');
-    textSpan.textContent = statsCollapsed ? "統計情報を表示" : "統計情報を非表示";
+    textSpan.textContent = statsCollapsed ? "● 統計情報" : "● 統計情報";
     btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
     icon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
     if(!statsCollapsed) showStats();
@@ -1356,7 +1356,7 @@ window.onload = () => {
     oc.classList.toggle('hidden');
     const expanded = !oc.classList.contains('hidden');
     optionsCollapsed = oc.classList.contains('hidden');
-    textSpan.textContent = optionsCollapsed ? "グループ表示オプションを表示" : "グループ表示オプションを非表示";
+    textSpan.textContent = optionsCollapsed ? "● グループ表示オプション" : "● グループ表示オプション";
     btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
     icon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
     // 変更点：グループ分け実行が行われていない限り、開閉時に groupOutput を更新しない
