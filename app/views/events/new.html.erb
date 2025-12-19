@@ -41,7 +41,7 @@
       <!-- 表示用 textarea: ユーザが編集する領域。内部データは membersRaw と同期 -->
       <textarea id="membersInput" rows="10" class="w-full border rounded-md px-3 py-2" placeholder="例：メンバー1, メンバー2, ..."></textarea>
       <p class="text-sm text-gray-500 mb-5">↑改行またはカンマ区切りで、ユニークなメンバー名を入力してください。</p>
-      <div id="memberCountHint" class="text-sm text-gray-500 mt-1 mb-5 bg-yellow-100 border rounded px-2 py-1">現在のメンバー数：未入力</div>
+      <div id="memberCountHint" class="text-sm text-gray-500 mt-1 mb-5 bg-yellow-100 border border-dashed rounded px-2 py-1">現在のメンバー数：未入力</div>
 
       <!-- インポート / サンプルデータ入力 / 履歴クリア用トリガ -->
       <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
@@ -98,7 +98,7 @@
             <p class="text-sm text-gray-500 mb-5">↑改行またはカンマ区切りで入力してください。入力メンバーは可能な限り分散して各グループに固定されます。</p>
           </div>
 
-          <div id="groupSizeHint" class="text-sm text-gray-500 mt-2 bg-yellow-100 border rounded px-2 py-1">（1グループあたり：未計算）</div>
+          <div id="groupSizeHint" class="text-sm text-gray-500 mt-2 bg-yellow-100 border border-dashed rounded px-2 py-1">（1グループあたり：未計算）</div>
         </div>
       </div>
 
@@ -268,7 +268,7 @@
         </div>
 
         <!-- グループ分けの回次表示（memberCountHint と同じスタイル） -->
-        <div id="groupRoundHint" class="text-sm text-gray-500 mt-1 mb-6 bg-yellow-100 border rounded px-2 py-1">現在のグループ分け表示：未実施</div>
+        <div id="groupRoundHint" class="text-sm text-gray-500 mt-1 mb-6 bg-yellow-100 border border-dashed rounded px-2 py-1">現在のグループ分け表示：未実施</div>
 
         <!-- 結果操作リンク -->
         <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
@@ -350,8 +350,8 @@
 
   </div>
 
-  <!-- トースト通知領域（非表示から表示へ切り替え） -->
-  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white text-lg px-10 py-2 rounded opacity-0 transition-opacity"></div>
+  <!-- トースト通知領域（幅を内容に合わせる・モバイル対応） -->
+  <div id="toast" class="fixed left-1/2 transform -translate-x-1/2 bg-white text-black border border-default shadow-xs text-sm dm:text-lg opacity-0 transition-opacity rounded-base" style="display:inline-block; max-width:90vw; width:auto; white-space:pre-wrap; text-align:center; padding:1rem; box-sizing:border-box;"></div>
 </div>
 
 <script>
@@ -515,6 +515,20 @@ function setRawAndRefreshDisplay(rawText){
 function assignGroups(){
   let raw = getRawValue().trim();
   let rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+
+  // 追加: メンバーが空ならトースト表示のみ行い、グループ表示はクリアして処理を中断する
+  if(rawList.length === 0){
+    showToast("メンバーがいません");
+    const gOut = document.getElementById('groupOutput');
+    const sOut = document.getElementById('statsOutput');
+    const gr = document.getElementById('groupRoundHint');
+    if(gOut) gOut.value = "";
+    if(sOut) sOut.value = "";
+    if(gr) gr.textContent = '現在のグループ分け表示：未実施';
+    groupsAssigned = false;
+    return;
+  }
+
   let entries = rawList.map(parseEntry);
   const round=getCurrentRound(entries);
 
@@ -637,6 +651,8 @@ function assignGroups(){
   }
 
   updateParticipantCount(); showGroups(); showStats(); pushToHistory();
+  // 追加: 実行成功時にトースト表示
+  showToast("グループに振り分けました");
   switchResultTab('groups');
 }
 
@@ -957,11 +973,10 @@ function showToast(msg){
   const toast = document.getElementById('toast');
   if(!toast) return;
   // 優先して top を固定、bottom は解除
-  toast.style.top = '80px';
+  toast.style.top = '35px';
   toast.style.bottom = 'auto';
   // 中央揃えの transform / left を確実に適用
   toast.style.left = '50%';
-  // toast.style.transform = 'translateX(-50%)';
   // 前面に出す
   toast.style.zIndex = '1000';
   toast.textContent = msg;
