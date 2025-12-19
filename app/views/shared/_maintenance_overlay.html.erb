@@ -1,0 +1,24 @@
+<div id="maintenance-overlay" class="hidden fixed inset-0 z-400 items-center justify-center">
+  <!-- backdrop -->
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true"></div>
+
+  <!-- panel -->
+  <div role="dialog" aria-modal="true" aria-labelledby="maintenance-title"
+       class="relative z-10 w-full max-w-xs mx-4 bg-white/95 dark:bg-gray-800/95 text-gray-900 dark:text-white rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 px-5 py-6 text-center">
+    <div class="mb-2">
+      <%= image_tag "icons/construction_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+    </div>
+    <h3 id="maintenance-title" class="text-lg font-semibold mt-2">準備中のページ</h3>
+    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">しばらくお待ちください。</p>
+    <div class="mt-4 flex items-center justify-center">
+      <%= render 'shared/button',
+          f: nil,
+          button_text: '閉じる',
+          id: 'maintenance-close',
+          path: '#',
+          variant: 'primary',
+          full_mobile: false,
+          extra_class: 'inline-flex items-center px-3 py-1.5 bg-blue-500 text-white rounded-md shadow-sm hover:bg-blue-600' %>
+    </div>
+  </div>
+</div>

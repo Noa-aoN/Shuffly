@@ -22,6 +22,9 @@
   <%# ヘッダー（部分テンプレート） %>
   <%= render 'shared/header' %>
 
+  <%# メンテナンスオーバーレイパーシャル をレイアウトに置くことで全ページで再利用可能 %>
+  <%= render 'shared/maintenance_overlay' %>
+
   <main class="flex-grow">
     <%# フラッシュ通知エリア（簡易） %>
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
@@ -41,5 +44,62 @@
 
   <%# フッター（部分テンプレート） %>
   <%= render 'shared/footer' %>
+
+  <%# メンテナンスオーバーレイの簡易制御をここに入れる（全ページ共通） %>
+  <script>
+    (function(){
+      // 要素取得（partial 側で id を揃えている前提）
+      const overlay = document.getElementById('maintenance-overlay');
+      if(!overlay) return;
+
+      const closeBtn = overlay.querySelector('#maintenance-close');
+      const hideBtn  = overlay.querySelector('#maintenance-hide');
+
+      function setVisible(flag){
+        if(flag){
+          overlay.classList.remove('hidden');
+          overlay.classList.add('fixed','flex');
+          overlay.style.pointerEvents = 'auto';
+          // focus first actionable element for simple accessibility
+          const focusEl = overlay.querySelector('button, a');
+          if(focusEl) try{ focusEl.focus(); }catch(e){}
+        } else {
+          overlay.classList.add('hidden');
+          overlay.classList.remove('fixed','flex');
+          overlay.style.pointerEvents = 'none';
+        }
+      }
+
+      // 公開 API
+      window.showMaintenance = function(v){ setVisible(Boolean(v)); };
+      window.toggleMaintenance = function(){ setVisible(overlay.classList.contains('hidden')); };
+
+      // ボタンハンドラ
+      if(closeBtn) closeBtn.addEventListener('click', function(e){ e.preventDefault(); setVisible(false); });
+      if(hideBtn) hideBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        try{ sessionStorage.setItem('maintenance-hidden','1'); }catch(e){}
+        setVisible(false);
+      });
+
+      // Esc で閉じる
+      document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape' && !overlay.classList.contains('hidden')) {
+          setVisible(false);
+        }
+      });
+
+      // 自動表示ルール:
+      // - URL に ?maintenance=1 があれば表示
+      // - sessionStorage に maintenance-hidden があれば表示抑止
+      // - window.DEFAULT_MAINTENANCE フラグがあれば表示（サーバで埋める等に便利）
+      try{
+        const params = new URLSearchParams(window.location.search);
+        const hidden = sessionStorage.getItem('maintenance-hidden') === '1';
+        if(params.get('maintenance') === '1' && !hidden) setVisible(true);
+        else if(window.DEFAULT_MAINTENANCE && !hidden) setVisible(true);
+      }catch(e){}
+    })();
+  </script>
 </body>
 </html>
