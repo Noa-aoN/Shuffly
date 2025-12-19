@@ -1,30 +1,36 @@
-<%# filepath: /Users/n/workspace/Shuffly/app/views/events/presentation.html.erb %>
+<%# メンテナンスオーバーレイ設定 %>
+<script>
+  try { sessionStorage.removeItem('maintenance-hidden'); } catch (e) {}
+  window.DEFAULT_MAINTENANCE = true;
+</script>
+
 <div class="min-h-screen bg-gray-50 text-gray-900">
-  <div class="max-w-7xl mx-auto px-6 pt-2 pb-4">
+  <div class="max-w-7xl mx-auto px-6 pt-0 pb-2">
     <!-- イベントタイトル -->
-    <div id="event-title-wrap" class="text-center mb-4">
-      <h1 id="event-title" class="text-3xl font-extrabold border rounded-md px-4 py-2 bg-white inline-block"></h1>
+    <div id="event-title-wrap" class="text-center mb-2">
+      <h1 id="event-title" class="text-3xl font-extrabold border border-dashed rounded-md px-4 py-3 bg-white inline-block"></h1>
     </div>
 
-    <header class="mb-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <!-- ロゴ削除（スペース詰め） -->
-        </div>
+    <header class="mb-2">
 
-        <div class="flex items-center gap-3">
-          <!-- 表示スタイルは後で履歴の下に移動 -->
-        </div>
-      </div>
-
-      <!-- tabs (centered) -->
+      <!-- タブボタン -->
       <nav class="mt-6 border-b border-gray-200">
-        <div class="flex gap-8 text-sm justify-center w-full">
-          <button data-mode="groups" class="mode-btn pb-3 text-blue-600 border-b-2 border-blue-600">グループ分け</button>
-          <button data-mode="order" class="mode-btn pb-3 text-gray-600 hover:text-gray-800">順番決め</button>
-          <button data-mode="roles" class="mode-btn pb-3 text-gray-600 hover:text-gray-800">役割決め</button>
+        <div class="flex gap-8 justify-center w-full">
+          <button data-mode="groups" class="mode-btn pb-3 flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg text-blue-600 border-blue-600">
+            <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+            <span class="leading-none">グループ分け</span>
+          </button>
+          <button data-mode="order" class="mode-btn pb-3 flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg text-gray-600 hover:text-gray-800">
+            <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+            <span class="leading-none">順番決め</span>
+          </button>
+          <button data-mode="roles" class="mode-btn pb-3 flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg text-gray-600 hover:text-gray-800">
+            <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+            <span class="leading-none">役割決め</span>
+          </button>
         </div>
       </nav>
+
     </header>
 
     <main>
@@ -51,16 +57,6 @@
             <!-- 履歴下の結果表示は除外 -->
           </div>
         </section>
-
-        <!-- controls centered under the big box (フルスクリーンでも一部は表示される) --><!--
-        <div class="flex flex-col sm:flex-row justify-center gap-4 mt-2">
-          <button id="btn-toggle-fullscreen" class="w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50">全画面表示</button>
-          <button id="btn-hide-results" class="w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50">結果を隠す</button>
-          <button id="btn-prev-item" class="w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50">前の表示</button>
-          <button id="btn-step-item" class="w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50">1件表示</button>
-          <button id="btn-next-item" class="w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50">後の表示</button>
-          <button id="btn-reveal" class="w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600">一括表示</button>
-        </div>-->
 
         <div class="flex flex-col md:flex-row gap-2 mb-3 items-center justify-center w-full">
           <%= render 'shared/button',
@@ -188,7 +184,7 @@
   position: fixed;
   inset: 0;
   background: #111827;
-  z-index: 1200;
+  z-index: 200;
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -207,7 +203,7 @@
   top: 12px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
-  z-index: 1250 !important;
+  z-index: 250 !important;
   margin: 0 !important;
 }
 .fullscreen-active #event-title {
@@ -275,7 +271,7 @@
   position: absolute !important;
   top: 8px !important;
   right: 8px !important;
-  z-index: 1300 !important;
+  z-index: 300 !important;
   font-size: 1rem;
   line-height: 1;
 }

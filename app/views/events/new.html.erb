@@ -40,7 +40,7 @@
 
       <!-- 表示用 textarea: ユーザが編集する領域。内部データは membersRaw と同期 -->
       <textarea id="membersInput" rows="10" class="w-full border rounded-md px-3 py-2" placeholder="例：メンバー1, メンバー2, ..."></textarea>
-      <p class="text-sm text-gray-500 mb-5">↑改行またはカンマ区切りで、ユニークなメンバー名を入力してください。</p>
+      <p class="text-sm text-gray-500 mb-5">↑ 改行またはカンマ区切りで、ユニークなメンバー名を入力してください。</p>
       <div id="memberCountHint" class="text-sm text-gray-500 mt-1 mb-5 bg-yellow-100 border border-dashed rounded px-2 py-1">現在のメンバー数：未入力</div>
 
       <!-- インポート / サンプルデータ入力 / 履歴クリア用トリガ -->
@@ -83,22 +83,23 @@
             <div>
               <label class="text-sm text-gray-600">グループ数*</label>
               <input id="groupCount" type="number" min="1" max="26" value="<%= @event.group_count.presence || 3 %>" class="mt-1 w-full border rounded px-2 py-1 mb-1">
-              <p class="text-sm text-gray-500 mb-1">↑26グループが最大です。</p>
+              <p class="text-sm text-gray-500 mb-1">↑ 26グループが最大です。</p>
             </div>
             <div>
               <label class="text-sm text-gray-600">グループ名（任意）</label>
               <textarea id="customGroupNames" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
-              <p class="text-sm text-gray-500 mb-1">↑改行またはカンマ区切りで入力してください。入力があるとグループ数が自動反映されます。</p>
+              <p class="text-sm text-gray-500 mb-1">↑ 改行またはカンマ区切りで入力してください。入力があるとグループ数が自動反映されます。</p>
             </div>
           </div>
 
           <div>
             <label class="text-sm text-gray-600">分散固定メンバー（任意）</label>
             <textarea id="fixedMembersInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
-            <p class="text-sm text-gray-500 mb-5">↑改行またはカンマ区切りで入力してください。入力メンバーは可能な限り分散して各グループに固定されます。</p>
+            <p class="text-sm text-gray-500 mb-6">↑ 改行またはカンマ区切りで入力してください。入力メンバーは可能な限り分散して各グループに固定されます。</p>
           </div>
 
-          <div id="groupSizeHint" class="text-sm text-gray-500 mt-2 bg-yellow-100 border border-dashed rounded px-2 py-1">（1グループあたり：未計算）</div>
+          <div id="groupSizeHint" class="text-sm text-gray-500 px-2 py-1 mt-1 mb-4 bg-yellow-100 border border-dashed rounded">（1グループあたり：未計算）</div>
+          <p class="text-sm text-gray-500">※<span class="underline decoration-dashed">グループ分けは複数回実行可能です。ボタンを押すたびに被りが最小限になるように振り分け、履歴も保持されます。</span></p>
         </div>
       </div>
 
@@ -109,7 +110,7 @@
           <div class="mb-2">
             <label class="text-sm text-gray-600">順番固定メンバー（任意）</label>
             <textarea id="fixedOrderInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：1:メンバー3, 5:メンバー1, ..."></textarea>
-            <p class="text-sm text-gray-500 mt-1">↑改行またはカンマ区切りで「番号:メンバー名」と入力してください。固定指定します。無効な指定は無視されます。</p>
+            <p class="text-sm text-gray-500 mt-1">↑ 改行またはカンマ区切りで「番号:メンバー名」と入力してください。固定指定します。無効な指定は無視されます。</p>
           </div>
           <p class="text-sm text-gray-500 mt-1">固定指定なしなら全員ランダムに順番が決まります。</p>
         </div>
@@ -121,47 +122,47 @@
           <label class="block mb-2 font-semibold">● 役割決めオプション</label>
           <label class="text-sm text-gray-600">役割名*</label>
           <textarea id="rolesInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
-          <p class="text-sm text-gray-500 mt-1">↑改行またはカンマ区切りで役割名を入力してください。割り当てはランダムです。</p>
+          <p class="text-sm text-gray-500 mt-1">↑ 改行またはカンマ区切りで役割名を入力してください。割り当てはランダムです。</p>
         </div>
       </div>
 
       <!-- 実行ボタン（パネルに応じて表示） -->
       <div id="settings-action-groups" class="mt-4">
-        <div class="flex flex-col md:flex-row gap-2 mb-3 items-center justify-center w-full">
+        <div class="grid grid-cols-1 md:grid-cols-1 gap-2 mb-3 w-full md:place-items-center">
           <%= render 'shared/button',
-                f: nil,
-                button_text: 'グループ分け実行',
-                id: nil,
-                path: '#',
-                variant: 'primary',
-                full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
+            f: nil,
+            button_text: 'グループ分け実行',
+            id: nil,
+            path: '#',
+            variant: 'primary',
+            full_mobile: true,
+            extra_class: 'text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
         </div>
       </div>
 
       <div id="settings-action-order" class="mt-4 hidden">
-        <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
+        <div class="grid grid-cols-1 md:grid-cols-1 gap-2 mb-3 w-full md:place-items-center">
           <%= render 'shared/button',
-                f: nil,
-                button_text: '順番決め実行',
-                id: nil,
-                path: '#',
-                variant: 'primary',
-                full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
+            f: nil,
+            button_text: '順番決め実行',
+            id: nil,
+            path: '#',
+            variant: 'primary',
+            full_mobile: true,
+            extra_class: 'text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
         </div>
       </div>
 
       <div id="settings-action-roles" class="mt-4 hidden">
-        <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
+        <div class="grid grid-cols-1 md:grid-cols-1 gap-2 mb-3 w-full md:place-items-center">
           <%= render 'shared/button',
-                f: nil,
-                button_text: '役割決め実行',
-                id: nil,
-                path: '#',
-                variant: 'primary',
-                full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
+            f: nil,
+            button_text: '役割決め実行',
+            id: nil,
+            path: '#',
+            variant: 'primary',
+            full_mobile: true,
+            extra_class: 'text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
         </div>
       </div>
     </div>
@@ -272,8 +273,8 @@
 
         <!-- 結果操作リンク -->
         <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
-          <a href="#" id="btn-prev-group" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">前回のグループ分けへ</a>
-          <a href="#" id="btn-next-group" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">次回のグループ分けへ</a>
+          <a href="#" id="btn-prev-group" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">前回のグループ分け</a>
+          <a href="#" id="btn-next-group" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">次回のグループ分け</a>
           <a href="#" id="btn-copy-groupoutput" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">クリップボードにコピー</a>
         </div>
 
@@ -306,16 +307,18 @@
       </div>
 
       <label class="block font-semibold mb-2">● イベントタイトル（任意）</label>
-      <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-3 bg-white" placeholder="例：〇〇イベント">
+      <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-1 bg-white" placeholder="例：〇〇イベント">
+      <p class="text-sm mb-4 text-gray-500">↑ 結果共有やイベント保存のタイトルを設定できます。</p>
+      <p class="text-sm mb-4 text-gray-500">※<span class="underline decoration-dashed">イベント保存にはログインが必要です。</span></p>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3 w-full place-items-center">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2 w-full md:place-items-center">
         <%= render 'shared/button',
               f: nil,
               button_text: '結果共有表示',
               id: 'btn-toggle-presentation',
               path: '#',
               variant: 'secondary',
-              full_mobile: false,
+              full_mobile: true,
               extra_class: 'text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
         <%= render 'shared/button',
               f: nil,
@@ -323,7 +326,7 @@
               id: 'btn-save-results',
               path: '#',
               variant: 'primary',
-              full_mobile: false,
+              full_mobile: true,
               extra_class: 'text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
         <%= render 'shared/button',
               f: nil,
@@ -331,11 +334,9 @@
               id: 'btn-export-results',
               path: '#',
               variant: 'secondary',
-              full_mobile: false,
+              full_mobile: true,
               extra_class: 'text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
       </div>
-
-      <p class="text-sm text-gray-500">イベント保存にはログインが必要です。</p>
 
       <!-- 非表示の保存フォーム（JS が submit を呼ぶ） -->
       <%= form_with(model: @event, local: true, html: { id: 'saveForm', style: 'display:none' }) do |f| %>

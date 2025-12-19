@@ -1,3 +1,11 @@
+<%# サインアップ画面 %>
+
+<%# メンテナンスオーバーレイ設定 %>
+<script>
+  try { sessionStorage.removeItem('maintenance-hidden'); } catch (e) {}
+  window.DEFAULT_MAINTENANCE = true;
+</script>
+
 <div class="max-w-2xl mx-auto px-6 pt-8">
   <div class="bg-white rounded-lg shadow-sm p-6">
     <h1 class="text-2xl font-bold mb-4">Sign up</h1>
