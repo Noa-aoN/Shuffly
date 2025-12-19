@@ -95,11 +95,11 @@
           <div>
             <label class="text-sm text-gray-600">分散固定メンバー（任意）</label>
             <textarea id="fixedMembersInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
-            <p class="text-sm text-gray-500 mb-5">↑ 改行またはカンマ区切りで入力してください。入力メンバーは可能な限り分散して各グループに固定されます。</p>
+            <p class="text-sm text-gray-500 mb-6">↑ 改行またはカンマ区切りで入力してください。入力メンバーは可能な限り分散して各グループに固定されます。</p>
           </div>
 
-          <div id="groupSizeHint" class="text-sm text-gray-500 mt-2 bg-yellow-100 border border-dashed rounded px-2 py-1">（1グループあたり：未計算）</div>
-          <p class="text-sm py-2 text-gray-500">※グループ分け実行は複数回可能です。ボタンを押すたびに被りが最小限になるように振り分け、履歴が保存されます。</p>
+          <div id="groupSizeHint" class="text-sm text-gray-500 px-2 py-1 mt-1 mb-4 bg-yellow-100 border border-dashed rounded">（1グループあたり：未計算）</div>
+          <p class="text-sm text-gray-500">※<span class="underline decoration-dashed">グループ分けは複数回実行可能です。ボタンを押すたびに被りが最小限になるように振り分け、履歴も保持されます。</span></p>
         </div>
       </div>
 
@@ -273,8 +273,8 @@
 
         <!-- 結果操作リンク -->
         <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
-          <a href="#" id="btn-prev-group" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">前回のグループ分けへ</a>
-          <a href="#" id="btn-next-group" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">次回のグループ分けへ</a>
+          <a href="#" id="btn-prev-group" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">前回のグループ分け</a>
+          <a href="#" id="btn-next-group" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">次回のグループ分け</a>
           <a href="#" id="btn-copy-groupoutput" class="w-full sm:flex-1 text-center text-base text-blue-600 hover:underline">クリップボードにコピー</a>
         </div>
 
@@ -308,8 +308,8 @@
 
       <label class="block font-semibold mb-2">● イベントタイトル（任意）</label>
       <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-1 bg-white" placeholder="例：〇〇イベント">
-      <p class="text-sm mb-1 text-gray-500">↑ 結果共有やイベント保存のタイトルを設定できます。</p>
-      <p class="text-sm mb-4 text-gray-500">※イベント保存にはログインが必要です。</p>
+      <p class="text-sm mb-4 text-gray-500">↑ 結果共有やイベント保存のタイトルを設定できます。</p>
+      <p class="text-sm mb-4 text-gray-500">※<span class="underline decoration-dashed">イベント保存にはログインが必要です。</span></p>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2 w-full md:place-items-center">
         <%= render 'shared/button',
