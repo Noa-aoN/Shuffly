@@ -351,7 +351,7 @@
   </div>
 
   <!-- トースト通知領域（非表示から表示へ切り替え） -->
-  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white px-4 py-2 rounded opacity-0 transition-opacity"></div>
+  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white text-lg px-10 py-2 rounded opacity-0 transition-opacity"></div>
 </div>
 
 <script>
@@ -647,7 +647,7 @@ function assignOrder(){
   if(members.length === 0){
     document.getElementById('orderOutput').value = "";
     if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = "[]";
-    showToast("参加者がいません");
+    showToast("メンバーがいません");
     return;
   }
 
@@ -952,29 +952,21 @@ function copyGroupOutput(){ navigator.clipboard.writeText(document.getElementByI
 function copyOrderOutput(){ navigator.clipboard.writeText(document.getElementById('orderOutput').value).then(()=>showToast("コピーしました！")).catch(()=>showToast("コピーに失敗しました")); }
 function copyRolesOutput(){ navigator.clipboard.writeText(document.getElementById('rolesOutput').value).then(()=>showToast("コピーしました！")).catch(()=>showToast("コピーに失敗しました")); }
 
-// showToast の位置をフッター高さに合わせて上に出すように変更
+// showToast の位置を常に上から100pxの位置に表示するよう変更
 function showToast(msg){
-  const toast=document.getElementById('toast');
+  const toast = document.getElementById('toast');
   if(!toast) return;
-  // フッターを探して高さを取得。無ければデフォルトマージンを使用
-  let bottomPx = 24; // デフォルト 24px
-  const footer = document.querySelector('footer');
-  if(footer){
-    try{
-      const rect = footer.getBoundingClientRect();
-      bottomPx = Math.max(24, rect.height + 16);
-    }catch(e){}
-  } else {
-    // 代替セレクタ（role/contentinfo 等）
-    const f2 = document.querySelector('[role="contentinfo"], .footer, .site-footer');
-    if(f2){
-      try { bottomPx = Math.max(24, f2.getBoundingClientRect().height + 16); }catch(e){}
-    }
-  }
-  toast.style.bottom = `${bottomPx}px`;
-  toast.textContent=msg;
-  toast.classList.remove("opacity-0");
-  setTimeout(()=>toast.classList.add("opacity-0"),1200);
+  // 優先して top を固定、bottom は解除
+  toast.style.top = '80px';
+  toast.style.bottom = 'auto';
+  // 中央揃えの transform / left を確実に適用
+  toast.style.left = '50%';
+  // toast.style.transform = 'translateX(-50%)';
+  // 前面に出す
+  toast.style.zIndex = '1000';
+  toast.textContent = msg;
+  toast.classList.remove('opacity-0');
+  setTimeout(()=>toast.classList.add('opacity-0'),1200);
 }
 
 function pushToHistory(){
