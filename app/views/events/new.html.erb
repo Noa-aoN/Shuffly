@@ -88,7 +88,7 @@
             <div>
               <label class="text-sm text-gray-600">グループ名（任意）</label>
               <textarea id="customGroupNames" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
-              <p class="text-sm text-gray-500 mb-1">↑ 改行またはカンマ区切りで入力してください。入力があるとグループ数が自動反映されます。</p>
+              <p class="text-sm text-gray-500 mb-1">↑ 改行またはカンマ区切りで入力してください。入力があるとグループ数が無視され、グループ名の数が反映されます。</p>
             </div>
           </div>
 
@@ -308,7 +308,7 @@
 
       <label class="block font-semibold mb-2">● イベントタイトル（任意）</label>
       <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-1 bg-white" placeholder="例：〇〇イベント">
-      <p class="text-sm mb-4 text-gray-500">↑ 結果共有やイベント保存のタイトルを設定できます。</p>
+      <p class="text-sm mb-4 text-gray-500">↑ 結果共有やイベント保存のタイトル・出力テキストファイル名を設定できます。</p>
       <p class="text-sm mb-4 text-gray-500">※<span class="underline decoration-dashed">イベント保存にはログインが必要です。</span></p>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2 w-full md:place-items-center">
