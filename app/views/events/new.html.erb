@@ -20,7 +20,7 @@
         <h2 class="text-xl md:text-2xl font-semibold">メンバーを入力する</h2>
       </div>
 
-      <label class="block mb-2 font-semibold">● メンバーリスト</label>
+      <label class="block mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> メンバーリスト</label>
 
       <!-- 内部保存用（hidden）: JSON を保持 → この値を基に処理する -->
       <textarea id="membersRaw" rows="10" class="hidden" style="display:none;"><%= begin
@@ -39,9 +39,9 @@
       end %></textarea>
 
       <!-- 表示用 textarea: ユーザが編集する領域。内部データは membersRaw と同期 -->
-      <textarea id="membersInput" rows="10" class="w-full border rounded-md px-3 py-2" placeholder="例：メンバー1, メンバー2, ..."></textarea>
+      <textarea id="membersInput" rows="10" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="例：メンバー1, メンバー2, ..."></textarea>
       <p class="text-sm text-gray-500 mb-5">↑ 改行またはカンマ区切りで、ユニークなメンバー名を入力してください。</p>
-      <div id="memberCountHint" class="text-sm text-gray-500 mt-1 mb-5 bg-yellow-100 border border-dashed rounded px-2 py-1">現在のメンバー数：未入力</div>
+      <div id="memberCountHint" class="text-sm text-yellow-800 mt-1 mb-5 bg-yellow-100 border border-dashed border-yellow-200 rounded-lg px-2 py-1">現在のメンバー数：<span class="font-bold">未入力</span></div>
 
       <!-- インポート / サンプルデータ入力 / 履歴クリア用トリガ -->
       <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
@@ -61,44 +61,44 @@
 
       <!-- タブボタン（表示切替）: 均等配置・リンク風 -->
       <div class="flex mb-5 border-b border-gray-200">
-        <button id="tab-settings-groups" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-blue-500 text-blue-600 font-semibold hover:underline">
+        <button id="tab-settings-groups" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-blue-500 text-gray-600 font-semibold hover:underline">
           <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
-          <span class="leading-none">グループ設定</span>
+          <span class="leading-none">グループ</span>
         </button>
         <button id="tab-settings-order"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 font-semibold hover:underline">
           <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
-          <span class="leading-none">順番設定</span>
+          <span class="leading-none">順番</span>
         </button>
         <button id="tab-settings-roles"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 font-semibold hover:underline">
           <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
-          <span class="leading-none">役割設定</span>
+          <span class="leading-none">役割</span>
         </button>
       </div>
 
       <!-- グループ設定パネル -->
       <div id="panel-settings-groups" class="settings-panel">
         <div class="mb-4">
-          <label class="block mb-2 font-semibold">● グループ分けオプション</label>
+          <label class="block mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> グループ分けオプション</label>
           <div class="flex flex-col gap-3 mb-2">
             <div>
               <label class="text-sm text-gray-600">グループ数*</label>
-              <input id="groupCount" type="number" min="1" max="26" value="<%= @event.group_count.presence || 3 %>" class="mt-1 w-full border rounded px-2 py-1 mb-1">
+              <input id="groupCount" type="number" min="1" max="26" value="<%= @event.group_count.presence || 3 %>" class="mt-1 w-full border border-slate-300 rounded-lg px-2 py-1 mb-1">
               <p class="text-sm text-gray-500 mb-1">↑ 26グループが最大です。</p>
             </div>
             <div>
               <label class="text-sm text-gray-600">グループ名（任意）</label>
-              <textarea id="customGroupNames" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：グループA, グループB, ..."></textarea>
+              <textarea id="customGroupNames" rows="2" class="w-full border border-slate-300 rounded-lg px-2 py-1 mt-1" placeholder="例：グループA, グループB, ..."></textarea>
               <p class="text-sm text-gray-500 mb-1">↑ 改行またはカンマ区切りで入力してください。入力があるとグループ数が無視され、グループ名の数が反映されます。</p>
             </div>
           </div>
 
           <div>
             <label class="text-sm text-gray-600">分散固定メンバー（任意）</label>
-            <textarea id="fixedMembersInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
+            <textarea id="fixedMembersInput" rows="2" class="w-full border border-slate-300 rounded-lg px-2 py-1 mt-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
             <p class="text-sm text-gray-500 mb-6">↑ 改行またはカンマ区切りで入力してください。入力メンバーは可能な限り分散して各グループに固定されます。</p>
           </div>
 
-          <div id="groupSizeHint" class="text-sm text-gray-500 px-2 py-1 mt-1 mb-4 bg-yellow-100 border border-dashed rounded">（1グループあたり：未計算）</div>
+          <div id="groupSizeHint" class="text-sm text-yellow-800 mt-1 mb-5 bg-yellow-100 border border-dashed border-yellow-200 rounded-lg px-2 py-1">1グループあたり：<span class="font-bold">未計算</span></div>
           <p class="text-sm text-gray-500">※<span class="underline decoration-dashed">グループ分けは複数回実行可能です。ボタンを押すたびに被りが最小限になるように振り分け、履歴も保持されます。</span></p>
         </div>
       </div>
@@ -106,10 +106,10 @@
       <!-- 順番設定パネル -->
       <div id="panel-settings-order" class="settings-panel hidden">
         <div class="mb-4">
-          <label class="block mb-2 font-semibold">● 順番決めオプション</label>
+          <label class="block mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> 順番決めオプション</label>
           <div class="mb-2">
             <label class="text-sm text-gray-600">順番固定メンバー（任意）</label>
-            <textarea id="fixedOrderInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：1:メンバー3, 5:メンバー1, ..."></textarea>
+            <textarea id="fixedOrderInput" rows="3" class="w-full border border-slate-300 rounded-lg px-2 py-1 mt-1" placeholder="例：1:メンバー3, 5:メンバー1, ..."></textarea>
             <p class="text-sm text-gray-500 mt-1">↑ 改行またはカンマ区切りで「番号:メンバー名」と入力してください。固定指定します。無効な指定は無視されます。</p>
           </div>
           <p class="text-sm text-gray-500 mt-1">固定指定なしなら全員ランダムに順番が決まります。</p>
@@ -119,9 +119,9 @@
       <!-- 役割設定パネル -->
       <div id="panel-settings-roles" class="settings-panel hidden">
         <div class="mb-4">
-          <label class="block mb-2 font-semibold">● 役割決めオプション</label>
+          <label class="block mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> 役割決めオプション</label>
           <label class="text-sm text-gray-600">役割名*</label>
-          <textarea id="rolesInput" rows="3" class="w-full border rounded px-2 py-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
+          <textarea id="rolesInput" rows="3" class="w-full border border-slate-300 rounded-lg px-2 py-1 mt-1" placeholder="例：司会, 書記, ..."><%= @event.setting_json["roles"] rescue "" %></textarea>
           <p class="text-sm text-gray-500 mt-1">↑ 改行またはカンマ区切りで役割名を入力してください。割り当てはランダムです。</p>
         </div>
       </div>
@@ -178,33 +178,33 @@
 
       <!-- 結果タブ: 均等配置・リンク風 -->
       <div class="flex mb-5 border-b border-gray-200">
-        <button id="tab-groups" class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-blue-500 text-blue-600 font-medium hover:underline">
+        <button id="tab-groups" class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-blue-500 text-gray-600 font-medium hover:underline">
           <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
-          <span class="leading-none">グループ結果</span>
+          <span class="leading-none">グループ</span>
         </button>
         <button id="tab-order"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">
           <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
-          <span class="leading-none">順番結果</span>
+          <span class="leading-none">順番</span>
         </button>
         <button id="tab-roles"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">
           <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
-          <span class="leading-none">役割結果</span>
+          <span class="leading-none">役割</span>
         </button>
       </div>
 
       <!-- グループ表示パネル -->
       <div id="panel-groups" class="result-panel">
-        <h3 class="mb-2 font-semibold">● グループ表示</h3>
+        <h3 class="mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> グループ表示</h3>
 
         <!-- グループ結果出力（初期は空。実行後に内容が入る） -->
-        <textarea id="groupOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border rounded-md px-3 py-2 w-full mb-4 text-lg"></textarea>
+        <textarea id="groupOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border  border-slate-300 rounded-lg px-3 py-2 w-full mb-4 text-lg"></textarea>
 
         <!-- グループ表示オプション -->
         <div class="mb-6">
           <div class="flex items-center justify-between mb-2">
             <h3 class="font-semibold">
               <a href="#" id="btn-toggle-options" class="inline-flex items-center gap-2 hover:underline" aria-expanded="false">
-                <span id="btn-toggle-options-text">● グループ表示オプション</span>
+                <span id="btn-toggle-options-text" class="text-gray-600"><span class="text-sm text-blue-500">●</span> グループ表示オプション</span>
                 <%= image_tag "icons/expand_more_24dp_1F1F1F.svg", width: 20, height: 20, id: "btn-toggle-options-icon", class: "inline-block" %>
               </a>
             </h3>
@@ -231,7 +231,7 @@
             <div class="mt-2 flex flex-col sm:flex-row sm:items-start gap-3">
               <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full sm:w-auto">
                 <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0">メンバーの区切り方 :</label>
-                <select id="separatorSelect" class="border rounded-md px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto min-w-40">
+                <select id="separatorSelect" class="border rounded-lg px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto min-w-40">
                   <option value="," selected>カンマ</option>
                   <option value=" " >スペース</option>
                   <option value="  ">ダブルスペース</option>
@@ -242,7 +242,7 @@
 
               <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full sm:w-auto">
                 <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0">グループの区切り方 :</label>
-                <select id="groupSeparatorSelect" class="border rounded-md px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto min-w-40">
+                <select id="groupSeparatorSelect" class="border rounded-lg px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto min-w-40">
                   <option value="none" selected>なし</option>
                   <option value="space">空行</option>
                   <option value="line">線</option>
@@ -258,18 +258,18 @@
           <div class="flex items-center justify-between mb-2">
             <h3 class="font-semibold">
               <a href="#" id="btn-toggle-stats" class="inline-flex items-center gap-2 hover:underline" aria-expanded="false">
-                <span id="btn-toggle-stats-text">● 統計情報</span>
+                <span id="btn-toggle-stats-text" class="text-gray-600"><span class="text-sm text-blue-500">●</span> 統計情報</span>
                 <%= image_tag "icons/expand_more_24dp_1F1F1F.svg", width: 20, height: 20, id: "btn-toggle-stats-icon", class: "inline-block" %>
               </a>
             </h3>
           </div>
           <div id="statsContainer" class="hidden">
-            <textarea id="statsOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border rounded-md px-3 py-2 w-full text-sm mb-2"></textarea>
+            <textarea id="statsOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border  border-slate-300 rounded-lg px-3 py-2 w-full text-sm mb-2"></textarea>
           </div>
         </div>
 
         <!-- グループ分けの回次表示（memberCountHint と同じスタイル） -->
-        <div id="groupRoundHint" class="text-sm text-gray-500 mt-1 mb-6 bg-yellow-100 border border-dashed rounded px-2 py-1">現在のグループ分け表示：未実施</div>
+        <div id="groupRoundHint" class="text-sm text-yellow-800 mt-1 mb-5 bg-yellow-100 border border-dashed border-yellow-200 rounded px-2 py-1">現在のグループ分け表示：<span class="font-bold">未実施</span></div>
 
         <!-- 結果操作リンク -->
         <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
@@ -282,8 +282,8 @@
 
       <!-- 順番表示パネル -->
       <div id="panel-order" class="result-panel hidden">
-        <h3 class="font-semibold mb-2">● 順番表示</h3>
-        <textarea id="orderOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
+        <h3 class="font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> 順番表示</h3>
+        <textarea id="orderOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border border-slate-300 rounded-lg px-3 py-2 w-full text-lg"></textarea>
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-orderoutput" class="text-base text-blue-600 hover:underline">クリップボードにコピー</a>
         </div>
@@ -291,8 +291,8 @@
 
       <!-- 役割表示パネル -->
       <div id="panel-roles" class="result-panel hidden">
-        <h3 class="font-semibold mb-2">● 役割表示</h3>
-        <textarea id="rolesOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border rounded-md px-3 py-2 w-full text-lg"></textarea>
+        <h3 class="font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> 役割表示</h3>
+        <textarea id="rolesOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border border-slate-300 rounded-lg px-3 py-2 w-full text-lg"></textarea>
         <div class="flex justify-center mt-2 w-full">
           <a href="#" id="btn-copy-rolesoutput" class="text-base text-blue-600 hover:underline">クリップボードにコピー</a>
         </div>
@@ -306,8 +306,8 @@
         <h2 class="text-xl md:text-2xl font-semibold">共有 / 出力 / 保存する</h2>
       </div>
 
-      <label class="block font-semibold mb-2">● イベントタイトル（任意）</label>
-      <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border rounded px-3 py-2 mb-1 bg-white" placeholder="例：〇〇イベント">
+      <label class="block font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> イベントタイトル（任意）</label>
+      <input id="shareEventTitle" type="text" value="<%= @event.title %>" class="w-full border border-slate-300 rounded-lg px-3 py-2 mb-1 bg-white" placeholder="例：〇〇イベント">
       <p class="text-sm mb-4 text-gray-500">↑ 結果共有やイベント保存のタイトル・出力テキストファイル名を設定できます。</p>
       <p class="text-sm mb-4 text-gray-500">※<span class="underline decoration-dashed">イベント保存にはログインが必要です。</span></p>
 
@@ -352,7 +352,7 @@
   </div>
 
   <!-- トースト通知領域（幅を内容に合わせる・モバイル対応） -->
-  <div id="toast" class="fixed left-1/2 transform -translate-x-1/2 bg-white text-black border border-default shadow-xs text-sm dm:text-lg opacity-0 transition-opacity rounded-base" style="display:inline-block; max-width:90vw; width:auto; white-space:pre-wrap; text-align:center; padding:1rem; box-sizing:border-box;"></div>
+  <div id="toast" class="fixed left-1/2 transform -translate-x-1/2 bg-white text-black border border-default shadow-xs text-sm dm:text-lg opacity-0 transition-opacity rounded-lg" style="display:inline-block; max-width:90vw; width:auto; white-space:pre-wrap; text-align:center; padding:1rem; box-sizing:border-box;"></div>
 </div>
 
 <script>
@@ -525,7 +525,7 @@ function assignGroups(){
     const gr = document.getElementById('groupRoundHint');
     if(gOut) gOut.value = "";
     if(sOut) sOut.value = "";
-    if(gr) gr.textContent = '現在のグループ分け表示：未実施';
+    if(gr) gr.innerHTML = '現在のグループ分け表示：<span class="font-bold">未実施</span>';
     groupsAssigned = false;
     return;
   }
@@ -925,9 +925,9 @@ function updateGroupRoundDisplay(){
   const entries = rawList.map(parseEntry);
   const round = getDisplayRound(entries);
   if(round === null){
-    el.textContent = '現在のグループ分け表示：未実施';
+    el.innerHTML = '現在のグループ分け表示：<span class="font-bold">未実施</span>';
   } else {
-    el.textContent = `現在のグループ分け表示：${round}回目`;
+    el.innerHTML = `現在のグループ分け表示：<span class="font-bold">${round}回目</span>`;
   }
 }
 
@@ -949,15 +949,23 @@ function updateParticipantCount(){
   }
 
   if(memberSpan){
-    memberSpan.textContent = count ? `現在のメンバー数：${count}人` : '現在のメンバー数：未入力';
+    if(count){
+      memberSpan.innerHTML = `現在のメンバー数：<span class="font-bold">${count}人</span>`;
+    } else {
+      memberSpan.innerHTML = '現在のメンバー数：<span class="font-bold">未入力</span>';
+    }
   }
 
   if(span){
     if(count === 0){
-      span.textContent = '現在の1グループあたり：未計算';
+      span.innerHTML = '1グループあたり：<span class="font-bold">未計算</span>';
     } else {
       const min=Math.floor(count/groupCount), max=Math.ceil(count/groupCount);
-      span.textContent = min===max?`現在の1グループあたり：${min}人`:`現在の1グループあたり：${min}〜${max}人`;
+      if(min===max){
+        span.innerHTML = `現在の1グループあたり：<span class="font-bold">${min}人</span>`;
+      } else {
+        span.innerHTML = `現在の1グループあたり：<span class="font-bold">${min}〜${max}人</span>`;
+      }
     }
   }
 
@@ -1343,12 +1351,12 @@ window.onload = () => {
   if(sc && btn && textSpan && icon){
     if(statsCollapsed){
       sc.classList.add('hidden');
-      textSpan.textContent = "● 統計情報";
+      textSpan.innerHTML = '<span class="text-sm text-blue-500">●</span> 統計情報';
       btn.setAttribute('aria-expanded', 'false');
       icon.src = ICON_EXPAND;
     } else {
       sc.classList.remove('hidden');
-      textSpan.textContent = "● 統計情報";
+      textSpan.innerHTML = '<span class="text-sm text-blue-500">●</span> 統計情報';
       btn.setAttribute('aria-expanded', 'true');
       icon.src = ICON_COLLAPSE;
     }
@@ -1361,12 +1369,13 @@ window.onload = () => {
   if(oc && obtn && otext && oicon){
     if(optionsCollapsed){
       oc.classList.add('hidden');
-      otext.textContent = "● グループ表示オプション";
+      // preserve dot styling by setting innerHTML so the dot keeps text-blue-500
+      otext.innerHTML = '<span class="text-sm text-blue-500">●</span> グループ表示オプション';
       obtn.setAttribute('aria-expanded', 'false');
       oicon.src = ICON_EXPAND;
     } else {
       oc.classList.remove('hidden');
-      otext.textContent = "● グループ表示オプション";
+      otext.innerHTML = '<span class="text-sm text-blue-500">●</span> グループ表示オプション';
       obtn.setAttribute('aria-expanded', 'true');
       oicon.src = ICON_COLLAPSE;
     }
@@ -1461,7 +1470,7 @@ window.onload = () => {
     sc.classList.toggle('hidden');
     const expanded = !sc.classList.contains('hidden');
     statsCollapsed = sc.classList.contains('hidden');
-    textSpan.textContent = statsCollapsed ? "● 統計情報" : "● 統計情報";
+    textSpan.innerHTML = '<span class="text-sm text-blue-500">●</span> 統計情報';
     btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
     icon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
     if(!statsCollapsed) showStats();
@@ -1478,7 +1487,8 @@ window.onload = () => {
     oc.classList.toggle('hidden');
     const expanded = !oc.classList.contains('hidden');
     optionsCollapsed = oc.classList.contains('hidden');
-    textSpan.textContent = optionsCollapsed ? "● グループ表示オプション" : "● グループ表示オプション";
+    // preserve dot styling by setting innerHTML so the dot keeps text-blue-500
+    textSpan.innerHTML = '<span class="text-sm text-blue-500">●</span> グループ表示オプション';
     btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
     icon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
     // 変更点：グループ分け実行が行われていない限り、開閉時に groupOutput を更新しない

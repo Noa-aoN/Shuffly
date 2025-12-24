@@ -10,7 +10,7 @@
 <% data_action = local_assigns.key?(:data_action) ? local_assigns[:data_action] : nil %>
 <% icon_html = local_assigns.fetch(:icon_html, nil) %>
 
-<% base = "inline-flex items-center justify-center rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition min-w-[200px]" %>
+<% base = "inline-flex items-center justify-center rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 transition min-w-[220px]" %>
 
 <% size_classes = {
   'sm' => 'px-3 py-1 text-sm min-h-[40px]',
@@ -44,7 +44,7 @@
       <% link_opts[:data] = { action: data_action } %>
     <% end %>
     <% link_opts.delete_if { |_, v| v.nil? } %>
-    <% inner = (icon_html.to_s + (icon_html.present? ? ' ' : '') + button_text).html_safe %>
+    <% inner = (icon_html.to_s + (icon_html.present? ? ' ' : '') + content_tag(:span, button_text, class: 'font-semibold')).html_safe %>
     <%= link_to inner, path, link_opts %>
   <% end %>
 </div>
