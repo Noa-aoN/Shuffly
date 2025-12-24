@@ -41,7 +41,7 @@
       <!-- 表示用 textarea: ユーザが編集する領域。内部データは membersRaw と同期 -->
       <textarea id="membersInput" rows="10" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="例：メンバー1, メンバー2, ..."></textarea>
       <p class="text-sm text-gray-500 mb-5">↑ 改行またはカンマ区切りで、ユニークなメンバー名を入力してください。</p>
-      <div id="memberCountHint" class="text-sm text-yellow-800 mt-1 mb-5 bg-yellow-100 border border-dashed border-yellow-200 rounded-lg px-2 py-1">現在のメンバー数：<span class="font-bold">未入力</span></div>
+      <div id="memberCountHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-lg px-4 py-3">現在のメンバー数：<span class="font-bold">未入力</span></div>
 
       <!-- インポート / サンプルデータ入力 / 履歴クリア用トリガ -->
       <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
@@ -98,7 +98,7 @@
             <p class="text-sm text-gray-500 mb-6">↑ 改行またはカンマ区切りで入力してください。入力メンバーは可能な限り分散して各グループに固定されます。</p>
           </div>
 
-          <div id="groupSizeHint" class="text-sm text-yellow-800 mt-1 mb-5 bg-yellow-100 border border-dashed border-yellow-200 rounded-lg px-2 py-1">1グループあたり：<span class="font-bold">未計算</span></div>
+          <div id="groupSizeHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-lg px-4 py-3">1グループあたり：<span class="font-bold">未計算</span></div>
           <p class="text-sm text-gray-500">※<span class="underline decoration-dashed">グループ分けは複数回実行可能です。ボタンを押すたびに被りが最小限になるように振り分け、履歴も保持されます。</span></p>
         </div>
       </div>
@@ -136,7 +136,9 @@
             path: '#',
             variant: 'primary',
             full_mobile: true,
-            extra_class: 'text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
+            extra_class: 'text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600',
+            icon: 'icons/diversity_3_24dp_1F1F1F.svg',
+            icon_class: 'inline-block relative bottom-0.5' %>
         </div>
       </div>
 
@@ -254,7 +256,7 @@
         </div>
 
         <!-- 統計情報（折りたたみ） -->
-        <div class="mb-6">
+        <div class="mb-5">
           <div class="flex items-center justify-between mb-2">
             <h3 class="font-semibold">
               <a href="#" id="btn-toggle-stats" class="inline-flex items-center gap-2 hover:underline" aria-expanded="false">
@@ -264,12 +266,12 @@
             </h3>
           </div>
           <div id="statsContainer" class="hidden">
-            <textarea id="statsOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border  border-slate-300 rounded-lg px-3 py-2 w-full text-sm mb-2"></textarea>
+            <textarea id="statsOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border border-slate-300 rounded-lg px-3 py-2 w-full text-sm mb-2"></textarea>
           </div>
         </div>
 
         <!-- グループ分けの回次表示（memberCountHint と同じスタイル） -->
-        <div id="groupRoundHint" class="text-sm text-yellow-800 mt-1 mb-5 bg-yellow-100 border border-dashed border-yellow-200 rounded px-2 py-1">現在のグループ分け表示：<span class="font-bold">未実施</span></div>
+        <div id="groupRoundHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-lg px-4 py-3">現在のグループ分け表示：<span class="font-bold">未実施</span></div>
 
         <!-- 結果操作リンク -->
         <div class="flex flex-col md:flex-row gap-2 items-center justify-center w-full">
