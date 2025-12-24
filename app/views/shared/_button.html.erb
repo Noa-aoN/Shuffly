@@ -8,9 +8,15 @@
 <% extra_class = local_assigns.fetch(:extra_class, '') %>
 <% id = local_assigns.key?(:id) ? local_assigns[:id] : nil %>
 <% data_action = local_assigns.key?(:data_action) ? local_assigns[:data_action] : nil %>
-<% icon_html = local_assigns.fetch(:icon_html, nil) %>
 
-<% base = "inline-flex items-center justify-center rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 transition min-w-[220px]" %>
+<%# 新規オプション: icon (asset パス or URL), icon_class, icon_alt, 既に構築済みの icon_html があれば優先する %>
+<% icon_html = local_assigns.fetch(:icon_html, nil) %>
+<% icon = local_assigns.fetch(:icon, nil) %>
+<%# アイコンとテキストの間は全角スペース1つで制御する %>
+<% icon_class = local_assigns.fetch(:icon_class, 'inline-block align-middle') %>
+<% icon_alt = local_assigns.fetch(:icon_alt, '') %>
+
+<% base = "inline-flex items-center justify-center rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 transition shadow-lg md:min-w-[180px] lg:min-w-[310px]" %>
 
 <% size_classes = {
   'sm' => 'px-3 py-1 text-sm min-h-[40px]',
@@ -28,7 +34,16 @@
 <% size_class = size_classes[size] || size_classes['md'] %>
 <% var_class = variant_classes[variant] || variant_classes['primary'] %>
 <% responsive_class = full_mobile ? 'w-full sm:w-auto' : 'inline-block' %>
-<% classes = [base, size_class, var_class, responsive_class, extra_class].join(' ').squeeze(' ').strip %>
+<% web_text_adjust = 'md:text-[16px]' %>
+<% classes = [base, size_class, var_class, responsive_class, web_text_adjust, extra_class].join(' ').squeeze(' ').strip %>
+
+<%# icon_html が未指定かつ icon が渡されている場合に生成する。アイコンの色はボタンの文字色に合わせる（text-white が含まれる場合は白く、それ以外は黒系のまま） %>
+<% if icon_html.blank? && icon.present? %>
+  <% src = (begin; asset_path(icon) rescue icon; end) %>
+  <% text_is_white = var_class.include?('text-white') %>
+  <% icon_style = text_is_white ? 'filter: invert(1) brightness(2);' : 'filter: none;' %>
+  <% icon_html = image_tag(src, width: 20, height: 20, class: icon_class, alt: (icon_alt.present? ? icon_alt : ''), style: icon_style) %>
+<% end %>
 
 <div class="mt-2">
   <% if f %>
@@ -44,7 +59,9 @@
       <% link_opts[:data] = { action: data_action } %>
     <% end %>
     <% link_opts.delete_if { |_, v| v.nil? } %>
-    <% inner = (icon_html.to_s + (icon_html.present? ? ' ' : '') + content_tag(:span, button_text, class: 'font-semibold')).html_safe %>
+    <%# アイコンがある場合はアイコンとテキストの間に全角スペースを1つ挿入する %>
+    <% separator = icon_html.present? ? "　" : '' %>
+    <% inner = (icon_html.to_s + separator + content_tag(:span, button_text, class: 'font-semibold')).html_safe %>
     <%= link_to inner, path, link_opts %>
   <% end %>
 </div>

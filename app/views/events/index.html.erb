@@ -83,22 +83,24 @@
   <!-- メインヒーロー：タイトルとCTA -->
   <section class="py-24 pb-30 w-full">
     <div class="max-w-5xl mx-auto text-center px-6 py-16">
-      <p class="text-sm mb-8">シャッフリー</p>
+      <p class="text-xl font-semibold mb-1">シャッフリー</p>
       <h2 class="text-6xl font-extrabold mb-4 tracking-wide">Shuffly</h2>
       <p class="text-lg mb-8"><span class="bg-yellow-200 px-1"><b>グループ・順番・役割決め</b></span>が、簡単かつスピーディに。</p>
 
-      <div class="flex items-center justify-center">
-        <div class="w-full max-w-md flex flex-col sm:flex-row gap-4 items-center">
+      <div class="max-w-[650px] mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 w-full md:place-items-center">
           <%= render 'shared/button',
                 button_text: 'すぐに使う',
                 path: new_event_path,
                 variant: 'primary',
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600 z-0 opacity-100' %>
-
+                full_mobile: true,
+                extra_class: 'text-center px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600',
+                icon: 'icons/bolt_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                icon_class: 'inline-block' %>
           <% if user_signed_in? %>
             <%= link_to "イベントを作成・確認する", new_event_path, class: "w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50" %>
 
-            <div class="hidden sm:flex items-center gap-2 ml-2">
+            <div class="hidden sm:flex items-center gap-2 sm:ml-2">
               <%= link_to "マイページ", mypage_path, class: "px-4 py-2 bg-gray-100 rounded-lg text-sm text-gray-700 hover:bg-gray-200" %>
               <%= link_to "ログアウト", destroy_user_session_path, method: :delete, data: { confirm: "ログアウトしますか？" }, class: "px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600" %>
             </div>
@@ -107,7 +109,10 @@
                   button_text: 'ログインして使う',
                   path: new_user_session_path,
                   variant: 'secondary',
-                  extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50 z-0 opacity-100' %>
+                  full_mobile: true,
+                  extra_class: 'text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50',
+                  icon: 'icons/login_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                  icon_class: 'inline-block' %>
           <% end %>
         </div>
       </div>
