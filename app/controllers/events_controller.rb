@@ -1,6 +1,6 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: [:show, :edit, :update]
-  skip_before_action :set_event, only: [:presentation]
+  before_action :set_event, only: [ :show, :edit, :update ]
+  skip_before_action :set_event, only: [ :presentation ]
 
   def index
     @events = current_user ? current_user.events : Event.none
@@ -22,11 +22,11 @@ class EventsController < ApplicationController
 
   def show
     # 保存済み JSON をロード
-    @members = JSON.parse(@event.members_json || '[]')
-    @results = JSON.parse(@event.member_results_json || '{}')
-    @order = JSON.parse(@event.member_order_json || '{}')
-    @settings = JSON.parse(@event.setting_json || '{}')
-    @history = JSON.parse(@event.history_json || '[]')
+    @members = JSON.parse(@event.members_json || "[]")
+    @results = JSON.parse(@event.member_results_json || "{}")
+    @order = JSON.parse(@event.member_order_json || "{}")
+    @settings = JSON.parse(@event.setting_json || "{}")
+    @history = JSON.parse(@event.history_json || "[]")
   end
 
   def edit; end
@@ -51,18 +51,18 @@ class EventsController < ApplicationController
     id = params[:id].to_s
 
     # common mistaken paths like /events/show -> redirect to presentation
-    if id == 'show' || id == 'presentation'
+    if id == "show" || id == "presentation"
       redirect_to presentation_events_path and return
     end
 
     # require a numeric id to avoid treating non-id segments as record ids
     unless id =~ /\A\d+\z/
-      redirect_to root_path, alert: '無効なイベントIDです' and return
+      redirect_to root_path, alert: "無効なイベントIDです" and return
     end
 
     @event = Event.find_by(id: id)
     unless @event
-      redirect_to root_path, alert: '指定のイベントが見つかりません' and return
+      redirect_to root_path, alert: "指定のイベントが見つかりません" and return
     end
   end
 
