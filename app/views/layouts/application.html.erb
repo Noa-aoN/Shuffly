@@ -48,7 +48,7 @@
   <%# メンテナンスオーバーレイの簡易制御をここに入れる（全ページ共通） %>
   <script>
     (function(){
-      // 要素取得（partial 側で id を揃えている前提）
+      // 要素取得（partial 側で id を揃える）
       const overlay = document.getElementById('maintenance-overlay');
       if(!overlay) return;
 
@@ -92,7 +92,7 @@
       // 自動表示ルール:
       // - URL に ?maintenance=1 があれば表示
       // - sessionStorage に maintenance-hidden があれば表示抑止
-      // - window.DEFAULT_MAINTENANCE フラグがあれば表示（サーバで埋める等に便利）
+      // - window.DEFAULT_MAINTENANCE フラグがあれば表示
       try{
         const params = new URLSearchParams(window.location.search);
         const hidden = sessionStorage.getItem('maintenance-hidden') === '1';
