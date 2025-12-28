@@ -44,7 +44,7 @@
       <div id="memberCountHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">現在のメンバー数：<span class="font-bold">未入力</span></div>
 
       <!-- インポート / サンプルデータ入力 / 履歴クリア用ボタン（tertiary） -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2 w-full md:place-items-center">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
         <%= render 'shared/button',
               f: nil,
               button_text: 'サンプルデータを入力',
@@ -52,7 +52,7 @@
               path: '#',
               variant: 'tertiary',
               full_mobile: true,
-              extra_class: 'w-full sm:flex-1 text-center',
+              extra_class: 'w-full',
               icon: 'icons/experiment_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
               icon_class: 'inline-block' %>
         <%= render 'shared/button',
@@ -62,7 +62,7 @@
               path: '#',
               variant: 'tertiary',
               full_mobile: true,
-              extra_class: 'w-full sm:flex-1 text-center',
+              extra_class: 'w-full',
               icon: 'icons/upload_file_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
               icon_class: 'inline-block' %>
         <input id="importFile" type="file" accept=".txt,.csv" class="hidden">
@@ -73,7 +73,7 @@
               path: '#',
               variant: 'tertiary',
               full_mobile: true,
-              extra_class: 'w-full sm:flex-1 text-center',
+              extra_class: 'w-full',
               icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
               icon_class: 'inline-block' %>
       </div>
@@ -157,7 +157,7 @@
 
       <!-- 実行ボタン（パネルに応じて表示） -->
       <div id="settings-action-groups" class="mt-4">
-        <div class="grid grid-cols-1 md:grid-cols-1 gap-2 mb-3 w-full md:place-items-center">
+        <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 mb-3 w-full sm:place-items-center">
           <%= render 'shared/button',
             f: nil,
             button_text: 'グループ分け実行',
@@ -172,7 +172,7 @@
       </div>
 
       <div id="settings-action-order" class="mt-4 hidden">
-        <div class="grid grid-cols-1 md:grid-cols-1 gap-2 mb-3 w-full md:place-items-center">
+        <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 mb-3 w-full sm:place-items-center">
           <%= render 'shared/button',
             f: nil,
             button_text: '順番決め実行',
@@ -187,7 +187,7 @@
       </div>
 
       <div id="settings-action-roles" class="mt-4 hidden">
-        <div class="grid grid-cols-1 md:grid-cols-1 gap-2 mb-3 w-full md:place-items-center">
+        <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 mb-3 w-full sm:place-items-center">
           <%= render 'shared/button',
             f: nil,
             button_text: '役割決め実行',
@@ -309,7 +309,7 @@
         <div id="groupRoundHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">現在のグループ分け表示：<span class="font-bold">未実施</span></div>
 
         <!-- 結果操作ボタン（tertiary） -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2 w-full md:place-items-center">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
           <div class="col-span-1">
             <%= render 'shared/button',
                   f: nil,
@@ -318,7 +318,7 @@
                   path: '#',
                   variant: 'tertiary',
                   full_mobile: true,
-                  extra_class: 'w-full sm:flex-1 text-center',
+                  extra_class: 'w-full',
                   icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                   icon_class: 'inline-block' %>
           </div>
@@ -331,7 +331,7 @@
                   path: '#',
                   variant: 'tertiary',
                   full_mobile: true,
-                  extra_class: 'w-full sm:flex-1 text-center',
+                  extra_class: 'w-full',
                   icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                   icon_class: 'inline-block icon_right' %>
           </div>
@@ -344,7 +344,7 @@
                   path: '#',
                   variant: 'tertiary',
                   full_mobile: true,
-                  extra_class: 'w-full sm:flex-1 text-center',
+                  extra_class: 'w-full',
                   icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                   icon_class: 'inline-block' %>
           </div>
@@ -401,7 +401,7 @@
       <p class="text-sm mb-4 text-gray-500">↑ 結果共有やイベント保存のタイトル・出力テキストファイル名を設定できます。</p>
       <p class="text-sm mb-4 text-gray-500">※<span class="underline decoration-dashed">イベント保存にはログインが必要です。</span></p>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2 w-full md:place-items-center">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
         <%= render 'shared/button',
               f: nil,
               button_text: '結果共有表示',
