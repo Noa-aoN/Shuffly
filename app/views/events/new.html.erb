@@ -14,7 +14,7 @@
   <div class="flex flex-col gap-10">
 
     <!-- ① メンバー入力エリア（表示用と内部保存用の textarea を分離） -->
-    <div class="bg-white rounded-xl shadow-sm px-10 pt-8 pb-6">
+    <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 pt-8 pb-6">
       <div class="flex items-start gap-3 mb-4">
         <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">1</div>
         <h2 class="text-xl md:text-2xl font-semibold">メンバーを入力する</h2>
@@ -53,26 +53,28 @@
     </div>
 
     <!-- ② 設定エリア（タブ切替でグループ / 順番 / 役割） -->
-    <div class="bg-white rounded-xl shadow-sm px-10 pt-8 pb-6">
+    <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 pt-8 pb-6">
       <div class="flex items-start gap-3 mb-4">
         <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">2</div>
         <h2 class="text-xl md:text-2xl font-semibold">設定して実行する</h2>
       </div>
 
-      <!-- タブボタン（表示切替）: 均等配置・リンク風 -->
-      <div class="flex mb-5 border-b border-gray-200">
-        <button id="tab-settings-groups" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-blue-500 text-gray-600 font-semibold hover:underline">
-          <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
-          <span class="leading-none">グループ</span>
-        </button>
-        <button id="tab-settings-order"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 font-semibold hover:underline">
-          <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
-          <span class="leading-none">順番</span>
-        </button>
-        <button id="tab-settings-roles"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 font-semibold hover:underline">
-          <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
-          <span class="leading-none">役割</span>
-        </button>
+      <!-- タブボタン（表示切替）: 新デザイン（ピル型） -->
+      <div class="mb-5">
+        <div class="inline-flex w-full items-center gap-2 bg-white rounded-xl p-1 border border-slate-200 shadow-sm">
+          <button id="tab-settings-groups" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm md:text-lg rounded-lg font-semibold text-blue-600 bg-blue-50 ring-1 ring-blue-100 shadow-sm">
+            <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+            <span class="hidden sm:inline leading-none">グループ</span>
+          </button>
+          <button id="tab-settings-order"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm md:text-lg rounded-lg text-gray-600 hover:text-blue-500">
+            <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+            <span class="hidden sm:inline leading-none">順番</span>
+          </button>
+          <button id="tab-settings-roles"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm md:text-lg rounded-lg text-gray-600 hover:text-blue-500">
+            <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+            <span class="hidden sm:inline leading-none">役割</span>
+          </button>
+        </div>
       </div>
 
       <!-- グループ設定パネル -->
@@ -174,7 +176,7 @@
     </div>
 
     <!-- ③ 結果表示カード：グループ / 順番 / 役割 の切替表示 -->
-    <div id="resultsCard" class="bg-gray-100 rounded-xl shadow-sm px-10 pt-8 pb-6">
+    <div id="resultsCard" class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 pt-8 pb-6">
       <div class="flex items-start justify-between mb-4">
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
@@ -182,20 +184,22 @@
         </div>
       </div>
 
-      <!-- 結果タブ: 均等配置・リンク風 -->
-      <div class="flex mb-5 border-b border-gray-200">
-        <button id="tab-groups" class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-blue-500 text-gray-600 font-medium hover:underline">
-          <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
-          <span class="leading-none">グループ</span>
-        </button>
-        <button id="tab-order"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">
-          <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
-          <span class="leading-none">順番</span>
-        </button>
-        <button id="tab-roles"  class="flex-1 text-center px-3 py-2 -mb-px border-b-2 text-sm md:text-lg border-transparent text-gray-600 hover:underline">
-          <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
-          <span class="leading-none">役割</span>
-        </button>
+      <!-- 結果タブ: 新デザイン（ピル型） -->
+      <div class="mb-5">
+        <div class="inline-flex w-full items-center gap-2 bg-white rounded-xl p-1 border border-slate-200 shadow-sm">
+          <button id="tab-groups" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg font-semibold text-blue-600 bg-blue-50 ring-1 ring-blue-100 shadow-sm">
+            <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+            <span class="hidden sm:inline leading-none">グループ</span>
+          </button>
+          <button id="tab-order"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg text-gray-600 hover:text-blue-500">
+            <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+            <span class="hidden sm:inline leading-none">順番</span>
+          </button>
+          <button id="tab-roles"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg text-gray-600 hover:text-blue-500">
+            <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
+            <span class="hidden sm:inline leading-none">役割</span>
+          </button>
+        </div>
       </div>
 
       <!-- グループ表示パネル -->
@@ -306,7 +310,7 @@
     </div>
 
     <!-- ④ 出力 / 共有 / 保存 -->
-    <div class="bg-gray-100 rounded-xl shadow-sm px-10 pt-8 pb-6">
+    <div class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 pt-8 pb-6">
       <div class="flex items-start gap-3 mb-4">
         <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">4</div>
         <h2 class="text-xl md:text-2xl font-semibold">共有 / 出力 / 保存する</h2>
@@ -1073,29 +1077,74 @@ function redoHistory(){
 }
 
 function switchResultTab(name){
+  // hide all panels
   document.querySelectorAll('.result-panel').forEach(el=>el.classList.add('hidden'));
 
+  // normalize tab styles: remove active styles (including pill background/ring/shadow)
   document.querySelectorAll('#tab-groups, #tab-order, #tab-roles').forEach(b=>{
-    b.classList.remove('border-blue-500','text-blue-600','font-semibold');
+    b.classList.remove('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
     b.classList.add('border-transparent','text-gray-600');
   });
 
-  if(name==='groups'){ document.getElementById('panel-groups').classList.remove('hidden'); const el=document.getElementById('tab-groups'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-semibold'); }
-  if(name==='order'){ document.getElementById('panel-order').classList.remove('hidden'); const el=document.getElementById('tab-order'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-semibold'); }
-  if(name==='roles'){ document.getElementById('panel-roles').classList.remove('hidden'); const el=document.getElementById('tab-roles'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-semibold'); }
+  if(name==='groups'){
+    const panel = document.getElementById('panel-groups'); if(panel) panel.classList.remove('hidden');
+    const el=document.getElementById('tab-groups');
+    if(el){
+      el.classList.remove('border-transparent','text-gray-600');
+      el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
+    }
+  }
+  if(name==='order'){
+    const panel = document.getElementById('panel-order'); if(panel) panel.classList.remove('hidden');
+    const el=document.getElementById('tab-order');
+    if(el){
+      el.classList.remove('border-transparent','text-gray-600');
+      el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
+    }
+  }
+  if(name==='roles'){
+    const panel = document.getElementById('panel-roles'); if(panel) panel.classList.remove('hidden');
+    const el=document.getElementById('tab-roles');
+    if(el){
+      el.classList.remove('border-transparent','text-gray-600');
+      el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
+    }
+  }
 }
 
 function switchSettingsTab(name){
   document.querySelectorAll('.settings-panel').forEach(el=>el.classList.add('hidden'));
 
+  // normalize settings tab styles and remove pill active styles
   document.querySelectorAll('#tab-settings-groups, #tab-settings-order, #tab-settings-roles').forEach(b=>{
-    b.classList.remove('border-blue-500','text-blue-600','font-semibold');
+    b.classList.remove('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
     b.classList.add('border-transparent','text-gray-600');
   });
 
-  if(name==='groups'){ document.getElementById('panel-settings-groups').classList.remove('hidden'); const el=document.getElementById('tab-settings-groups'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-semibold'); }
-  if(name==='order'){ document.getElementById('panel-settings-order').classList.remove('hidden'); const el=document.getElementById('tab-settings-order'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-semibold'); }
-  if(name==='roles'){ document.getElementById('panel-settings-roles').classList.remove('hidden'); const el=document.getElementById('tab-settings-roles'); el.classList.remove('border-transparent'); el.classList.add('border-blue-500','text-blue-600','font-semibold'); }
+  if(name==='groups'){
+    document.getElementById('panel-settings-groups').classList.remove('hidden');
+    const el=document.getElementById('tab-settings-groups');
+    if(el){
+      el.classList.remove('border-transparent','text-gray-600');
+      el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
+    }
+  }
+  if(name==='order'){
+    document.getElementById('panel-settings-order').classList.remove('hidden');
+    const el=document.getElementById('tab-settings-order');
+    if(el){
+      el.classList.remove('border-transparent','text-gray-600');
+      el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
+    }
+  }
+  if(name==='roles'){
+    document.getElementById('panel-settings-roles').classList.remove('hidden');
+    const el=document.getElementById('tab-settings-roles');
+    if(el){
+      el.classList.remove('border-transparent','text-gray-600');
+      el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
+    }
+  }
 
   const gAct = document.getElementById('settings-action-groups');
   const oAct = document.getElementById('settings-action-order');
