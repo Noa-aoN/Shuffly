@@ -43,14 +43,14 @@
       <p class="text-sm text-gray-500 mb-5">↑ 改行またはカンマ区切りで、ユニークなメンバー名を入力してください。</p>
       <div id="memberCountHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">現在のメンバー数：<span class="font-bold">未入力</span></div>
 
-      <!-- インポート / サンプルデータ入力 / 履歴クリア用トリガ -->
+      <!-- インポート / サンプルデータ入力 / 履歴クリア用ボタン（tertiary） -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2 w-full md:place-items-center">
         <%= render 'shared/button',
               f: nil,
               button_text: 'サンプルデータを入力',
               id: 'btn-insert-sample',
               path: '#',
-              variant: 'ghost',
+              variant: 'tertiary',
               full_mobile: true,
               extra_class: 'w-full sm:flex-1 text-center',
               icon: 'icons/experiment_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
@@ -60,7 +60,7 @@
               button_text: 'テキスト/CSVから入力',
               id: 'btn-trigger-import',
               path: '#',
-              variant: 'ghost',
+              variant: 'tertiary',
               full_mobile: true,
               extra_class: 'w-full sm:flex-1 text-center',
               icon: 'icons/upload_file_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
@@ -71,7 +71,7 @@
               button_text: '履歴をクリア',
               id: 'btn-clear-history',
               path: '#',
-              variant: 'ghost',
+              variant: 'tertiary',
               full_mobile: true,
               extra_class: 'w-full sm:flex-1 text-center',
               icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
@@ -308,38 +308,46 @@
         <!-- グループ分けの回次表示（memberCountHint と同じスタイル） -->
         <div id="groupRoundHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">現在のグループ分け表示：<span class="font-bold">未実施</span></div>
 
-        <!-- 結果操作リンク -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2 w-full md:place-items-center">
-          <%= render 'shared/button',
-                f: nil,
-                button_text: '前回のグループ分け',
-                id: 'btn-prev-group',
-                path: '#',
-                variant: 'ghost',
-                full_mobile: true,
-                extra_class: 'w-full sm:flex-1 text-center',
-                icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-                icon_class: 'inline-block' %>
-          <%= render 'shared/button',
-                f: nil,
-                button_text: '次回のグループ分け',
-                id: 'btn-next-group',
-                path: '#',
-                variant: 'ghost',
-                full_mobile: true,
-                extra_class: 'w-full sm:flex-1 text-center',
-                icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-                icon_class: 'inline-block icon_right' %>
-          <%= render 'shared/button',
-                f: nil,
-                button_text: 'クリップボードにコピー',
-                id: 'btn-copy-groupoutput',
-                path: '#',
-                variant: 'ghost',
-                full_mobile: true,
-                extra_class: 'w-full sm:flex-1 text-center',
-                icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-                icon_class: 'inline-block' %>
+        <!-- 結果操作ボタン（tertiary） -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2 w-full md:place-items-center">
+          <div class="col-span-1">
+            <%= render 'shared/button',
+                  f: nil,
+                  button_text: raw('<span class="hidden sm:inline">前回のグループ分け</span><span class="inline sm:hidden">前回</span>'),
+                  id: 'btn-prev-group',
+                  path: '#',
+                  variant: 'tertiary',
+                  full_mobile: true,
+                  extra_class: 'w-full sm:flex-1 text-center',
+                  icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                  icon_class: 'inline-block' %>
+          </div>
+
+          <div class="col-span-1">
+            <%= render 'shared/button',
+                  f: nil,
+                  button_text: raw('<span class="hidden sm:inline">次回のグループ分け</span><span class="inline sm:hidden">次回</span>'),
+                  id: 'btn-next-group',
+                  path: '#',
+                  variant: 'tertiary',
+                  full_mobile: true,
+                  extra_class: 'w-full sm:flex-1 text-center',
+                  icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                  icon_class: 'inline-block icon_right' %>
+          </div>
+
+          <div class="col-span-2 sm:col-span-1">
+            <%= render 'shared/button',
+                  f: nil,
+                  button_text: 'クリップボードにコピー',
+                  id: 'btn-copy-groupoutput',
+                  path: '#',
+                  variant: 'tertiary',
+                  full_mobile: true,
+                  extra_class: 'w-full sm:flex-1 text-center',
+                  icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                  icon_class: 'inline-block' %>
+          </div>
         </div>
 
       </div>
@@ -354,9 +362,11 @@
                 button_text: 'クリップボードにコピー',
                 id: 'btn-copy-orderoutput',
                 path: '#',
-                variant: 'ghost',
+                variant: 'tertiary',
                 full_mobile: true,
-                extra_class: 'text-base text-blue-600 hover:underline' %>
+                extra_class: 'text-base text-blue-600 hover:underline',
+                icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                icon_class: 'inline-block' %>
         </div>
       </div>
 
@@ -370,9 +380,11 @@
                 button_text: 'クリップボードにコピー',
                 id: 'btn-copy-rolesoutput',
                 path: '#',
-                variant: 'ghost',
+                variant: 'tertiary',
                 full_mobile: true,
-                extra_class: 'text-base text-blue-600 hover:underline' %>
+                extra_class: 'text-base text-blue-600 hover:underline',
+                icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                icon_class: 'inline-block' %>
         </div>
       </div>
     </div>
@@ -1584,9 +1596,18 @@ window.onload = () => {
   bindIf('groupSeparatorSelect', 'change', ()=>{ if(groupsAssigned){ showGroups(); showStats(); } });
 
   // コピー / ナビ操作
-  bindIf('btn-copy-groupoutput', 'click', (e)=>{ e.preventDefault(); copyGroupOutput(); });
-  bindIf('btn-copy-orderoutput', (e)=>{ e.preventDefault(); copyOrderOutput(); });
-  bindIf('btn-copy-rolesoutput', (e)=>{ e.preventDefault(); copyRolesOutput(); });
+  bindIf('btn-copy-groupoutput', 'click', (e)=>{
+    if(e) e.preventDefault();
+    copyGroupOutput();
+  });
+  bindIf('btn-copy-orderoutput', (e)=>{
+    if(e) e.preventDefault();
+    copyOrderOutput();
+  });
+  bindIf('btn-copy-rolesoutput', (e)=>{
+    if(e) e.preventDefault();
+    copyRolesOutput();
+  });
 
   // 統計表示トグル
   bindIf('btn-toggle-stats', 'click', (e)=>{

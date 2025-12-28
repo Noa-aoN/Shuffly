@@ -16,7 +16,7 @@
 <% icon_class = local_assigns.fetch(:icon_class, 'inline-block align-middle') %>
 <% icon_alt = local_assigns.fetch(:icon_alt, '') %>
 
-<% base = "inline-flex items-center justify-center rounded-xl font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 transition shadow-lg md:min-w-[180px] lg:min-w-[310px]" %>
+<% base = "inline-flex items-center justify-center rounded-xl font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 transition shadow-lg md:min-w-[180px] lg:min-w-[310px] px-6 py-3" %>
 
 <% size_classes = {
   'sm' => 'px-3 py-1 text-sm min-h-[40px]',
@@ -26,8 +26,8 @@
 
 <% variant_classes = {
   'primary' => 'bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500 border border-slate-200',
-  'secondary' => 'bg-gray-100 text-gray-800 hover:bg-gray-200 focus:ring-gray-400 border border-slate-200',
-  'ghost' => 'bg-white text-blue-700 hover:bg-blue-50 focus:ring-blue-200 border border-slate-200',
+  'secondary' => 'bg-white text-blue-700 hover:bg-blue-50 focus:ring-blue-200 border border-slate-200',
+  'tertiary' => 'bg-white text-gray-800 hover:bg-gray-200 focus:ring-gray-400 border border-slate-200',
   'danger' => 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500 border border-slate-200'
 } %>
 
