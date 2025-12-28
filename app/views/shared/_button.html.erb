@@ -27,7 +27,7 @@
 <% variant_classes = {
   'primary' => 'bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500 border border-slate-200',
   'secondary' => 'bg-gray-100 text-gray-800 hover:bg-gray-200 focus:ring-gray-400 border border-slate-200',
-  'ghost' => 'bg-transparent text-blue-700 hover:bg-blue-100 focus:ring-blue-200 border border-slate-200',
+  'ghost' => 'bg-white text-blue-700 hover:bg-blue-50 focus:ring-blue-200 border border-slate-200',
   'danger' => 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500 border border-slate-200'
 } %>
 
@@ -37,13 +37,18 @@
 <% web_text_adjust = 'md:text-[16px]' %>
 <% classes = [base, size_class, var_class, responsive_class, web_text_adjust, extra_class].join(' ').squeeze(' ').strip %>
 
-<%# icon_html が未指定かつ icon が渡されている場合に生成する。アイコンの色はボタンの文字色に合わせる（text-white が含まれる場合は白く、それ以外は黒系のまま） %>
+<%# icon_html が未指定かつ icon が渡されている場合に生成する。
+    アイコンの色はボタンの文字色に合わせるため mask(-image) を使い background-color:currentColor を適用する。
+    これにより white/black/blue 等の文字色に合わせてアイコンが着色される（モダンブラウザで動作）。 %>
 <% if icon_html.blank? && icon.present? %>
   <% src = (begin; asset_path(icon) rescue icon; end) %>
-  <% text_is_white = var_class.include?('text-white') %>
-  <% icon_style = text_is_white ? 'filter: invert(1) brightness(2);' : 'filter: none;' %>
-  <% icon_html = image_tag(src, width: 20, height: 20, class: icon_class, alt: (icon_alt.present? ? icon_alt : ''), style: icon_style) %>
+  <% mask_style = "background-color: currentColor; width:20px; height:20px; display:inline-block; -webkit-mask: url('#{src}') no-repeat center; -webkit-mask-size: contain; mask: url('#{src}') no-repeat center; mask-size: contain;" %>
+  <%# alt は span の title 属性に使用（img の alt 相当） %>
+  <% icon_html = content_tag(:span, '', class: icon_class, style: mask_style, title: (icon_alt.present? ? icon_alt : '')) %>
 <% end %>
+
+<%# 新規: icon_class に 'icon_right' が含まれる場合はアイコンを右側に配置する %>
+<% icon_right = icon_class.to_s.split(/\s+/).include?('icon_right') %>
 
 <div class="mt-2">
   <% if f %>
@@ -61,7 +66,11 @@
     <% link_opts.delete_if { |_, v| v.nil? } %>
     <%# アイコンがある場合はアイコンとテキストの間に全角スペースを1つ挿入する %>
     <% separator = icon_html.present? ? "　" : '' %>
-    <% inner = (icon_html.to_s + separator + content_tag(:span, button_text, class: 'font-semibold')).html_safe %>
+    <% if icon_html.present? && icon_right %>
+      <% inner = (content_tag(:span, button_text, class: 'font-semibold') + separator + icon_html.to_s).html_safe %>
+    <% else %>
+      <% inner = (icon_html.to_s + separator + content_tag(:span, button_text, class: 'font-semibold')).html_safe %>
+    <% end %>
     <%= link_to inner, path, link_opts %>
   <% end %>
 </div>
