@@ -82,12 +82,14 @@
                 icon: 'icons/bolt_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                 icon_class: 'inline-block' %>
           <% if user_signed_in? %>
-            <%= link_to "イベントを作成・確認する", new_event_path, class: "w-full text-center px-6 py-3 bg-white border rounded-xl text-blue-600 hover:bg-gray-50" %>
-
-            <div class="hidden sm:flex items-center gap-2 sm:ml-2">
-              <%= link_to "マイページ", mypage_path, class: "px-4 py-2 bg-gray-100 rounded-xl text-sm text-gray-700 hover:bg-gray-200" %>
-              <%= link_to "ログアウト", destroy_user_session_path, data: { turbo_method: :delete, turbo_confirm: "ログアウトしますか？" }, class: "px-4 py-2 bg-red-500 text-white rounded-xl text-sm hover:bg-red-600" %>
-            </div>
+            <%= render 'shared/button',
+                  button_text: 'マイページへ',
+                  path: mypage_path,
+                  variant: 'secondary',
+                  full_mobile: true,
+                  extra_class: 'text-center px-6 py-3 bg-white border rounded-xl text-blue-600 hover:bg-gray-50',
+                  icon: 'icons/account_circle_24dp_1F1F1F.svg',
+                  icon_class: 'inline-block' %>
           <% else %>
             <%= render 'shared/button',
                   button_text: 'ログインして使う',

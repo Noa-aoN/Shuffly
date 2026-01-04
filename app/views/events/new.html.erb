@@ -1,4 +1,4 @@
-<main class="max-w-6xl mx-auto px-6 pt-2 pb-10"
+<main class="max-w-6xl mx-auto px-6 py-6 md:py-8"
       data-is-signed-in="<%= user_signed_in? ? 'true' : 'false' %>"
       data-icon-expand="<%= asset_path('icons/expand_more_24dp_1F1F1F.svg') %>"
       data-icon-collapse="<%= asset_path('icons/keyboard_arrow_up_24dp_1F1F1F.svg') %>"
@@ -23,11 +23,7 @@
     <%= render 'events/share_section', event: @event %>
   </div>
 
-  <!-- トースト通知領域（幅を内容に合わせる・モバイル対応） -->
-  <div id="toast"
-       role="status"
-       aria-live="polite"
-       class="fixed left-1/2 -translate-x-1/2 bg-white text-black border border-default shadow-xs text-sm md:text-lg opacity-0 transition-opacity rounded-xl inline-block max-w-[90vw] w-auto whitespace-pre-wrap text-center p-4 box-border"></div>
+  <%# Toast通知は shared/_toast.html.erb パーシャルで application.html.erb に配置済み %>
 </main>
 
 <%= javascript_include_tag "events_new", type: "module", defer: true %>

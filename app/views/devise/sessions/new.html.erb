@@ -1,44 +1,38 @@
-<%# サインアップ画面 %>
+<%# サインイン画面 %>
 
-<%# メンテナンスオーバーレイ設定 %>
-<script>
-  try { sessionStorage.removeItem('maintenance-hidden'); } catch (e) {}
-  window.DEFAULT_MAINTENANCE = true;
-</script>
+<%= render 'shared/devise_card', title: t("devise.sessions.new.title") do %>
+  <%= render "devise/shared/error_messages", resource: resource %>
 
-<div class="max-w-2xl mx-auto px-6 pt-8">
-  <div class="bg-white rounded-lg shadow-sm p-6">
-    <h1 class="text-2xl font-bold mb-4">Log in</h1>
+  <%= form_for(resource, as: resource_name, url: session_path(resource_name), data: { turbo: false }) do |f| %>
+    <div class="mb-4">
+      <%= f.label :email, class: "block text-sm font-medium text-gray-700" %>
+      <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+    </div>
 
-    <%= render "devise/shared/error_messages", resource: resource %>
+    <div class="mb-4">
+      <%= f.label :password, class: "block text-sm font-medium text-gray-700" %>
+      <%= f.password_field :password, autocomplete: "current-password", class: "mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+    </div>
 
-    <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+    <% if devise_mapping.rememberable? %>
       <div class="mb-4">
-        <%= f.label :email, class: "block text-sm font-medium text-gray-700" %>
-        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "mt-1 w-full border rounded-md px-3 py-2" %>
-      </div>
-
-      <div class="mb-4">
-        <%= f.label :password, class: "block text-sm font-medium text-gray-700" %>
-        <%= f.password_field :password, autocomplete: "current-password", class: "mt-1 w-full border rounded-md px-3 py-2" %>
-      </div>
-
-      <% if devise_mapping.rememberable? %>
-        <div class="mb-4">
-          <label class="inline-flex items-center gap-2 text-sm">
-            <%= f.check_box :remember_me, class: "rounded border-gray-300" %>
-            <span class="text-gray-700"><%= f.label :remember_me %></span>
-          </label>
-        </div>
-      <% end %>
-
-      <div class="mt-6 flex items-center justify-center">
-        <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700">Log in</button>
+        <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+          <%= f.check_box :remember_me, class: "rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0" %>
+          <span class="text-gray-700"><%= t("devise.sessions.new.remember_me") %></span>
+        </label>
       </div>
     <% end %>
 
-    <div class="mt-4 text-center">
-      <%= render "devise/shared/links" %>
+    <div class="flex justify-center mt-6">
+      <%= render 'shared/button',
+            f: f,
+            button_text: t("devise.sessions.new.submit"),
+            variant: 'primary',
+            size: 'lg' %>
     </div>
+  <% end %>
+
+  <div class="mt-8">
+    <%= render "devise/shared/links" %>
   </div>
-</div>
+<% end %>

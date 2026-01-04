@@ -1,0 +1,60 @@
+ja:
+  devise:
+    sessions:
+      new:
+        title: "ログイン"
+        submit: "ログイン"
+        remember_me: "ログイン状態を保持する"
+    registrations:
+      new:
+        title: "アカウント登録"
+        submit: "アカウント登録"
+        password_min_length: "%{count}文字以上"
+      edit:
+        title: "アカウント情報編集"
+        email_pending: "確認待ちのメールアドレス: %{email}"
+        password_hint: "変更しない場合は空欄"
+        password_min_length: "%{count}文字以上"
+        current_password_hint: "変更を確認するために現在のパスワードが必要です"
+        submit: "更新"
+        cancel_account_title: "アカウント削除"
+        cancel_account_message: "ご利用ありがとうございました"
+        cancel_account_button: "アカウント削除"
+        cancel_account_confirm: "本当に削除しますか？"
+        back: "戻る"
+    passwords:
+      new:
+        title: "パスワードをお忘れですか？"
+        submit: "パスワード再設定メールを送る"
+    shared:
+      links:
+        log_in: "ログイン"
+        sign_up: "アカウント登録"
+        forgot_password: "パスワードをお忘れですか？"
+        didnt_receive_confirmation: "確認メールが届きませんか？"
+        didnt_receive_unlock: "ロック解除メールが届きませんか？"
+        sign_in_with: "%{provider}でログイン"
+  activerecord:
+    attributes:
+      user:
+        email: "メールアドレス"
+        password: "パスワード"
+        password_confirmation: "パスワード（確認）"
+        current_password: "現在のパスワード"
+        remember_me: "ログイン状態を保持する"
+        name: "名前"
+        nickname: "ニックネーム"
+    errors:
+      models:
+        user:
+          attributes:
+            email:
+              blank: "を入力してください"
+              invalid: "は有効なメールアドレスではありません"
+              taken: "は既に使用されています"
+            password:
+              blank: "を入力してください"
+              too_short: "は%{count}文字以上で入力してください"
+              confirmation: "と確認用パスワードが一致しません"
+            password_confirmation:
+              confirmation: "とパスワードが一致しません"
