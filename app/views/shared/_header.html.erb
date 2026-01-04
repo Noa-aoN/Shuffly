@@ -10,7 +10,7 @@
       <% if user_signed_in? %>
         <!-- 仮リンクの場合は turbo 無効化 -->
         <%= link_to "マイページ", "#", class: "text-white hover:underline", data: { turbo: false } %>
-        <%= link_to "ログアウト", destroy_user_session_path, method: :delete, class: "text-white hover:underline" %>
+        <%= link_to "ログアウト", destroy_user_session_path, data: { turbo_method: :delete, turbo_confirm: "ログアウトしますか？" }, class: "text-white hover:underline" %>
       <% else %>
         <%= link_to "ログイン", new_user_session_path, class: "text-white hover:underline" %>
         <%= link_to "サインアップ", new_user_registration_path, class: "text-white hover:underline" %>

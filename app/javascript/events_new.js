@@ -921,7 +921,16 @@ const ShufflyApp = (function() {
         history_json: document.getElementById('historyJsonInput')?.value || "",
         title: document.getElementById('shareEventTitle')?.value || document.title || ''
       };
-      localStorage.setItem('presentation_shuffly_event', JSON.stringify(payload));
+      try {
+        localStorage.setItem('presentation_shuffly_event', JSON.stringify(payload));
+      } catch(storageError) {
+        if (storageError.name === 'QuotaExceededError') {
+          console.warn('localStorage quota exceeded', storageError);
+          showToast('ストレージ容量が不足しています');
+        } else {
+          throw storageError;
+        }
+      }
     }catch(e){
       console.warn('presentation payload store failed', e);
     }
@@ -1016,7 +1025,17 @@ const ShufflyApp = (function() {
       }
     } else {
       try {
-        localStorage.setItem('pending_shuffly_event', JSON.stringify(payloadPreview));
+        try {
+          localStorage.setItem('pending_shuffly_event', JSON.stringify(payloadPreview));
+        } catch(storageError) {
+          if (storageError.name === 'QuotaExceededError') {
+            console.warn('localStorage quota exceeded', storageError);
+            showToast('ストレージ容量が不足しています');
+            return;
+          } else {
+            throw storageError;
+          }
+        }
         const loginUrl = new_user_session_path + "?redirect_to=" + encodeURIComponent(window.location.href);
         window.location.href = loginUrl;
       } catch(e){
@@ -1096,6 +1115,20 @@ const ShufflyApp = (function() {
       if(pending){
         try {
           const p = JSON.parse(pending);
+          // データ検証: オブジェクトであることと、想定外のプロパティがないかチェック
+          if (typeof p !== 'object' || p === null || Array.isArray(p)) {
+            console.warn('Invalid pending event data structure');
+            localStorage.removeItem('pending_shuffly_event');
+            return;
+          }
+          // 許可されたプロパティのみを処理（XSS等の防止）
+          const allowedProps = ['members_json', 'results_json', 'order_json', 'settings_json', 'history_json', 'title'];
+          const hasValidProps = Object.keys(p).every(key => allowedProps.includes(key));
+          if (!hasValidProps) {
+            console.warn('Pending event data contains unexpected properties');
+            localStorage.removeItem('pending_shuffly_event');
+            return;
+          }
           if(p.members_json) document.getElementById('membersJsonInput').value = p.members_json;
           if(p.results_json) document.getElementById('resultsJsonInput').value = p.results_json;
           if(p.order_json) document.getElementById('orderJsonInput').value = p.order_json;
@@ -1108,7 +1141,9 @@ const ShufflyApp = (function() {
             form.submit();
           }
         } catch(e){
-          // 復元に失敗した場合は無視
+          // 復元に失敗した場合は無視し、不正なデータを削除
+          console.warn('Failed to restore pending event', e);
+          localStorage.removeItem('pending_shuffly_event');
         }
       }
     }
