@@ -151,36 +151,104 @@
   <!-- 順番表示パネル -->
   <div id="panel-order" class="result-panel hidden">
     <h3 class="font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> 順番表示</h3>
-    <textarea id="orderOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border border-slate-300 rounded-xl px-3 py-2 w-full text-lg"></textarea>
-    <div class="flex justify-center mt-2 w-full">
-      <%= render 'shared/button',
-            f: nil,
-            button_text: 'クリップボードにコピー',
-            id: 'btn-copy-orderoutput',
-            path: '#',
-            variant: 'tertiary',
-            full_mobile: true,
-            extra_class: 'text-base text-blue-600 hover:underline',
-            icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-            icon_class: 'inline-block' %>
+    <textarea id="orderOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border border-slate-300 rounded-xl px-3 py-2 w-full text-lg mb-4"></textarea>
+
+    <!-- 順番決めの回次表示 -->
+    <div id="orderRoundHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">現在の順番決め表示：<span class="font-bold">未実施</span></div>
+
+    <!-- 結果操作ボタン（tertiary） -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
+      <div class="col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: raw('<span class="hidden sm:inline">前回の順番決め</span><span class="inline sm:hidden">前回</span>'),
+              id: 'btn-prev-order',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
+
+      <div class="col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: raw('<span class="hidden sm:inline">次回の順番決め</span><span class="inline sm:hidden">次回</span>'),
+              id: 'btn-next-order',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block icon_right' %>
+      </div>
+
+      <div class="col-span-2 md:col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: 'クリップボードにコピー',
+              id: 'btn-copy-orderoutput',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
     </div>
+
   </div>
 
   <!-- 役割表示パネル -->
   <div id="panel-roles" class="result-panel hidden">
     <h3 class="font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> 役割表示</h3>
-    <textarea id="rolesOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border border-slate-300 rounded-xl px-3 py-2 w-full text-lg"></textarea>
-    <div class="flex justify-center mt-2 w-full">
-      <%= render 'shared/button',
-            f: nil,
-            button_text: 'クリップボードにコピー',
-            id: 'btn-copy-rolesoutput',
-            path: '#',
-            variant: 'tertiary',
-            full_mobile: true,
-            extra_class: 'text-base text-blue-600 hover:underline',
-            icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-            icon_class: 'inline-block' %>
+    <textarea id="rolesOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border border-slate-300 rounded-xl px-3 py-2 w-full text-lg mb-4"></textarea>
+
+    <!-- 役割分担の回次表示 -->
+    <div id="rolesRoundHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">現在の役割分担表示：<span class="font-bold">未実施</span></div>
+
+    <!-- 結果操作ボタン（tertiary） -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
+      <div class="col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: raw('<span class="hidden sm:inline">前回の役割分担</span><span class="inline sm:hidden">前回</span>'),
+              id: 'btn-prev-roles',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
+
+      <div class="col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: raw('<span class="hidden sm:inline">次回の役割分担</span><span class="inline sm:hidden">次回</span>'),
+              id: 'btn-next-roles',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block icon_right' %>
+      </div>
+
+      <div class="col-span-2 md:col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: 'クリップボードにコピー',
+              id: 'btn-copy-rolesoutput',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
     </div>
+
   </div>
 </div>
