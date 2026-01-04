@@ -1302,3 +1302,21 @@ const ShufflyApp = (function() {
 if (typeof window !== 'undefined') {
   window.ShufflyApp = ShufflyApp;
 }
+
+// JavaScriptの初期化（DOMContentLoaded時に自動実行）
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.ShufflyApp) {
+    // data属性から設定を読み取る
+    const container = document.querySelector('[data-is-signed-in]');
+    if (container) {
+      const config = {
+        isSignedIn: container.dataset.isSignedIn === 'true',
+        iconExpand: container.dataset.iconExpand || '',
+        iconCollapse: container.dataset.iconCollapse || '',
+        newUserSessionPath: container.dataset.newUserSessionPath || '/users/sign_in'
+      };
+      window.ShufflyApp.initialize(config);
+      window.ShufflyApp.bindEvents();
+    }
+  }
+});

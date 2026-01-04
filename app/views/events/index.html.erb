@@ -1,4 +1,4 @@
-<div class="min-h-screen pb-10">
+<div class="events-index-page min-h-screen pb-10">
 
   <!-- 背景アニメーションレイヤー -->
   <div class="pointer-events-none fixed inset-0 -z-10 bg-icons-animation"></div>
@@ -64,17 +64,17 @@
     }
 
     /* 各カード（9枚想定）にマウスオーバーでピクッと動く動作を付与 */
-    /* 対象は p-6 + rounded-xl + shadow-sm を持つカード群（既存のカード要素に影響） */
-    .p-6.rounded-xl.shadow-sm {
+    /* スコープを限定してこのページ内のカードのみに適用 */
+    .events-index-page .index-feature-card {
       transition: transform 140ms cubic-bezier(.2,.8,.2,1), box-shadow 140ms;
       will-change: transform;
     }
-    .p-6.rounded-xl.shadow-sm:hover {
+    .events-index-page .index-feature-card:hover {
       transform: translateY(-6px) rotate(-0.6deg);
       box-shadow: 0 12px 28px rgba(10, 25, 47, 0.08);
     }
     /* 少し短い急なピクッのバリエーション（マウスエンター直後の感触向上） */
-    .p-6.rounded-xl.shadow-sm:active {
+    .events-index-page .index-feature-card:active {
       transform: translateY(-2px) rotate(-0.2deg);
       transition-duration: 80ms;
     }
@@ -127,34 +127,29 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <!-- 特徴：グループ分け -->
-        <div>
-          <div class="p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center text-center">
-            <!-- アイコン：白い丸枠内にSVGを表示 -->
-            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
-              <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, alt: "グループ分けアイコン" %>
-            </div>
-            <h4 class="font-semibold mb-2">グループ分け</h4>
-            <p class="text-sm text-gray-600">メンバーリストから指定した数のグループを<br>複数回・被りづらく自動で作成します。</p>
-          </div>
-        </div>
+        <%= render 'events/feature_card',
+              icon: 'icons/diversity_3_24dp_1F1F1F.svg',
+              icon_bg: 'bg-white',
+              card_bg: 'bg-gray-50',
+              title: 'グループ分け',
+              description: 'メンバーリストから指定した数のグループを<br>複数回・被りづらく自動で作成します。',
+              wrapper: true %>
 
         <!-- 特徴：順番決め -->
-        <div class="p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center text-center">
-          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
-            <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, alt: "順番決めアイコン" %>
-          </div>
-          <h4 class="font-semibold mb-2">順番決め</h4>
-          <p class="text-sm text-gray-600">発表や作業の順番を<br>ワンクリックでランダムに決定します。</p>
-        </div>
+        <%= render 'events/feature_card',
+              icon: 'icons/format_list_numbered_24dp_1F1F1F.svg',
+              icon_bg: 'bg-white',
+              card_bg: 'bg-gray-50',
+              title: '順番決め',
+              description: '発表や作業の順番を<br>ワンクリックでランダムに決定します。' %>
 
         <!-- 特徴：役割分担 -->
-        <div class="p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center text-center">
-          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
-            <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, alt: "役割分担アイコン" %>
-          </div>
-          <h4 class="font-semibold mb-2">役割分担</h4>
-          <p class="text-sm text-gray-600">司会や書記等の役割を公平に振り分けます。</p>
-        </div>
+        <%= render 'events/feature_card',
+              icon: 'icons/badge_24dp_1F1F1F.svg',
+              icon_bg: 'bg-white',
+              card_bg: 'bg-gray-50',
+              title: '役割分担',
+              description: '司会や書記等の役割を公平に振り分けます。' %>
 
       </div>
     </div>
@@ -169,7 +164,7 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <!-- ログイン時特徴：メンバーリストの保存 -->
-        <div class="p-6 bg-white rounded-xl shadow-sm flex flex-col items-center text-center">
+        <div class="index-feature-card p-6 bg-white rounded-xl shadow-sm flex flex-col items-center text-center">
           <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <%= image_tag "icons/save_24dp_1F1F1F.svg", width: 24, height: 24, alt: "保存アイコン" %>
           </div>
@@ -178,7 +173,7 @@
         </div>
 
         <!-- ログイン時特徴：シャッフル履歴の確認 -->
-        <div class="p-6 bg-white rounded-xl shadow-sm flex flex-col items-center text-center">
+        <div class="index-feature-card p-6 bg-white rounded-xl shadow-sm flex flex-col items-center text-center">
           <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <%= image_tag "icons/content_paste_search_24dp_1F1F1F.svg", width: 24, height: 24, alt: "履歴確認アイコン" %>
           </div>
@@ -187,7 +182,7 @@
         </div>
 
         <!-- ログイン時特徴：画面スタイルの変更 -->
-        <div class="p-6 bg-white rounded-xl shadow-sm flex flex-col items-center text-center">
+        <div class="index-feature-card p-6 bg-white rounded-xl shadow-sm flex flex-col items-center text-center">
           <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <%= image_tag "icons/palette_24dp_1F1F1F.svg", width: 24, height: 24, alt: "スタイル変更アイコン" %>
           </div>
@@ -207,19 +202,19 @@
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <div class="p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center">
+        <div class="index-feature-card p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center">
           <div class="w-15 h-15 bg-blue-500 text-white rounded-full flex items-center justify-center mb-4 font-bold text-xl">1</div>
           <h4 class="font-semibold mb-2">メンバーを入力</h4>
           <p class="text-sm text-gray-600">名前を一人ずつ入力するか<br>リストを貼り付けます。</p>
         </div>
 
-        <div class="p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center">
+        <div class="index-feature-card p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center">
           <div class="w-15 h-15 bg-blue-500 text-white rounded-full flex items-center justify-center mb-4 font-bold text-xl">2</div>
           <h4 class="font-semibold mb-2">条件を設定</h4>
           <p class="text-sm text-gray-600">グループ数やグループ名<br>順番や役割設定を選びます。</p>
         </div>
 
-        <div class="p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center">
+        <div class="index-feature-card p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center">
           <div class="w-15 h-15 bg-blue-500 text-white rounded-full flex items-center justify-center mb-4 font-bold text-xl">3</div>
           <h4 class="font-semibold mb-2">シャッフル！</h4>
           <p class="text-sm text-gray-600">ボタンを押すだけで結果がすぐに表示されます。</p>

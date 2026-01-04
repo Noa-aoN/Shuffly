@@ -1,4 +1,8 @@
-<div class="max-w-6xl mx-auto px-6 pt-2 pb-10">
+<main class="max-w-6xl mx-auto px-6 pt-2 pb-10"
+      data-is-signed-in="<%= user_signed_in? ? 'true' : 'false' %>"
+      data-icon-expand="<%= asset_path('icons/expand_more_24dp_1F1F1F.svg') %>"
+      data-icon-collapse="<%= asset_path('icons/keyboard_arrow_up_24dp_1F1F1F.svg') %>"
+      data-new-user-session-path="<%= new_user_session_path %>">
 
   <!-- ヘッダ：アイコン + タイトル -->
   <h1 class="text-2xl md:text-3xl font-bold mb-8 flex items-center gap-2">
@@ -20,21 +24,10 @@
   </div>
 
   <!-- トースト通知領域（幅を内容に合わせる・モバイル対応） -->
-  <div id="toast" class="fixed left-1/2 transform -translate-x-1/2 bg-white text-black border border-default shadow-xs text-sm dm:text-lg opacity-0 transition-opacity rounded-xl" style="display:inline-block; max-width:90vw; width:auto; white-space:pre-wrap; text-align:center; padding:1rem; box-sizing:border-box;"></div>
-</div>
+  <div id="toast"
+       role="status"
+       aria-live="polite"
+       class="fixed left-1/2 -translate-x-1/2 bg-white text-black border border-default shadow-xs text-sm md:text-lg opacity-0 transition-opacity rounded-xl inline-block max-w-[90vw] w-auto whitespace-pre-wrap text-center p-4 box-border"></div>
+</main>
 
 <%= javascript_include_tag "events_new", type: "module", defer: true %>
-<script type="module">
-  // JavaScriptの初期化
-  document.addEventListener('DOMContentLoaded', () => {
-    if (window.ShufflyApp) {
-      window.ShufflyApp.initialize({
-        isSignedIn: <%= user_signed_in? ? 'true' : 'false' %>,
-        iconExpand: "<%= asset_path('icons/expand_more_24dp_1F1F1F.svg') %>",
-        iconCollapse: "<%= asset_path('icons/keyboard_arrow_up_24dp_1F1F1F.svg') %>",
-        newUserSessionPath: "<%= new_user_session_path %>"
-      });
-      window.ShufflyApp.bindEvents();
-    }
-  });
-</script>
