@@ -482,9 +482,43 @@ const ShufflyApp = (function() {
       memberSep = sepVal;
     }
 
-    const showLabel=document.getElementById('showGroupLabel').checked;
-    const showCount=document.getElementById('showGroupCount') ? document.getElementById('showGroupCount').checked : true;
-    const breakMemberLine = document.getElementById('breakMemberLine') ? document.getElementById('breakMemberLine').checked : true;
+    // 表示内容の取得
+    const displayFormat = document.getElementById('displayFormatSelect') ? document.getElementById('displayFormatSelect').value : 'name_count_break';
+
+    // 表示内容から設定を決定
+    let showLabel, showCount, breakMemberLine;
+    switch(displayFormat) {
+      case 'name':
+        showLabel = true;
+        showCount = false;
+        breakMemberLine = false;
+        break;
+      case 'name_break':
+        showLabel = true;
+        showCount = false;
+        breakMemberLine = true;
+        break;
+      case 'name_count':
+        showLabel = true;
+        showCount = true;
+        breakMemberLine = false;
+        break;
+      case 'name_count_break':
+        showLabel = true;
+        showCount = true;
+        breakMemberLine = true;
+        break;
+      case 'none':
+        showLabel = false;
+        showCount = false;
+        breakMemberLine = false;
+        break;
+      default:
+        showLabel = true;
+        showCount = true;
+        breakMemberLine = true;
+    }
+
     const groupSepVal = document.getElementById('groupSeparatorSelect') ? document.getElementById('groupSeparatorSelect').value : 'space';
 
     let groupSep = '\n\n';
@@ -536,29 +570,132 @@ const ShufflyApp = (function() {
       groupMap[id].push(e.name);
     }
 
-    const groupSepVal = document.getElementById('groupSeparatorSelect') ? document.getElementById('groupSeparatorSelect').value : 'space';
-    let groupSep = '\n\n';
-    if(groupSepVal === 'none') groupSep = '\n';
-    else if(groupSepVal === 'space') groupSep = '\n\n';
-    else if(groupSepVal === 'line') groupSep = '\n────────\n';
-    else if(groupSepVal === 'wave') groupSep = '\n〜〜〜〜〜〜〜\n';
+    // 被り確認の計算
+    const output = [];
 
-    const parts = [];
+    // 1. グループごとのメンバー被り率を計算
+    const groupOverlapRates = [];
     for(const id of groupIds){
-      const members=groupMap[id];
-      let total=0;
-      const memberLines = [];
-      for(const m of members){
-        const mk=members.reduce((sum,other)=>sum+(m!==other?(coMap[m][other]||0):0),0);
-        memberLines.push(`${m}：同グループ回数＝${mk}`);
-        total+=mk;
+      const members = groupMap[id];
+      if(members.length < 2) continue;
+
+      let totalOverlap = 0;
+      let pairCount = 0;
+      for(let i = 0; i < members.length; i++){
+        for(let j = i + 1; j < members.length; j++){
+          const m1 = members[i];
+          const m2 = members[j];
+          const overlap = (coMap[m1] && coMap[m1][m2]) ? coMap[m1][m2] : 0;
+          totalOverlap += overlap;
+          pairCount++;
+        }
       }
-      const header = `${idToName[id] ? `グループ ${idToName[id]}` : `グループ ${id}`}（同グループ回数平均＝${members.length? (total/members.length).toFixed(2):0}）：`;
-      const block = [header].concat(memberLines).join("\n");
-      parts.push(block);
+      const avgOverlap = pairCount > 0 ? (totalOverlap / pairCount) : 0;
+      if(avgOverlap > 0){
+        groupOverlapRates.push({
+          id: id,
+          label: idToName[id] || id,
+          rate: avgOverlap
+        });
+      }
     }
 
-    document.getElementById('statsOutput').value = parts.join(groupSep).trim();
+    // メンバー被り率でソート（高い順）
+    groupOverlapRates.sort((a, b) => b.rate - a.rate);
+
+    // 2. 被りがあったメンバーを回数ごとにグループ化して抽出
+    const allMembers = new Set();
+    for(const members of Object.values(groupMap)){
+      for(const m of members) allMembers.add(m);
+    }
+    const memberList = Array.from(allMembers);
+
+    // メンバーごとの最大被り回数を記録
+    const memberMaxOverlap = {}; // { メンバー名: 最大被り回数 }
+
+    // 今回一緒になったメンバーの被りをチェック
+    for(const members of Object.values(groupMap)){
+      if(members.length < 2) continue;
+
+      // このグループ内で被りがあるメンバーを抽出
+      for(let i = 0; i < members.length; i++){
+        for(let j = i + 1; j < members.length; j++){
+          const m1 = members[i];
+          const m2 = members[j];
+          const count = (coMap[m1] && coMap[m1][m2]) ? coMap[m1][m2] : 0;
+
+          if(count > 0){
+            // 各メンバーの最大被り回数を更新
+            memberMaxOverlap[m1] = Math.max(memberMaxOverlap[m1] || 0, count);
+            memberMaxOverlap[m2] = Math.max(memberMaxOverlap[m2] || 0, count);
+          }
+        }
+      }
+    }
+
+    // 最大被り回数ごとにメンバーをグループ化
+    const memberOverlapGroups = {}; // { 回数: Set(メンバー名) }
+    for(const [member, maxCount] of Object.entries(memberMaxOverlap)){
+      if(!memberOverlapGroups[maxCount]){
+        memberOverlapGroups[maxCount] = new Set();
+      }
+      memberOverlapGroups[maxCount].add(member);
+    }
+
+    // 3. 新しい組み合わせのメンバーを抽出
+    const newCombinationMembers = [];
+    for(const member of memberList){
+      // このメンバーが今回一緒になった全員との被り回数をチェック
+      let allNew = true;
+      for(const members of Object.values(groupMap)){
+        if(!members.includes(member)) continue;
+        for(const other of members){
+          if(other === member) continue;
+          const count = (coMap[member] && coMap[member][other]) ? coMap[member][other] : 0;
+          if(count > 0){
+            allNew = false;
+            break;
+          }
+        }
+        if(!allNew) break;
+      }
+      if(allNew && memberList.length > 1){
+        newCombinationMembers.push(member);
+      }
+    }
+
+    // 出力の構築
+    if(groupOverlapRates.length > 0){
+      output.push('⚠ 被りがあったグループ：');
+      for(const g of groupOverlapRates){
+        output.push(`  ${g.label}（メンバー被り率${g.rate.toFixed(2)}）`);
+      }
+    }
+
+    // 被り回数の多い順にソートして表示
+    const sortedCounts = Object.keys(memberOverlapGroups).map(Number).sort((a, b) => b - a);
+    if(sortedCounts.length > 0){
+      if(groupOverlapRates.length > 0) output.push('');
+      output.push('⚠ 被りがあったメンバー：');
+      for(const count of sortedCounts){
+        const members = Array.from(memberOverlapGroups[count]);
+        members.sort(); // メンバー名をソート
+        output.push(`  ${members.join(' & ')}（メンバー被り${count}回目）`);
+      }
+    }
+
+    if(newCombinationMembers.length > 0){
+      if(groupOverlapRates.length > 0 || sortedCounts.length > 0) output.push('');
+      output.push('✓ 全員が新しい組み合わせのメンバー：');
+      output.push(`  ${newCombinationMembers.join(', ')}`);
+    }
+
+    // 「全員が新しい組み合わせのメンバー：」が表示されていない場合のみ表示
+    if(groupOverlapRates.length === 0 && sortedCounts.length === 0 && newCombinationMembers.length === 0){
+      output.push('未実施');
+    }
+
+    document.getElementById('statsOutput').value = output.join('\n');
 
     // 回次表示を更新
     updateGroupRoundDisplay();
@@ -1357,9 +1494,7 @@ const ShufflyApp = (function() {
     bindIf('tab-roles', 'click', ()=>switchResultTab('roles'));
 
     // グループ表示オプションの変更（変更してもグループ分け実行前は結果反映しない）
-    bindIf('showGroupLabel', 'change', ()=>{ if(groupsAssigned){ showGroups(); showStats(); } });
-    bindIf('showGroupCount', 'change', ()=>{ if(groupsAssigned){ showGroups(); showStats(); } });
-    bindIf('breakMemberLine', 'change', ()=>{ if(groupsAssigned) showGroups(); });
+    bindIf('displayFormatSelect', 'change', ()=>{ if(groupsAssigned){ showGroups(); showStats(); } });
     bindIf('separatorSelect', 'change', ()=>{ if(groupsAssigned){ showGroups(); showStats(); } });
     bindIf('groupSeparatorSelect', 'change', ()=>{ if(groupsAssigned){ showGroups(); showStats(); } });
 

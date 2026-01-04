@@ -46,36 +46,36 @@
       <!-- このコンテナを折りたたむ／表示する -->
       <div id="optionsContainer" class="hidden">
         <h3 class="mb-2 font-semibold sr-only">グループ表示オプション（詳細）</h3>
-        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-          <label class="inline-flex items-center gap-1 mt-2">
-            <input type="checkbox" id="showGroupLabel" checked class="rounded border-gray-300">
-            <span class="text-sm ml-1 mr-3">グループ名表示</span>
-          </label>
-          <label class="inline-flex items-center gap-1 mt-2">
-            <input type="checkbox" id="showGroupCount" checked class="rounded border-gray-300">
-            <span class="text-sm ml-1 mr-3">グループ人数表示</span>
-          </label>
-          <label class="inline-flex items-center gap-1 mt-2">
-            <input type="checkbox" id="breakMemberLine" checked class="rounded border-gray-300">
-            <span class="text-sm ml-1 mr-3">メンバーを改行表示</span>
-          </label>
-        </div>
 
-        <div class="mt-2 flex flex-col sm:flex-row sm:items-start gap-3">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full sm:w-auto">
-            <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0">メンバーの区切り方 :</label>
-            <select id="separatorSelect" class="border rounded-xl px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto min-w-40">
+        <div class="flex flex-col gap-3">
+          <!-- 表示内容 -->
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
+            <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-fit">表示内容：</label>
+            <select id="displayFormatSelect" class="border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-auto min-w-[240px]">
+              <option value="name">グループ名</option>
+              <option value="name_break">グループ名 ※改行あり</option>
+              <option value="name_count">グループ名＋人数</option>
+              <option value="name_count_break" selected>グループ名＋人数 ※改行あり</option>
+              <option value="none">なし</option>
+            </select>
+          </div>
+
+          <!-- メンバーの区切り方 -->
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
+            <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-fit">メンバーの区切り方：</label>
+            <select id="separatorSelect" class="border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-auto min-w-[240px]">
               <option value="," selected>カンマ</option>
-              <option value=" " >スペース</option>
+              <option value=" ">スペース</option>
               <option value="  ">ダブルスペース</option>
               <option value="\\t">タブ</option>
               <option value="\\n">改行</option>
             </select>
           </div>
 
-          <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full sm:w-auto">
-            <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0">グループの区切り方 :</label>
-            <select id="groupSeparatorSelect" class="border rounded-xl px-2 py-1 mt-0 sm:mt-1 w-full sm:w-auto min-w-40">
+          <!-- グループの区切り方 -->
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
+            <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-fit">グループの区切り方：</label>
+            <select id="groupSeparatorSelect" class="border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-auto min-w-[240px]">
               <option value="none" selected>なし</option>
               <option value="space">空行</option>
               <option value="line">線</option>
