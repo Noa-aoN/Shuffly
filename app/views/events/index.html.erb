@@ -10,56 +10,40 @@
       background-repeat: repeat;
       opacity: 0.06;
       animation:
-        moveRight 70s linear infinite,
-        diagonalFlip 6s ease-in-out infinite,
-        scatterEffect 60s ease-in-out infinite;
-      will-change: transform, background-position;
+        smoothFlow 40s linear infinite,
+        shuffleMoment 12s ease-in-out infinite;
+      will-change: background-position, transform;
     }
 
-    /* 基本移動を右方向に変更。途中で小さな乱れ（シャッフル）を入れる */
-    @keyframes moveRight {
+    /* 基本：滑らかに右方向へ流れる */
+    @keyframes smoothFlow {
       0% {
         background-position: 0 0;
       }
-      70% {
-        background-position: 2100px 0;
-      }
-      /* たまにシャッフルされるジャークを入れる（短いタイミングで位置が乱れる） */
-      78% {
-        background-position: 2150px -8px;
-      }
-      80% {
-        background-position: 2080px 6px;
-      }
-      82% {
-        background-position: 2220px -4px;
-      }
-      84% {
-        background-position: 2180px 3px;
-      }
       100% {
-        background-position: 3000px 0;
+        background-position: 2000px 0;
       }
     }
 
-    @keyframes diagonalFlip {
-      0%, 100% {
-        transform: translate(0, 0);
+    /* たまにシャッフル効果：位置と回転が一瞬ランダムに動く */
+    @keyframes shuffleMoment {
+      0%, 85% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
       }
-      50% {
-        transform: translate(-40px, 40px);
+      87% {
+        transform: translate(12px, -8px) rotate(2deg) scale(1.02);
       }
-    }
-
-    @keyframes scatterEffect {
-      0%, 92%, 100% {
-        transform: scale(1) rotate(0deg);
+      89% {
+        transform: translate(-10px, 6px) rotate(-1.5deg) scale(0.98);
       }
-      94% {
-        transform: scale(1.03) rotate(1.2deg) translate(8px, -12px);
+      91% {
+        transform: translate(8px, -5px) rotate(1deg) scale(1.01);
       }
-      96% {
-        transform: scale(0.985) rotate(-0.9deg) translate(-10px, 8px);
+      93% {
+        transform: translate(-6px, 4px) rotate(-0.5deg) scale(0.99);
+      }
+      95%, 100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
       }
     }
 
