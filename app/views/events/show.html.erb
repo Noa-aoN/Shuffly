@@ -5,7 +5,18 @@
   <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
     <div class="flex-1">
       <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-        <%= @event.title.presence || t("mypage.events.title") %>
+        <span class="event-title cursor-pointer hover:bg-gray-100 rounded px-2 py-1 -mx-2 transition-colors"
+              data-event-id="<%= @event.id %>"
+              data-event-title="<%= @event.title.presence || t("mypage.events.title") %>">
+          <%= @event.title.presence || t("mypage.events.title") %>
+        </span>
+        <span class="text-sm text-gray-400 ml-2">
+          <%= image_tag 'icons/edit_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                         width: 16,
+                         height: 16,
+                         class: 'inline-block align-middle opacity-50',
+                         alt: '編集' %>
+        </span>
       </h1>
       <div class="flex flex-wrap gap-4 text-base text-gray-600">
         <span class="flex items-center gap-1">
@@ -1084,6 +1095,129 @@
       xhr.send(params.toString());
     });
   }
+
+  // イベントタイトルのインライン編集機能（マイページと同じスタイル）
+  document.querySelectorAll('.event-title').forEach(titleSpan => {
+    const startEdit = function(e) {
+      e.preventDefault();
+      const eventId = titleSpan.dataset.eventId;
+      const oldTitle = titleSpan.dataset.eventTitle;
+
+      // 既に入力フィールドがある場合は編集開始しない
+      if (titleSpan.querySelector('input')) return;
+
+      // 入力フィールドを作成
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = oldTitle;
+      input.className = 'w-full px-2 py-1 text-2xl md:text-3xl font-bold text-gray-900 border-2 border-blue-500 rounded outline-none';
+      input.setAttribute('autocomplete', 'off');
+
+      // 既存の内容を置き換え
+      while (titleSpan.firstChild) {
+        titleSpan.removeChild(titleSpan.firstChild);
+      }
+      titleSpan.appendChild(input);
+      input.focus();
+      input.select();
+
+      // キャンセル関数
+      const cancelEdit = function(inputElement) {
+        while (titleSpan.firstChild) {
+          titleSpan.removeChild(titleSpan.firstChild);
+        }
+        titleSpan.textContent = oldTitle + ' ';
+      };
+
+      // 保存処理
+      const saveEdit = function() {
+        const newTitle = input.value.trim();
+
+        // 変更がない場合はキャンセル
+        if (newTitle === oldTitle) {
+          cancelEdit(input);
+          return;
+        }
+
+        // 空の場合はデフォルトタイトルを使用
+        const finalTitle = newTitle || `イベント ${eventId}`;
+
+        // 文字数制限チェック（255文字）
+        if (finalTitle.length > 255) {
+          alert('タイトルは255文字以内で入力してください');
+          cancelEdit(input);
+          return;
+        }
+
+        // サーバーに保存
+        const formData = new FormData();
+        formData.append('event[title]', finalTitle);
+
+        fetch(`<%= event_path(@event) %>`, {
+          method: 'PATCH',
+          headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // 成功: タイトルを更新
+            while (titleSpan.firstChild) {
+              titleSpan.removeChild(titleSpan.firstChild);
+            }
+            titleSpan.textContent = finalTitle + ' ';
+            titleSpan.dataset.eventTitle = finalTitle;
+
+            // 更新日時を更新
+            const timeElement = document.querySelector('img[alt="更新日アイコン"]').parentElement;
+            if (timeElement) {
+              const timeSpan = timeElement.querySelector('span');
+              if (timeSpan) {
+                const updatedText = timeSpan.textContent.split(': ')[0] + ': ' + new Date().toLocaleString('ja-JP', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                });
+                timeSpan.textContent = updatedText;
+              }
+            }
+
+            showToast('タイトルを更新しました');
+          } else {
+            alert('保存に失敗しました: ' + (data.errors || '不明なエラー'));
+            cancelEdit(input);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('保存に失敗しました: 通信エラー');
+          cancelEdit(input);
+        });
+      };
+
+      // イベントリスナー
+      input.addEventListener('blur', saveEdit);
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          input.blur(); // blurイベントで保存
+        } else if (e.key === 'Escape') {
+          input.removeEventListener('blur', saveEdit);
+          cancelEdit(input);
+        }
+      });
+
+      // クリックで編集開始
+      titleSpan.addEventListener('click', startEdit);
+    };
+
+    // クリックで編集開始
+    titleSpan.addEventListener('click', startEdit);
+  });
 
 })();
 </script>
