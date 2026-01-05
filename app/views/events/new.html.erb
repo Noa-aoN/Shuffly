@@ -1,10 +1,24 @@
+<!-- ============================================ -->
+<!-- 新規シャッフルイベントページ                -->
+<!-- メンバー入力、設定、結果表示、保存機能      -->
+<!-- ============================================ -->
+
+<!-- ========================================== -->
+<!-- メインコンテナ                             -->
+<!-- ========================================== -->
+<!-- JavaScriptで使用するデータ属性を持つ -->
 <main class="max-w-6xl mx-auto px-6 py-6 md:py-8"
       data-is-signed-in="<%= user_signed_in? ? 'true' : 'false' %>"
       data-icon-expand="<%= asset_path('icons/expand_more_24dp_1F1F1F.svg') %>"
       data-icon-collapse="<%= asset_path('icons/keyboard_arrow_up_24dp_1F1F1F.svg') %>"
-      data-new-user-session-path="<%= new_user_session_path %>">
+      data-new-user-session-path="<%= new_user_session_path %>"
+      <% if defined?(@load_event_data) && @load_event_data.present? %>
+      data-load-event="<%= raw @load_event_data.to_json.html_safe %>"
+      <% end %>>
 
-  <!-- ヘッダ：アイコン + タイトル -->
+  <!-- ========================================== -->
+  <!-- ページヘッダー                             -->
+  <!-- ========================================== -->
   <h1 class="text-2xl md:text-3xl font-bold mb-8 flex items-center gap-2">
     <%= image_tag "icons/shuffle_24dp_1F1F1F.svg",
           width: 35,
@@ -16,14 +30,27 @@
     </span>
   </h1>
 
+  <!-- ========================================== -->
+  <!-- 4つのメインセクション                      -->
+  <!-- ========================================== -->
   <div class="flex flex-col gap-10">
+    <!-- ① メンバー入力パネル -->
     <%= render 'events/member_input', event: @event %>
+
+    <!-- ② 設定パネル（グループ/順番/役割） -->
     <%= render 'events/settings_panel', event: @event %>
+
+    <!-- ③ 結果表示パネル -->
     <%= render 'events/results_panel' %>
+
+    <!-- ④ 共有・出力・保存セクション -->
     <%= render 'events/share_section', event: @event %>
   </div>
 
-  <%# Toast通知は shared/_toast.html.erb パーシャルで application.html.erb に配置済み %>
+  <!-- Toast通知は shared/_toast.html.erb パーシャルで application.html.erb に配置済み -->
 </main>
 
+<!-- ========================================== -->
+<!-- JavaScript読み込み                         -->
+<!-- ========================================== -->
 <%= javascript_include_tag "events_new", type: "module", defer: true %>

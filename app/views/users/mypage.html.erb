@@ -1,10 +1,179 @@
-<h1 class="text-2xl font-bold mb-4">マイページ</h1>
+<%# マイページ %>
 
-<p>ようこそ、<%= @user.name || @user.email %></p>
+<div class="max-w-6xl mx-auto px-6 py-6 md:py-8">
+  <%# ユーザー情報ヘッダー %>
+  <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 mb-6">
+    <div class="flex items-center gap-4">
+      <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+        <%= image_tag 'icons/person_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 32, height: 32, class: "text-blue-600", alt: "ユーザーアイコン" %>
+      </div>
+      <div class="grow">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900"><%= @user.name.presence || @user.email.split('@').first %></h1>
+        <p class="text-gray-600 text-sm"><%= @user.email %></p>
+      </div>
+    </div>
+  </div>
 
-<h2 class="mt-6 text-lg font-semibold">あなたの作成したイベント</h2>
-<ul>
-  <% @events.each do |ev| %>
-    <li><%= link_to ev.title.presence || "イベント #{ev.id}", event_path(ev) %> — <%= ev.created_at.to_date %></li>
+  <%# タブナビゲーション - 統合パーシャル使用 %>
+  <%= render 'shared/tabs',
+        tabs: [
+          { id: 'events', text: t("mypage.tabs.events"), icon: 'icons/event_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'events') },
+          { id: 'member_lists', text: t("mypage.tabs.member_lists"), icon: 'icons/user_attributes_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'member_lists') },
+          { id: 'account', text: t("mypage.tabs.account"), icon: 'icons/settings_account_box_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'account') }
+        ],
+        active_tab: (params[:tab] || 'events'),
+        container_class: 'mb-6' %>
+
+  <%# タブコンテンツ %>
+  <% case params[:tab]
+     when 'member_lists' %>
+    <div class="space-y-4">
+      <% if @member_lists && @member_lists.any? %>
+        <%# メンバーリストカード一覧 %>
+        <% @member_lists.each do |member_list| %>
+          <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md transition">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="grow">
+                <h3 class="font-semibold text-lg text-gray-900 mb-2">
+                  <%= member_list.name %>
+                </h3>
+                <div class="flex items-center gap-4 text-sm text-gray-600">
+                  <span class="flex items-center gap-1">
+                    <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "メンバー数アイコン" %>
+                    <%= member_list.members.count %>人
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "作成日アイコン" %>
+                    <%= member_list.created_at.strftime('%Y年%m月%d日') %>
+                  </span>
+                </div>
+              </div>
+              <div class="flex flex-wrap justify-center sm:justify-start gap-2">
+                <%= render 'shared/button',
+                      button_text: '確認する',
+                      path: edit_member_list_path(member_list),
+                      variant: 'secondary',
+                      size: 'md' %>
+                <%= render 'shared/button',
+                      button_text: '編集する',
+                      path: edit_member_list_path(member_list),
+                      variant: 'primary',
+                      size: 'md' %>
+                <%= render 'shared/button',
+                      button_text: '削除する',
+                      path: member_list_path(member_list),
+                      variant: 'tertiary',
+                      size: 'md',
+                      button_to_method: :delete,
+                      confirm_message: "#{member_list.name}を削除してもよろしいですか？",
+                      extra_class: 'bg-red-600 hover:bg-red-700' %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <%# 新規作成ボタン（中央配置） %>
+        <div class="flex justify-center pt-4">
+          <%= render 'shared/button',
+                button_text: t("mypage.member_lists.create_new"),
+                path: new_member_list_path,
+                variant: 'primary',
+                size: 'md' %>
+        </div>
+      <% else %>
+        <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-12 text-center">
+          <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 64, height: 64, class: "mx-auto text-gray-300 mb-4", alt: "空のメンバーリストアイコン" %>
+          <p class="text-gray-600 mb-6"><%= t("mypage.member_lists.empty") %></p>
+          <div class="flex justify-center">
+            <%= render 'shared/button',
+                  button_text: t("mypage.member_lists.create_new"),
+                  path: new_member_list_path,
+                  variant: 'primary',
+                  size: 'lg' %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+  <% when 'account' %>
+    <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
+      <h2 class="text-xl font-bold mb-6"><%= t("mypage.account.title") %></h2>
+
+      <div class="space-y-4">
+        <div class="flex items-center justify-between py-3 border-b border-gray-100">
+          <div>
+            <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.email") %></p>
+            <p class="text-sm text-gray-600"><%= @user.email %></p>
+          </div>
+          <%= link_to t("mypage.account.edit_account"), edit_user_registration_path, class: "text-blue-600 hover:underline text-sm" %>
+        </div>
+
+        <% if @user.name.present? %>
+          <div class="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.name") %></p>
+              <p class="text-sm text-gray-600"><%= @user.name %></p>
+            </div>
+            <%= link_to t("mypage.account.edit_account"), edit_user_registration_path, class: "text-blue-600 hover:underline text-sm" %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-gray-200 flex justify-center">
+        <%= render 'shared/button',
+              button_text: t("mypage.account.logout"),
+              path: destroy_user_session_path,
+              variant: 'tertiary',
+              size: 'md',
+              button_to_method: :delete,
+              extra_class: 'bg-gray-600 hover:bg-gray-700' %>
+      </div>
+    </div>
+
+  <% else # events (default) %>
+    <div class="space-y-4">
+      <% if @events.any? %>
+        <% @events.each do |event| %>
+          <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md transition">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="grow">
+                <h3 class="font-semibold text-lg text-gray-900 mb-2">
+                  <%= event.title.presence || "イベント #{event.id}" %>
+                </h3>
+                <div class="flex items-center gap-4 text-sm text-gray-600">
+                  <span class="flex items-center gap-1">
+                    <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "作成日アイコン" %>
+                    <%= event.created_at.strftime('%Y年%m月%d日') %>
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "メンバー数アイコン" %>
+                    <%= event.members.count %>人
+                  </span>
+                </div>
+              </div>
+              <div class="flex justify-center sm:justify-start">
+                <%= render 'shared/button',
+                      button_text: t("mypage.events.view_details"),
+                      path: event_path(event),
+                      variant: 'primary',
+                      size: 'md' %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-12 text-center">
+          <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 64, height: 64, class: "mx-auto text-gray-300 mb-4", alt: "空のイベント履歴アイコン" %>
+          <p class="text-gray-600 mb-6"><%= t("mypage.events.empty") %></p>
+          <div class="flex justify-center">
+            <%= render 'shared/button',
+                  button_text: t("mypage.events.create_new"),
+                  path: new_event_path,
+                  variant: 'primary',
+                  size: 'lg' %>
+          </div>
+        </div>
+      <% end %>
+    </div>
   <% end %>
-</ul>
+</div>

@@ -19,6 +19,9 @@
 </head>
 
 <body class="antialiased text-gray-800 bg-gray-50 min-h-screen flex flex-col">
+  <%# Toast通知（JavaScript有効時）- bodyの最初に配置してfixed位置を正しく機能させる %>
+  <%= render 'shared/toast' %>
+
   <%# ヘッダー（部分テンプレート） %>
   <%= render 'shared/header' %>
 
@@ -26,9 +29,6 @@
   <%= render 'shared/maintenance_overlay' %>
 
   <main class="flex-grow">
-    <%# Toast通知（JavaScript有効時） %>
-    <%= render 'shared/toast' %>
-
     <%# フラッシュ通知エリア（フォールバック: JavaScript無効時） %>
     <noscript>
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">

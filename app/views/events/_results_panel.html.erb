@@ -1,5 +1,10 @@
-<!-- ③ 結果表示カード：グループ / 順番 / 役割 の切替表示 -->
+<!-- ============================================ -->
+<!-- ③ 結果表示パネル                            -->
+<!-- シャッフル結果（グループ/順番/役割）の表示  -->
+<!-- ============================================ -->
 <div id="resultsCard" class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 py-8">
+
+  <!-- パネルヘッダー -->
   <div class="flex items-start justify-between mb-4">
     <div class="flex items-center gap-3">
       <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
@@ -7,32 +12,41 @@
     </div>
   </div>
 
-  <!-- 結果タブ: 新デザイン（ピル型） -->
+  <!-- ========================================== -->
+  <!-- タブナビゲーション                         -->
+  <!-- ========================================== -->
   <div class="mb-5">
     <div class="inline-flex w-full items-center gap-2 bg-white rounded-xl p-1 border border-slate-200 shadow-sm">
+      <!-- グループタブ -->
       <button id="tab-groups" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg font-semibold text-blue-600 bg-blue-50 ring-1 ring-blue-100 shadow-sm">
         <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "グループアイコン" %>
         <span class="hidden sm:inline leading-none">グループ</span>
       </button>
-      <button id="tab-order"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg text-gray-600 hover:text-blue-500">
+
+      <!-- 順番タブ -->
+      <button id="tab-order" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg text-gray-600 hover:text-blue-500">
         <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "順番アイコン" %>
         <span class="hidden sm:inline leading-none">順番</span>
       </button>
-      <button id="tab-roles"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg text-gray-600 hover:text-blue-500">
+
+      <!-- 役割タブ -->
+      <button id="tab-roles" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg text-gray-600 hover:text-blue-500">
         <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "役割アイコン" %>
         <span class="hidden sm:inline leading-none">役割</span>
       </button>
     </div>
   </div>
 
-  <!-- グループ表示パネル -->
+  <!-- ========================================== -->
+  <!-- グループ分けパネル                         -->
+  <!-- ========================================== -->
   <div id="panel-groups" class="result-panel">
     <h3 class="mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> グループ表示</h3>
 
-    <!-- グループ結果出力（初期は空。実行後に内容が入る） -->
-    <textarea id="groupOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border  border-slate-300 rounded-xl px-3 py-2 w-full mb-4 text-lg"></textarea>
+    <!-- 結果出力エリア -->
+    <textarea id="groupOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 text-lg"></textarea>
 
-    <!-- グループ表示オプション -->
+    <!-- グループ表示オプション（折りたたみ可能） -->
     <div class="mb-6">
       <div class="flex items-center justify-between mb-2">
         <h3 class="font-semibold">
@@ -43,12 +57,11 @@
         </h3>
       </div>
 
-      <!-- このコンテナを折りたたむ／表示する -->
       <div id="optionsContainer" class="hidden">
         <h3 class="mb-2 font-semibold sr-only">グループ表示オプション（詳細）</h3>
 
         <div class="flex flex-col gap-3">
-          <!-- 表示内容 -->
+          <!-- オプション: 表示内容 -->
           <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
             <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-fit">表示内容：</label>
             <select id="displayFormatSelect" class="border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-auto min-w-[240px]">
@@ -60,7 +73,7 @@
             </select>
           </div>
 
-          <!-- メンバーの区切り方 -->
+          <!-- オプション: メンバーの区切り方 -->
           <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
             <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-fit">メンバーの区切り方：</label>
             <select id="separatorSelect" class="border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-auto min-w-[240px]">
@@ -72,7 +85,7 @@
             </select>
           </div>
 
-          <!-- グループの区切り方 -->
+          <!-- オプション: グループの区切り方 -->
           <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
             <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-fit">グループの区切り方：</label>
             <select id="groupSeparatorSelect" class="border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-auto min-w-[240px]">
@@ -86,7 +99,7 @@
       </div>
     </div>
 
-    <!-- 統計情報（折りたたみ） -->
+    <!-- 統計情報（折りたたみ可能） -->
     <div class="mb-5">
       <div class="flex items-center justify-between mb-2">
         <h3 class="font-semibold">
@@ -101,11 +114,14 @@
       </div>
     </div>
 
-    <!-- グループ分けの回次表示（memberCountHint と同じスタイル） -->
-    <div id="groupRoundHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">現在のグループ分け表示：<span class="font-bold">未実施</span></div>
+    <!-- 回次表示インジケーター -->
+    <div id="groupRoundHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+      現在のグループ分け表示：<span class="font-bold">未実施</span>
+    </div>
 
-    <!-- 結果操作ボタン（tertiary） -->
+    <!-- 操作ボタングループ -->
     <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
+      <!-- 前回のグループ分けボタン -->
       <div class="col-span-1">
         <%= render 'shared/button',
               f: nil,
@@ -119,6 +135,7 @@
               icon_class: 'inline-block' %>
       </div>
 
+      <!-- 次回のグループ分けボタン -->
       <div class="col-span-1">
         <%= render 'shared/button',
               f: nil,
@@ -132,6 +149,7 @@
               icon_class: 'inline-block icon_right' %>
       </div>
 
+      <!-- クリップボードにコピーボタン -->
       <div class="col-span-2 md:col-span-1">
         <%= render 'shared/button',
               f: nil,
@@ -145,19 +163,25 @@
               icon_class: 'inline-block' %>
       </div>
     </div>
-
   </div>
 
-  <!-- 順番表示パネル -->
+  <!-- ========================================== -->
+  <!-- 順番決めパネル                             -->
+  <!-- ========================================== -->
   <div id="panel-order" class="result-panel hidden">
     <h3 class="font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> 順番表示</h3>
+
+    <!-- 結果出力エリア -->
     <textarea id="orderOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border border-slate-300 rounded-xl px-3 py-2 w-full text-lg mb-4"></textarea>
 
-    <!-- 順番決めの回次表示 -->
-    <div id="orderRoundHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">現在の順番決め表示：<span class="font-bold">未実施</span></div>
+    <!-- 回次表示インジケーター -->
+    <div id="orderRoundHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+      現在の順番決め表示：<span class="font-bold">未実施</span>
+    </div>
 
-    <!-- 結果操作ボタン（tertiary） -->
+    <!-- 操作ボタングループ -->
     <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
+      <!-- 前回の順番決めボタン -->
       <div class="col-span-1">
         <%= render 'shared/button',
               f: nil,
@@ -171,6 +195,7 @@
               icon_class: 'inline-block' %>
       </div>
 
+      <!-- 次回の順番決めボタン -->
       <div class="col-span-1">
         <%= render 'shared/button',
               f: nil,
@@ -184,6 +209,7 @@
               icon_class: 'inline-block icon_right' %>
       </div>
 
+      <!-- クリップボードにコピーボタン -->
       <div class="col-span-2 md:col-span-1">
         <%= render 'shared/button',
               f: nil,
@@ -197,19 +223,25 @@
               icon_class: 'inline-block' %>
       </div>
     </div>
-
   </div>
 
-  <!-- 役割表示パネル -->
+  <!-- ========================================== -->
+  <!-- 役割分担パネル                             -->
+  <!-- ========================================== -->
   <div id="panel-roles" class="result-panel hidden">
     <h3 class="font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> 役割表示</h3>
+
+    <!-- 結果出力エリア -->
     <textarea id="rolesOutput" rows="10" readonly class="bg-yellow-100 text-gray-500 border border-slate-300 rounded-xl px-3 py-2 w-full text-lg mb-4"></textarea>
 
-    <!-- 役割分担の回次表示 -->
-    <div id="rolesRoundHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">現在の役割分担表示：<span class="font-bold">未実施</span></div>
+    <!-- 回次表示インジケーター -->
+    <div id="rolesRoundHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+      現在の役割分担表示：<span class="font-bold">未実施</span>
+    </div>
 
-    <!-- 結果操作ボタン（tertiary） -->
+    <!-- 操作ボタングループ -->
     <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
+      <!-- 前回の役割分担ボタン -->
       <div class="col-span-1">
         <%= render 'shared/button',
               f: nil,
@@ -223,6 +255,7 @@
               icon_class: 'inline-block' %>
       </div>
 
+      <!-- 次回の役割分担ボタン -->
       <div class="col-span-1">
         <%= render 'shared/button',
               f: nil,
@@ -236,6 +269,7 @@
               icon_class: 'inline-block icon_right' %>
       </div>
 
+      <!-- クリップボードにコピーボタン -->
       <div class="col-span-2 md:col-span-1">
         <%= render 'shared/button',
               f: nil,
@@ -249,6 +283,5 @@
               icon_class: 'inline-block' %>
       </div>
     </div>
-
   </div>
 </div>

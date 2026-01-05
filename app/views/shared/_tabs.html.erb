@@ -1,19 +1,43 @@
+<%# 統合タブボタンパーシャル
+
+使用方法:
+  tabs: [{ id: 'groups', text: 'グループ', icon: 'icons/xxx.svg', path: optional_path }]
+  active_tab: 'groups'  # アクティブなタブのID
+  id_prefix: 'tab'      # button/linkのIDのプレフィックス（デフォルト: 'tab'）
+  container_class: ''   # コンテナの追加クラス
+%>
 <% tabs = local_assigns.fetch(:tabs, []) %>
-<% container_class = local_assigns.fetch(:container_class, 'flex gap-2 mb-4') %>
-<% active_id = local_assigns.fetch(:active_id, nil) %>
+<% active_tab = local_assigns.fetch(:active_tab, nil) %>
+<% id_prefix = local_assigns.fetch(:id_prefix, 'tab') %>
+<% container_class = local_assigns.fetch(:container_class, '') %>
 
-<div class="<%= container_class %>" role="tablist" aria-label="tabs">
-  <% tabs.each do |t| %>
-    <% id = (t[:id] || t['id']) %>
-    <% text = (t[:text] || t['text'] || '') %>
-    <% extra = (t[:extra_class] || t['extra_class'] || '') %>
+<div class="<%= container_class %>">
+  <div class="inline-flex w-full items-center gap-2 bg-white rounded-xl p-1 border border-slate-200 shadow-sm">
+    <% tabs.each do |tab| %>
+      <% id = tab[:id] || tab['id'] %>
+      <% text = tab[:text] || tab['text'] || '' %>
+      <% icon = tab[:icon] || tab['icon'] %>
+      <% path = tab[:path] || tab['path'] %>
+      <% is_active = active_tab && id.to_s == active_tab.to_s %>
 
-    <%# Use direct button markup with the requested compact size (px-3 py-1 text-sm border rounded) %>
-    <% classes = ['px-3', 'py-1', 'text-sm', 'border', 'rounded', extra].reject(&:blank?).join(' ') %>
-    <% if active_id && id.to_s == active_id.to_s %>
-      <% classes = [classes, 'bg-blue-100'].join(' ') %>
+      <% base_class = "flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm md:text-lg rounded-lg font-semibold transition #{is_active ? 'text-blue-600 bg-blue-50 ring-1 ring-blue-100 shadow-sm' : 'text-gray-600 hover:text-blue-500'}" %>
+
+      <%# pathがある場合はlink_to、なければbutton %>
+      <% if path %>
+        <%= link_to path, id: "#{id_prefix}-#{id}", class: base_class do %>
+          <% if icon %>
+            <%= image_tag icon, width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "#{text}アイコン" %>
+          <% end %>
+          <span class="hidden sm:inline leading-none"><%= text %></span>
+        <% end %>
+      <% else %>
+        <%= content_tag :button, id: "#{id_prefix}-#{id}", class: base_class, type: 'button' do %>
+          <% if icon %>
+            <%= image_tag icon, width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "#{text}アイコン" %>
+          <% end %>
+          <span class="hidden sm:inline leading-none"><%= text %></span>
+        <% end %>
+      <% end %>
     <% end %>
-
-    <button type="button" id="<%= id %>" class="<%= classes %>" role="tab"><%= text %></button>
-  <% end %>
+  </div>
 </div>

@@ -25,7 +25,18 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_02_023759) do
     t.jsonb "member_order_json", default: []
     t.jsonb "setting_json", default: {}
     t.jsonb "history_json", default: []
+    t.text "memo"
     t.index ["user_id"], name: "index_events_on_user_id"
+  end
+
+  create_table "member_lists", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.jsonb "members_json", default: []
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "name"], name: "index_member_lists_on_user_id_and_name"
+    t.index ["user_id"], name: "index_member_lists_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -42,4 +53,5 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_02_023759) do
   end
 
   add_foreign_key "events", "users"
+  add_foreign_key "member_lists", "users"
 end

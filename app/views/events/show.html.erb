@@ -1,47 +1,310 @@
-<div class="min-h-screen bg-gray-50">
-  <div class="max-w-6xl mx-auto px-6 py-6">
-    <div class="flex items-center justify-between mb-4">
-      <h1 class="text-2xl font-bold"><%= @event&.title.presence || "イベント" %></h1>
-      <div class="flex items-center gap-2">
-        <button id="btn-presentation" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">プレゼン表示</button>
-        <button id="btn-back-to-settings" class="px-3 py-1 bg-white border rounded hover:bg-gray-100">イベント設定に戻る</button>
-        <a href="<%= edit_event_path(@event) if @event %>" class="px-3 py-1 border rounded bg-white hover:bg-gray-100">編集</a>
+<%# イベント詳細ページ %>
+
+<div class="max-w-6xl mx-auto px-6 py-6 md:py-8">
+  <%# ヘッダー: タイトルとメタデータ %>
+  <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+    <div class="flex-1">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+        <%= @event.title.presence || t("mypage.events.title") %>
+      </h1>
+      <div class="flex flex-wrap gap-4 text-base text-gray-600">
+        <span class="flex items-center gap-1">
+          <%= image_tag 'icons/today_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "作成日アイコン" %>
+          <%= t("mypage.event_detail.created_at") %>: <%= @event.created_at.strftime('%Y/%m/%d %H:%M') %>
+        </span>
+        <span class="flex items-center gap-1">
+          <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "更新日アイコン" %>
+          <%= t("mypage.event_detail.updated_at") %>: <%= @event.updated_at.strftime('%Y/%m/%d %H:%M') %>
+        </span>
+        <span class="flex items-center gap-1">
+          <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "人数アイコン" %>
+          <%= t("mypage.event_detail.members_count", count: @members.count) %>
+        </span>
+      </div>
+      <%# 実行回数表示 %>
+      <div class="flex flex-wrap gap-4 text-sm text-gray-500 mt-2" id="execution-counts">
+        <span>グループ分け回数: <strong id="groups-count">0回</strong></span>
+        <span>順番決め回数: <strong id="order-count">0回</strong></span>
+        <span>役割分担回数: <strong id="roles-count">0回</strong></span>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <section class="col-span-2 bg-white p-4 rounded shadow-sm">
-        <h2 class="text-lg font-semibold mb-2">グループ表示</h2>
-        <div id="pres-groups" class="whitespace-pre-wrap text-lg text-gray-800 bg-gray-50 p-3 rounded min-h-[120px]"></div>
+    <%# アクションボタン %>
+    <div class="mt-4 pt-4 border-t border-gray-100">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
+        <%= render 'shared/button',
+              button_text: t("mypage.event_detail.back"),
+              path: mypage_path(tab: 'events'),
+              variant: 'tertiary',
+              size: 'sm',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/keyboard_return_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+        <%= render 'shared/button',
+              button_text: '続きからシャッフル',
+              path: new_event_path(load_event_id: @event.id),
+              variant: 'primary',
+              size: 'sm',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/start_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+        <%= render 'shared/button',
+              button_text: 'イベント履歴を削除',
+              path: event_path(@event),
+              variant: 'tertiary',
+              size: 'sm',
+              full_mobile: true,
+              button_to_method: :delete,
+              id: 'btn-delete-event',
+              extra_class: 'w-full bg-red-50 text-red-600 hover:bg-red-100',
+              icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
+    </div>
+  </div>
 
-        <div class="flex items-center gap-2 mt-3">
-          <button id="btn-copy-groups" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">コピー</button>
-          <span id="copy-status" class="text-sm text-gray-500"></span>
+  <%# タブナビゲーション（results_panelと同じスタイル） %>
+  <div class="mb-6">
+    <div class="inline-flex w-full items-center gap-2 bg-white rounded-xl p-1 border border-slate-200 shadow-sm">
+      <button id="tab-groups" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg font-semibold text-blue-600 bg-blue-50 ring-1 ring-blue-100 shadow-sm">
+        <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "グループアイコン" %>
+        <span class="hidden sm:inline leading-none">グループ</span>
+      </button>
+      <button id="tab-order" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg font-semibold text-gray-600 hover:text-blue-500">
+        <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "順番アイコン" %>
+        <span class="hidden sm:inline leading-none">順番</span>
+      </button>
+      <button id="tab-roles" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg font-semibold text-gray-600 hover:text-blue-500">
+        <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "役割アイコン" %>
+        <span class="hidden sm:inline leading-none">役割</span>
+      </button>
+    </div>
+  </div>
+
+  <%# グループパネル %>
+  <div id="panel-groups" class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 py-8">
+    <h3 class="mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> グループ表示</h3>
+    <div id="pres-groups" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[120px]"></div>
+
+    <%# 履歴インデックス %>
+    <div class="text-base text-yellow-800 mt-1 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+      現在のグループ分け表示：<span id="history-index-groups" class="font-bold">未実施</span>
+    </div>
+
+    <%# 結果操作ボタン（tertiary） %>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
+      <div class="col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: raw('<span class="hidden sm:inline">前回のグループ分け</span><span class="inline sm:hidden">前回</span>'),
+              id: 'btn-prev-groups',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
+
+      <div class="col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: raw('<span class="hidden sm:inline">次回のグループ分け</span><span class="inline sm:hidden">次回</span>'),
+              id: 'btn-next-groups',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block icon_right' %>
+      </div>
+
+      <div class="col-span-2 md:col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: 'クリップボードにコピー',
+              id: 'btn-copy-groups',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
+    </div>
+  </div>
+
+  <%# 順番パネル %>
+  <div id="panel-order" class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 py-8 hidden">
+    <h3 class="font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> 順番表示</h3>
+    <div id="pres-order" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[120px]"></div>
+
+    <%# 履歴インデックス %>
+    <div class="text-base text-yellow-800 mt-1 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+      現在の順番決め表示：<span id="history-index-order" class="font-bold">未実施</span>
+    </div>
+
+    <%# 結果操作ボタン（tertiary） %>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
+      <div class="col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: raw('<span class="hidden sm:inline">前回の順番決め</span><span class="inline sm:hidden">前回</span>'),
+              id: 'btn-prev-order',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
+
+      <div class="col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: raw('<span class="hidden sm:inline">次回の順番決め</span><span class="inline sm:hidden">次回</span>'),
+              id: 'btn-next-order',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block icon_right' %>
+      </div>
+
+      <div class="col-span-2 md:col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: 'クリップボードにコピー',
+              id: 'btn-copy-order',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
+    </div>
+  </div>
+
+  <%# 役割パネル %>
+  <div id="panel-roles" class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 py-8 hidden">
+    <h3 class="font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> 役割表示</h3>
+    <div id="pres-roles" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[120px]"></div>
+
+    <%# 履歴インデックス %>
+    <div class="text-base text-yellow-800 mt-1 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+      現在の役割分担表示：<span id="history-index-roles" class="font-bold">未実施</span>
+    </div>
+
+    <%# 結果操作ボタン（tertiary） %>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
+      <div class="col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: raw('<span class="hidden sm:inline">前回の役割分担</span><span class="inline sm:hidden">前回</span>'),
+              id: 'btn-prev-roles',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
+
+      <div class="col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: raw('<span class="hidden sm:inline">次回の役割分担</span><span class="inline sm:hidden">次回</span>'),
+              id: 'btn-next-roles',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block icon_right' %>
+      </div>
+
+      <div class="col-span-2 md:col-span-1">
+        <%= render 'shared/button',
+              f: nil,
+              button_text: 'クリップボードにコピー',
+              id: 'btn-copy-roles',
+              path: '#',
+              variant: 'tertiary',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
+    </div>
+  </div>
+
+  <%# メモカード %>
+  <div class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 py-8 mt-6">
+    <h2 class="text-xl font-bold mb-4"><%= t("mypage.event_detail.memo") %></h2>
+    <%= form_with model: @event, url: event_path(@event), method: :patch, id: 'memo-form', local: true, data: { turbo: false } do |f| %>
+      <%= f.text_area :memo,
+            rows: 3,
+            class: "w-full border border-slate-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-yellow-100",
+            placeholder: t("mypage.event_detail.memo_placeholder") %>
+      <div class="mt-3">
+        <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 mb-2 w-full sm:place-items-center">
+          <%= render 'shared/button',
+                f: f,
+                button_text: t("mypage.event_detail.save_memo"),
+                variant: 'tertiary',
+                full_mobile: true,
+                extra_class: 'w-full',
+                icon: 'icons/edit_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                icon_class: 'inline-block' %>
         </div>
+      </div>
+    <% end %>
+  </div>
 
-        <h3 class="text-sm font-medium mt-6 mb-2">履歴スナップショット（生データ）</h3>
-        <pre id="pres-snapshot" class="bg-gray-100 p-3 rounded text-sm whitespace-pre-wrap max-h-48 overflow-auto"></pre>
-      </section>
-
-      <aside class="bg-white p-4 rounded shadow-sm">
-        <h3 class="font-medium mb-2">順番</h3>
-        <pre id="pres-order" class="whitespace-pre-wrap text-gray-800 bg-gray-50 p-2 rounded min-h-[80px]"></pre>
-
-        <h3 class="font-medium mt-4 mb-2">役職</h3>
-        <pre id="pres-roles" class="whitespace-pre-wrap text-gray-800 bg-gray-50 p-2 rounded min-h-[80px]"></pre>
-
-        <div class="mt-4 flex gap-2">
-          <button id="btn-prev-snapshot" class="px-3 py-1 bg-white border rounded disabled:opacity-50">前へ</button>
-          <button id="btn-next-snapshot" class="px-3 py-1 bg-white border rounded disabled:opacity-50">次へ</button>
-          <span id="snapshot-index" class="ml-2 text-sm text-gray-500"></span>
-        </div>
-      </aside>
+  <%# エクスポートセクション %>
+  <div class="bg-white rounded-xl shadow-sm p-6 mt-6">
+    <h2 class="text-xl font-bold mb-4"><%= t("mypage.event_detail.export") %></h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
+      <%= render 'shared/button',
+            button_text: 'プレゼン表示',
+            path: '#',
+            id: 'btn-presentation',
+            variant: 'tertiary',
+            full_mobile: true,
+            extra_class: 'w-full',
+            icon: 'icons/share_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block' %>
+      <%= render 'shared/button',
+            button_text: "ファイル出力",
+            path: '#',
+            id: 'btn-export-current',
+            variant: 'tertiary',
+            full_mobile: true,
+            extra_class: 'w-full',
+            icon: 'icons/download_2_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block' %>
+      <%= render 'shared/button',
+            button_text: "ファイル全履歴出力",
+            path: '#',
+            id: 'btn-export-all-history',
+            variant: 'tertiary',
+            full_mobile: true,
+            extra_class: 'w-full',
+            icon: 'icons/download_2_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block' %>
     </div>
   </div>
 </div>
 
+<%# タブ切替用データ属性 %>
+<% content_for :javascript do %>
 <script>
 (function(){
+  // Safe JSON parse with fallbacks
   function safeParse(v){
     if(!v) return null;
     if (typeof v === 'object') return v;
@@ -50,73 +313,101 @@
     }
   }
 
-  // server-provided payload (if @event exists, controller may have populated these)
-  const serverPayload = {
-    members_json: <%= raw((defined?(@members) && @members) ? @members.to_json : 'null') %>,
-    results_json: <%= raw((defined?(@results) && @results) ? @results.to_json : 'null') %>,
-    order_json:   <%= raw((defined?(@order)   && @order)   ? @order.to_json   : 'null') %>,
-    settings_json:<%= raw((defined?(@settings)&& @settings)? @settings.to_json: 'null') %>,
-    history_json: <%= raw((defined?(@history) && @history) ? @history.to_json : 'null') %>,
-    title:        <%= raw((defined?(@event) && @event&.title) ? @event.title.to_json : '""') %>
+  // Server-provided data
+  const serverData = {
+    members: <%= raw @members.to_json %>,
+    results: <%= raw @results.to_json %>,
+    order: <%= raw @order.to_json %>,
+    settings: <%= raw @settings.to_json %>,
+    history: <%= raw @history.to_json %>,
+    title: <%= raw @event.title.to_json %>
   };
 
-  // try query/localStorage first, then fallback to serverPayload
-  function loadPayload(){
-    function getParam(name){
-      try{
-        const p = new URLSearchParams(window.location.search);
-        return p.has(name) ? p.get(name) : null;
-      }catch(e){ return null; }
-    }
+  // History state for each tab
+  const historyState = {
+    groups: { index: -1, history: [] },
+    order: { index: -1, history: [] },
+    roles: { index: -1, history: [] }
+  };
 
-    let payload = null;
-    try {
-      const members_raw = getParam('members_json') || getParam('membersJson') || null;
-      const results_raw = getParam('results_json') || getParam('resultsJson') || null;
-      const order_raw   = getParam('order_json') || getParam('orderJson') || null;
-      const settings_raw= getParam('settings_json') || getParam('settingsJson') || null;
-      const history_raw = getParam('history_json') || getParam('historyJson') || null;
-      const title_raw   = (new URLSearchParams(window.location.search)).get('title') || null;
+  // Parse history and extract by type
+  function parseHistoryByType() {
+    const history = Array.isArray(serverData.history) ? serverData.history : [];
 
-      if(members_raw || results_raw || order_raw || settings_raw || history_raw || title_raw){
-        payload = {
-          members_json: safeParse(members_raw),
-          results_json: safeParse(results_raw),
-          order_json: safeParse(order_raw),
-          settings_json: safeParse(settings_raw),
-          history_json: safeParse(history_raw),
-          title: title_raw || ''
-        };
-      }
-    } catch(e){ payload = null; }
-
-    if(!payload){
+    history.forEach((entry, idx) => {
       try {
-        const raw = localStorage.getItem('presentation_shuffly_event') || localStorage.getItem('pending_shuffly_event');
-        if(raw){
-          const p = safeParse(raw) || JSON.parse(raw);
-          payload = {
-            members_json: safeParse(p.members_json) || p.members_json || null,
-            results_json: safeParse(p.results_json) || p.results_json || null,
-            order_json:   safeParse(p.order_json)   || p.order_json   || null,
-            settings_json:safeParse(p.settings_json)|| p.settings_json|| null,
-            history_json: safeParse(p.history_json) || p.history_json || null,
-            title: p.title || ''
-          };
+        const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
+
+        // 新形式: { type: 'groups'|'order'|'roles', data: {...} }
+        // 旧形式: { groups: {...} } または { order: {...} } または { settings: {...} }
+        if (parsed) {
+          if (parsed.type === 'groups' || parsed.groups) {
+            // 新形式の場合はdata.groupsを、旧形式の場合はgroupsを直接使用
+            const entryData = parsed.type === 'groups' ? parsed.data : parsed;
+            if (entryData && (entryData.groups || entryData.membersRaw)) {
+              historyState.groups.history.push(parsed);
+            }
+          }
+          if (parsed.type === 'order') {
+            // 新形式: data.resultに配列が入っている
+            if (parsed.data && (parsed.data.result || parsed.data.order)) {
+              historyState.order.history.push(parsed);
+            }
+          } else if (parsed.order) {
+            // 旧形式: 直接orderがある
+            historyState.order.history.push(parsed);
+          }
+          if (parsed.type === 'roles') {
+            // 新形式: data.assignmentsに配列が入っている
+            if (parsed.data && (parsed.data.assignments || parsed.data.settings)) {
+              historyState.roles.history.push(parsed);
+            }
+          } else if (parsed.settings) {
+            // 旧形式: 直接settingsがある
+            historyState.roles.history.push(parsed);
+          }
         }
-      } catch(e){ /* ignore */ }
-    }
-
-    if(!payload) payload = serverPayload;
-    return payload;
+      } catch(e) {}
+    });
   }
+  parseHistoryByType();
 
-  const payload = loadPayload();
+  // Set initial indices to first (1回目を最初に表示)
+  historyState.groups.index = historyState.groups.history.length > 0 ? 0 : -1;
+  historyState.order.index = historyState.order.history.length > 0 ? 0 : -1;
+  historyState.roles.index = historyState.roles.history.length > 0 ? 0 : -1;
 
-  // rendering helpers
+  // Tab switching
+  const tabs = document.querySelectorAll('#tab-groups, #tab-order, #tab-roles');
+  const panels = {
+    groups: document.getElementById('panel-groups'),
+    order: document.getElementById('panel-order'),
+    roles: document.getElementById('panel-roles')
+  };
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      const targetId = this.id.replace('tab-', '');
+      const targetPanel = panels[targetId];
+
+      // Update tab styles
+      tabs.forEach(t => {
+        t.classList.remove('text-blue-600', 'bg-blue-50', 'ring-1', 'ring-blue-100', 'shadow-sm');
+        t.classList.add('text-gray-600');
+      });
+      this.classList.remove('text-gray-600');
+      this.classList.add('text-blue-600', 'bg-blue-50', 'ring-1', 'ring-blue-100', 'shadow-sm');
+
+      // Show target panel
+      Object.values(panels).forEach(p => p.classList.add('hidden'));
+      targetPanel.classList.remove('hidden');
+    });
+  });
+
+  // Rendering functions
   function renderGroups(results){
     const el = document.getElementById('pres-groups');
-    if(!results || !results.groups){ el.textContent = '結果データがありません'; return; }
+    if(!results || !results.groups){ el.textContent = <%= raw t("mypage.event_detail.no_data").to_json %>; return; }
     const groups = results.groups;
     const groupNames = results.group_names || results.groupNames || {};
     let out = '';
@@ -136,123 +427,583 @@
 
   function renderOrder(orderData){
     const el = document.getElementById('pres-order');
-    if(!orderData){ el.textContent = ''; return; }
+    if(!orderData || Object.keys(orderData).length === 0){ el.textContent = <%= raw t("mypage.event_detail.no_data").to_json %>; return; }
     const ord = Array.isArray(orderData) ? orderData : (typeof orderData === 'string' ? safeParse(orderData) : orderData);
-    if(!ord){ el.textContent = ''; return; }
+    if(!ord || ord.length === 0){ el.textContent = <%= raw t("mypage.event_detail.no_data").to_json %>; return; }
     const lines = ord.map((o,i)=> ((o.order || o.order_index || (i+1)) + '. ' + (o.name || o)));
     el.textContent = lines.join('\n');
   }
 
   function renderRoles(settings){
     const el = document.getElementById('pres-roles');
-    if(!settings){ el.textContent = ''; return; }
+    if(!settings || Object.keys(settings).length === 0){ el.textContent = <%= raw t("mypage.event_detail.no_data").to_json %>; return; }
     try{
       const s = (typeof settings === 'string') ? safeParse(settings) : settings;
       if(s && s.role_assignments && Array.isArray(s.role_assignments)){
-        el.textContent = s.role_assignments.map(r=> (r.name + ': ' + r.role)).join('\n');
+        // roleがnullまたは空のメンバーは表示しない
+        const filtered = s.role_assignments.filter(r => r.role && r.role.trim() !== '');
+        if (filtered.length === 0) {
+          el.textContent = <%= raw t("mypage.event_detail.no_data").to_json %>;
+        } else {
+          el.textContent = filtered.map(r=> (r.name + ': ' + r.role)).join('\n');
+        }
       } else if(s && s.roles && typeof s.roles === 'string'){
         el.textContent = '役職: ' + s.roles;
-      } else el.textContent = '';
-    }catch(e){ el.textContent=''; }
+      } else el.textContent = <%= raw t("mypage.event_detail.no_data").to_json %>;
+    }catch(e){ el.textContent = <%= raw t("mypage.event_detail.no_data").to_json %>; }
   }
 
-  // initial render
-  document.getElementById('pres-groups').textContent = '';
-  document.getElementById('pres-order').textContent = '';
-  document.getElementById('pres-roles').textContent = '';
-  document.getElementById('pres-snapshot').textContent = '';
+  // Update history index display
+  function updateHistoryIndex(tab) {
+    const state = historyState[tab];
+    const idxEl = document.getElementById('history-index-' + tab);
+    const prevBtn = document.getElementById('btn-prev-' + tab);
+    const nextBtn = document.getElementById('btn-next-' + tab);
 
-  const results = payload.results_json;
-  const order   = payload.order_json;
-  const settings= payload.settings_json;
-  const history = Array.isArray(payload.history_json) ? payload.history_json.slice() : (typeof payload.history_json === 'string' ? (safeParse(payload.history_json) || [payload.history_json]) : []);
-
-  // set title (if any)
-  const titleParam = payload.title || document.title;
-  if(titleParam) document.querySelector('h1') && (document.querySelector('h1').textContent = titleParam);
-
-  renderGroups(results);
-  renderOrder(order);
-  renderRoles(settings);
-
-  // history navigation
-  let idx = history.length > 0 ? history.length - 1 : -1;
-  const prevBtn = document.getElementById('btn-prev-snapshot');
-  const nextBtn = document.getElementById('btn-next-snapshot');
-  const idxEl = document.getElementById('snapshot-index');
-  const snapEl = document.getElementById('pres-snapshot');
-
-  function updateSnapshotView(){
-    if(idx < 0 || history.length === 0){
-      snapEl.textContent = '(履歴がありません)';
-      idxEl.textContent = '';
+    if (state.history.length === 0) {
+      idxEl.textContent = '未実施';
       prevBtn.disabled = true;
       nextBtn.disabled = true;
     } else {
-      const raw = history[idx];
-      try{
-        const parsed = safeParse(raw);
-        snapEl.textContent = parsed ? (typeof parsed === 'string' ? parsed : JSON.stringify(parsed, null, 2)) : String(raw);
-      }catch(e){ snapEl.textContent = String(raw); }
-      idxEl.textContent = ` ${idx+1}/${history.length}`;
-      prevBtn.disabled = (idx <= 0);
-      nextBtn.disabled = (idx >= history.length - 1);
+      idxEl.textContent = `${state.index + 1}/${state.history.length}回目`;
+      prevBtn.disabled = (state.index <= 0);
+      nextBtn.disabled = (state.index >= state.history.length - 1);
     }
   }
 
-  prevBtn.addEventListener('click', ()=>{ if(idx>0){ idx--; updateSnapshotView(); } });
-  nextBtn.addEventListener('click', ()=>{ if(idx < history.length-1){ idx++; updateSnapshotView(); } });
-  updateSnapshotView();
+  // Navigate history
+  function navigateHistory(tab, direction) {
+    const state = historyState[tab];
+    const newIndex = state.index + direction;
 
-  // copy groups
-  document.getElementById('btn-copy-groups').addEventListener('click', function(){
-    const text = document.getElementById('pres-groups').textContent || '';
-    navigator.clipboard.writeText(text).then(()=> {
-      const st = document.getElementById('copy-status'); st.textContent = 'コピーしました'; setTimeout(()=>st.textContent='',1200);
-    }).catch(()=> {
-      const st = document.getElementById('copy-status'); st.textContent = 'コピーに失敗しました'; setTimeout(()=>st.textContent='',1200);
-    });
+    if (newIndex >= 0 && newIndex < state.history.length) {
+      state.index = newIndex;
+      const entry = state.history[newIndex];
+
+      // 新形式: { type: 'groups'|'order'|'roles', data: {...} }
+      // 旧形式: { groups: {...} } など
+      let dataToRender = null;
+      if (entry.type) {
+        // 新形式
+        dataToRender = entry.data;
+      } else {
+        // 旧形式
+        dataToRender = entry;
+      }
+
+      if (tab === 'groups') {
+        const groupsData = dataToRender.groups || dataToRender;
+        if (groupsData) {
+          // membersRaw形式からgroupsを再構築する必要がある場合
+          if (dataToRender.membersRaw) {
+            // membersRawから履歴をパースしてグループを再構築
+            const raw = dataToRender.membersRaw;
+            const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+            const entries = rawList.map(line => {
+              const name = line.split('#')[0].trim();
+              const hist = line.match(/#\d+[A-Z]/g) || [];
+              return { name, history: hist };
+            });
+
+            // グループを再構築
+            const groups = {};
+            entries.forEach(e => {
+              const last = e.history.at(-1);
+              const m = last ? last.match(/#\d+([A-Z])$/) : null;
+              const groupId = m ? m[1] : null;
+              if (groupId) {
+                if (!groups[groupId]) groups[groupId] = [];
+                groups[groupId].push(e.name);
+              }
+            });
+
+            if (Object.keys(groups).length > 0) {
+              renderGroups({ groups: groups });
+            }
+          } else {
+            renderGroups(dataToRender);
+          }
+        }
+      }
+
+      if (tab === 'order') {
+        // 新形式: data.result、旧形式: order
+        const orderArray = dataToRender.result || dataToRender.order || dataToRender;
+        if (orderArray && Array.isArray(orderArray)) {
+          renderOrder(orderArray);
+        }
+      }
+
+      if (tab === 'roles') {
+        // 新形式: data.assignments、旧形式: settings
+        if (dataToRender.assignments) {
+          // assignments形式をrole_assignments形式に変換
+          renderRoles({ role_assignments: dataToRender.assignments });
+        } else if (dataToRender.settings) {
+          renderRoles(dataToRender.settings);
+        } else {
+          // dataToRender自体がrole_assignmentsを持っている場合
+          renderRoles(dataToRender);
+        }
+      }
+
+      updateHistoryIndex(tab);
+    }
+  }
+
+  // Setup navigation buttons
+  ['groups', 'order', 'roles'].forEach(tab => {
+    const prevBtn = document.getElementById('btn-prev-' + tab);
+    const nextBtn = document.getElementById('btn-next-' + tab);
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateHistory(tab, -1);
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateHistory(tab, 1);
+      });
+    }
   });
 
-  // presentation: save payload to localStorage then open presentation route
-  document.getElementById('btn-presentation').addEventListener('click', function(){
+  // Initial render - 履歴がある場合は1回目の履歴データを表示
+  // グループ: 1回目の履歴またはserverData.results
+  if (historyState.groups.history.length > 0) {
+    const firstGroups = historyState.groups.history[0];
+    const groupsData = firstGroups.type === 'groups' ? firstGroups.data : firstGroups;
+    if (groupsData && groupsData.groups) {
+      renderGroups(groupsData);
+    } else {
+      renderGroups(serverData.results);
+    }
+  } else {
+    renderGroups(serverData.results);
+  }
+
+  // 順番: 1回目の履歴またはserverData.order
+  if (historyState.order.history.length > 0) {
+    const firstOrder = historyState.order.history[0];
+    const orderData = firstOrder.type === 'order' ? firstOrder.data : firstOrder;
+    const orderArray = orderData ? (orderData.result || orderData.order || orderData) : null;
+    if (orderArray) {
+      renderOrder(orderArray);
+    } else {
+      renderOrder(serverData.order);
+    }
+  } else {
+    renderOrder(serverData.order);
+  }
+
+  // 役割: 1回目の履歴またはserverData.settings
+  if (historyState.roles.history.length > 0) {
+    const firstRoles = historyState.roles.history[0];
+    const rolesData = firstRoles.type === 'roles' ? firstRoles.data : firstRoles;
+    const rolesSettings = rolesData ? (rolesData.assignments || rolesData.settings || rolesData) : null;
+    if (rolesSettings) {
+      // assignments形式をsettings形式に変換
+      if (rolesData.assignments) {
+        renderRoles({ role_assignments: rolesData.assignments });
+      } else {
+        renderRoles(rolesSettings);
+      }
+    } else {
+      renderRoles(serverData.settings);
+    }
+  } else {
+    renderRoles(serverData.settings);
+  }
+
+  // Initialize history navigation
+  ['groups', 'order', 'roles'].forEach(tab => updateHistoryIndex(tab));
+
+  // Update execution counts
+  function updateExecutionCounts() {
+    const groupsCountEl = document.getElementById('groups-count');
+    const orderCountEl = document.getElementById('order-count');
+    const rolesCountEl = document.getElementById('roles-count');
+
+    let groupsCount = 0, orderCount = 0, rolesCount = 0;
+
+    const history = Array.isArray(serverData.history) ? serverData.history : [];
+
+    history.forEach(entry => {
+      try {
+        const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
+        if (parsed) {
+          // 新形式: typeフィールドで判断
+          if (parsed.type === 'groups') groupsCount++;
+          else if (parsed.groups) groupsCount++; // 旧形式
+
+          if (parsed.type === 'order') orderCount++;
+          else if (parsed.order) orderCount++; // 旧形式
+
+          if (parsed.type === 'roles') rolesCount++;
+          else if (parsed.settings) rolesCount++; // 旧形式
+        }
+      } catch(e) {}
+    });
+
+    if (groupsCountEl) groupsCountEl.textContent = groupsCount + '回';
+    if (orderCountEl) orderCountEl.textContent = orderCount + '回';
+    if (rolesCountEl) rolesCountEl.textContent = rolesCount + '回';
+  }
+  updateExecutionCounts();
+
+  // Copy function with toast notification
+  function copyToClipboard(text, successMsg) {
+    navigator.clipboard.writeText(text).then(()=> {
+      showToast(successMsg);
+    }).catch(()=> {
+      alert(<%= raw t("mypage.event_detail.copy_failed").to_json %>);
+    });
+  }
+
+  // Copy buttons for each tab
+  document.getElementById('btn-copy-groups').addEventListener('click', function(e){
+    e.preventDefault();
+    const text = document.getElementById('pres-groups').textContent || '';
+    copyToClipboard(text, <%= raw t("mypage.event_detail.copied").to_json %>);
+  });
+
+  document.getElementById('btn-copy-order').addEventListener('click', function(e){
+    e.preventDefault();
+    const text = document.getElementById('pres-order').textContent || '';
+    copyToClipboard(text, <%= raw t("mypage.event_detail.copied").to_json %>);
+  });
+
+  document.getElementById('btn-copy-roles').addEventListener('click', function(e){
+    e.preventDefault();
+    const text = document.getElementById('pres-roles').textContent || '';
+    copyToClipboard(text, <%= raw t("mypage.event_detail.copied").to_json %>);
+  });
+
+  // Presentation mode
+  document.getElementById('btn-presentation').addEventListener('click', function(e){
+    e.preventDefault();
     try{
-      const payloadToStore = {
-        members_json: payload.members_json || null,
-        results_json: payload.results_json || null,
-        order_json: payload.order_json || null,
-        settings_json: payload.settings_json || null,
-        history_json: payload.history_json || null,
-        title: titleParam || ''
-      };
-      localStorage.setItem('presentation_shuffly_event', JSON.stringify(payloadToStore));
+      localStorage.setItem('presentation_shuffly_event', JSON.stringify(serverData));
     }catch(e){ console.warn('presentation store failed', e); }
-    const w = window.open('/events/presentation', '_blank', 'noopener');
+    const w = window.open('<%= presentation_events_path %>', '_blank', 'noopener');
     if(!w) alert('ポップアップがブロックされました。ポップアップを許可してください');
   });
 
-  // back to new: store pending_shuffly_event then redirect to new page to restore inputs
-  document.getElementById('btn-back-to-settings').addEventListener('click', function(){
-    try{
-      const preview = {
-        members_json: payload.members_json ? (typeof payload.members_json === 'string' ? payload.members_json : JSON.stringify(payload.members_json)) : '',
-        results_json: payload.results_json ? (typeof payload.results_json === 'string' ? payload.results_json : JSON.stringify(payload.results_json)) : '',
-        order_json: payload.order_json ? (typeof payload.order_json === 'string' ? payload.order_json : JSON.stringify(payload.order_json)) : '',
-        settings_json: payload.settings_json ? (typeof payload.settings_json === 'string' ? payload.settings_json : JSON.stringify(payload.settings_json)) : '',
-        history_json: payload.history_json ? (typeof payload.history_json === 'string' ? payload.history_json : JSON.stringify(payload.history_json)) : '',
-        title: payload.title || ''
-      };
-      localStorage.setItem('pending_shuffly_event', JSON.stringify(preview));
-    }catch(e){ /* ignore */ }
-    window.location.href = "<%= new_event_path %>";
+  // Export functions
+  function downloadText(filename, content) {
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('ファイルを出力しました');
+  }
+
+  // Export current display (現在表示されている内容をテキスト出力)
+  document.getElementById('btn-export-current').addEventListener('click', function(e){
+    e.preventDefault();
+
+    const title = serverData.title || 'イベント結果';
+    const groupsContent = document.getElementById('pres-groups').textContent.trim();
+    const orderContent = document.getElementById('pres-order').textContent.trim();
+    const rolesContent = document.getElementById('pres-roles').textContent.trim();
+
+    let combinedContent = `${title}\n`;
+    combinedContent += '='.repeat(50) + '\n\n';
+
+    if (groupsContent) {
+      combinedContent += '【グループ分け】\n';
+      combinedContent += '-'.repeat(50) + '\n';
+      combinedContent += groupsContent + '\n\n';
+    }
+
+    if (orderContent) {
+      combinedContent += '【順番決め】\n';
+      combinedContent += '-'.repeat(50) + '\n';
+      combinedContent += orderContent + '\n\n';
+    }
+
+    if (rolesContent) {
+      combinedContent += '【役割分担】\n';
+      combinedContent += '-'.repeat(50) + '\n';
+      combinedContent += rolesContent + '\n\n';
+    }
+
+    const filename = `${title.replace(/[\\/:*?"<>|]/g, '_')}.txt`;
+    downloadText(filename, combinedContent);
   });
 
-  // keyboard shortcuts
-  document.addEventListener('keydown', function(e){
-    if(e.key === 'ArrowLeft') prevBtn.click();
-    if(e.key === 'ArrowRight') nextBtn.click();
-    if(e.key === 'Escape') document.getElementById('btn-back-to-settings').click();
+  // Export all history (全履歴をテキスト出力)
+  document.getElementById('btn-export-all-history').addEventListener('click', function(e){
+    e.preventDefault();
+
+    const title = serverData.title || 'イベント結果';
+    let combinedContent = `${title} - 全履歴\n`;
+    combinedContent += '='.repeat(50) + '\n\n';
+
+    const history = Array.isArray(serverData.history) ? serverData.history : [];
+    let groupsRound = 0, orderRound = 0, rolesRound = 0;
+
+    // グループ分け履歴を出力（新形式と旧形式に対応）
+    const groupsHistory = history.filter(entry => {
+      const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
+      return parsed && (parsed.type === 'groups' || parsed.groups);
+    });
+
+    if (groupsHistory.length > 0) {
+      combinedContent += '【グループ分け履歴】\n';
+      combinedContent += '-'.repeat(50) + '\n';
+      groupsHistory.forEach((entry, idx) => {
+        const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
+        let dataToExport = null;
+        if (parsed.type === 'groups') {
+          // 新形式: data内にデータがある
+          dataToExport = parsed.data;
+        } else if (parsed.groups) {
+          // 旧形式: 直接groupsがある
+          dataToExport = parsed;
+        }
+
+        if (dataToExport) {
+          groupsRound++;
+          combinedContent += `\n${groupsRound}回目:\n`;
+
+          // membersRaw形式からグループを再構築
+          if (dataToExport.membersRaw) {
+            const raw = dataToExport.membersRaw;
+            const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+            const entries = rawList.map(line => {
+              const name = line.split('#')[0].trim();
+              const hist = line.match(/#\d+[A-Z]/g) || [];
+              return { name, history: hist };
+            });
+
+            // グループを再構築
+            const groups = {};
+            entries.forEach(e => {
+              const last = e.history.at(-1);
+              const m = last ? last.match(/#\d+([A-Z])$/) : null;
+              const groupId = m ? m[1] : null;
+              if (groupId) {
+                if (!groups[groupId]) groups[groupId] = [];
+                groups[groupId].push(e.name);
+              }
+            });
+
+            if (Object.keys(groups).length > 0) {
+              Object.keys(groups).forEach(k => {
+                const members = groups[k] || [];
+                combinedContent += `グループ${k} (${members.length}名):\n`;
+                members.forEach(m => {
+                  combinedContent += `  - ${m}\n`;
+                });
+                combinedContent += '\n';
+              });
+            }
+          } else if (dataToExport.groups) {
+            // groupsデータが直接ある場合
+            const groups = dataToExport.groups;
+            const groupNames = dataToExport.group_names || dataToExport.groupNames || {};
+            Object.keys(groups).forEach(k => {
+              const members = groups[k] || [];
+              const label = groupNames[k] || k;
+              combinedContent += `${label} (${members.length}名):\n`;
+              members.forEach(m => {
+                if(typeof m === 'string') combinedContent += `  - ${m}\n`;
+                else if(m && (m.name || m.full_name)) combinedContent += `  - ${m.name || m.full_name}${m.role ? ' — ' + m.role : ''}\n`;
+              });
+              combinedContent += '\n';
+            });
+          }
+        }
+      });
+      combinedContent += '\n';
+    }
+
+    // 順番決め履歴を出力（新形式と旧形式に対応）
+    const orderHistory = history.filter(entry => {
+      const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
+      return parsed && (parsed.type === 'order' || parsed.order);
+    });
+
+    if (orderHistory.length > 0) {
+      combinedContent += '【順番決め履歴】\n';
+      combinedContent += '-'.repeat(50) + '\n';
+      orderHistory.forEach((entry, idx) => {
+        const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
+        let orderData = null;
+        if (parsed.type === 'order') {
+          // 新形式: data内にデータがある
+          orderData = parsed.data;
+          if (orderData && orderData.result) {
+            orderData = orderData.result;
+          }
+        } else if (parsed.order) {
+          // 旧形式: 直接orderがある
+          orderData = parsed.order;
+        }
+
+        if (orderData) {
+          orderRound++;
+          combinedContent += `\n${orderRound}回目:\n`;
+          const ord = Array.isArray(orderData) ? orderData : (typeof orderData === 'string' ? safeParse(orderData) : orderData);
+          if (ord && ord.length > 0) {
+            const lines = ord.map((o, i) => `${i + 1}. ${o.name || o}`).join('\n');
+            combinedContent += lines + '\n';
+          }
+        }
+      });
+      combinedContent += '\n';
+    }
+
+    // 役割分担履歴を出力（新形式と旧形式に対応）
+    const rolesHistory = history.filter(entry => {
+      const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
+      return parsed && (parsed.type === 'roles' || parsed.settings);
+    });
+
+    if (rolesHistory.length > 0) {
+      combinedContent += '【役割分担履歴】\n';
+      combinedContent += '-'.repeat(50) + '\n';
+      rolesHistory.forEach((entry, idx) => {
+        const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
+        let settingsData = null;
+        if (parsed.type === 'roles') {
+          // 新形式: data内にデータがある
+          settingsData = parsed.data;
+        } else if (parsed.settings) {
+          // 旧形式: 直接settingsがある
+          settingsData = parsed.settings;
+        }
+
+        if (settingsData) {
+          rolesRound++;
+          combinedContent += `\n${rolesRound}回目:\n`;
+          const s = typeof settingsData === 'string' ? safeParse(settingsData) : settingsData;
+          if (s && s.role_assignments && Array.isArray(s.role_assignments)) {
+            combinedContent += s.role_assignments.map(r => `${r.name}: ${r.role}`).join('\n') + '\n';
+          } else if (s && s.roles && typeof s.roles === 'string') {
+            combinedContent += `役職: ${s.roles}\n`;
+          } else if (s && s.assignments && Array.isArray(s.assignments)) {
+            combinedContent += s.assignments.map(r => `${r.name}: ${r.role || ''}`).join('\n') + '\n';
+          }
+        }
+      });
+      combinedContent += '\n';
+    }
+
+    const filename = `${title.replace(/[\\/:*?"<>|]/g, '_')}_全履歴.txt`;
+    downloadText(filename, combinedContent);
   });
+
+  // Keyboard shortcuts for current tab
+  document.addEventListener('keydown', function(e){
+    const activePanel = document.querySelector('.bg-gray-100:not(.hidden)');
+    if (!activePanel) return;
+
+    let tab = null;
+    if (activePanel.id === 'panel-groups') tab = 'groups';
+    else if (activePanel.id === 'panel-order') tab = 'order';
+    else if (activePanel.id === 'panel-roles') tab = 'roles';
+
+    if (!tab) return;
+
+    if(e.key === 'ArrowLeft') navigateHistory(tab, -1);
+    if(e.key === 'ArrowRight') navigateHistory(tab, 1);
+  });
+
+  // Delete button confirmation
+  const btnDelete = document.getElementById('btn-delete-event');
+  if (btnDelete) {
+    const deleteForm = btnDelete.closest('form');
+    if (deleteForm) {
+      deleteForm.addEventListener('submit', function(e) {
+        const confirmed = window.confirm(<%= raw t("mypage.event_detail.delete_confirm_event").to_json %>);
+        if (!confirmed) {
+          e.preventDefault();
+        }
+      });
+    }
+  }
+
+  // Toast notification function
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    if (!toast) {
+      // Create toast element if it doesn't exist
+      const newToast = document.createElement('div');
+      newToast.id = 'toast';
+      newToast.className = 'fixed top-9 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 z-50';
+      newToast.style.top = '35px';
+      document.body.appendChild(newToast);
+      newToast.addEventListener('transitionend', function() {
+        if (newToast.classList.contains('opacity-0')) {
+          newToast.remove();
+        }
+      });
+    }
+
+    const toastEl = document.getElementById('toast');
+    toastEl.textContent = message;
+    toastEl.classList.remove('opacity-0');
+    toastEl.style.zIndex = '1000';
+
+    setTimeout(() => {
+      toastEl.classList.add('opacity-0');
+    }, 2000);
+  }
+
+  // SPA-style memo submission (XMLHttpRequestを使用してfetchオーバーライド問題を回避)
+  const memoForm = document.getElementById('memo-form');
+  if (memoForm) {
+    memoForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation(); // Turboのイベントを完全に止める
+
+      const formData = new FormData(memoForm);
+      const url = memoForm.action;
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+      // URLSearchParamsに変換
+      const params = new URLSearchParams();
+      for (let [key, value] of formData.entries()) {
+        params.append(key, value);
+      }
+
+      // XMLHttpRequestを使用（fetchがオーバーライドされている問題を回避）
+      const xhr = new XMLHttpRequest();
+      xhr.open('PATCH', url, true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.setRequestHeader('X-CSRF-Token', csrfToken);
+      xhr.setRequestHeader('Accept', 'application/json');
+      xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          showToast('メモを更新しました');
+        } else {
+          let errorMsg = '保存に失敗しました';
+          try {
+            const data = JSON.parse(xhr.responseText);
+            if (data.errors) errorMsg = data.errors.join(', ');
+          } catch(e) {}
+          alert('メモの保存に失敗しました: ' + errorMsg);
+        }
+      };
+
+      xhr.onerror = function() {
+        alert('メモの保存に失敗しました: 通信エラー');
+      };
+
+      xhr.send(params.toString());
+    });
+  }
 
 })();
 </script>
+<% end %>
+<%= yield :javascript %>

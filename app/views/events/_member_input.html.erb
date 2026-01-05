@@ -1,5 +1,10 @@
-<!-- ① メンバー入力エリア（表示用と内部保存用の textarea を分離） -->
+<!-- ============================================ -->
+<!-- ① メンバー入力パネル                        -->
+<!-- メンバーリストの入力と管理                  -->
+<!-- ============================================ -->
 <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
+
+  <!-- パネルヘッダー -->
   <div class="flex items-start gap-3 mb-4">
     <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">1</div>
     <h2 class="text-xl md:text-2xl font-semibold">メンバーを入力する</h2>
@@ -7,7 +12,10 @@
 
   <label class="block mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> メンバーリスト</label>
 
-  <!-- 内部保存用（hidden）: JSON を保持 → この値を基に処理する -->
+  <!-- ========================================== -->
+  <!-- 内部データ保持エリア（hidden）             -->
+  <!-- ========================================== -->
+  <!-- JSONフォーマットでメンバーデータを保持。履歴情報も含む -->
   <textarea id="membersRaw" rows="10" class="hidden" style="display:none;"><%= begin
     members = event.members_json.present? ? JSON.parse(event.members_json) : []
     members.map do |m|
@@ -23,13 +31,25 @@
     ""
   end %></textarea>
 
-  <!-- 表示用 textarea: ユーザが編集する領域。内部データは membersRaw と同期 -->
+  <!-- ========================================== -->
+  <!-- ユーザー入力エリア                         -->
+  <!-- ========================================== -->
+  <!-- ユーザーが編集可能なテキストエリア。membersRawと自動同期 -->
   <textarea id="membersInput" rows="10" class="w-full border border-slate-300 rounded-xl px-3 py-2" placeholder="例：メンバー1, メンバー2, ..."></textarea>
-  <p class="text-sm text-gray-500 mb-5">↑ 改行またはカンマ区切りで、ユニークなメンバー名を入力してください。</p>
-  <div id="memberCountHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">現在のメンバー数：<span class="font-bold">未入力</span></div>
 
-  <!-- インポート / サンプルデータ入力 / 履歴クリア用ボタン（tertiary） -->
+  <!-- 入力ヒント -->
+  <p class="text-sm text-gray-500 mb-5">↑ 改行またはカンマ区切りで、ユニークなメンバー名を入力してください。</p>
+
+  <!-- メンバー数表示インジケーター -->
+  <div id="memberCountHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+    現在のメンバー数：<span class="font-bold">未入力</span>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 操作ボタングループ                         -->
+  <!-- ========================================== -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
+    <!-- サンプルデータ入力ボタン -->
     <%= render 'shared/button',
           f: nil,
           button_text: 'サンプルデータを入力',
@@ -40,6 +60,8 @@
           extra_class: 'w-full',
           icon: 'icons/experiment_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
           icon_class: 'inline-block' %>
+
+    <!-- テキスト/CSVインポートボタン -->
     <%= render 'shared/button',
           f: nil,
           button_text: 'テキスト/CSVから入力',
@@ -51,6 +73,8 @@
           icon: 'icons/upload_file_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
           icon_class: 'inline-block' %>
     <input id="importFile" type="file" accept=".txt,.csv" class="hidden">
+
+    <!-- 履歴クリアボタン -->
     <%= render 'shared/button',
           f: nil,
           button_text: '履歴をクリア',

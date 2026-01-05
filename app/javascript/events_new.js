@@ -1682,10 +1682,29 @@ const ShufflyApp = (function() {
     }
   }
 
+  // 履歴データをロードする関数（「続きからシャッフル」機能用）
+  function loadHistory(historyArray) {
+    if (Array.isArray(historyArray)) {
+      shufflyHistory = historyArray;
+      currentHistoryIndex = shufflyHistory.length - 1;
+
+      // 履歴データを読み込んだ後に、各回数表示を更新
+      if (typeof updateOrderRoundDisplay === 'function') {
+        updateOrderRoundDisplay();
+      }
+      if (typeof updateRolesRoundDisplay === 'function') {
+        updateRolesRoundDisplay();
+      }
+    }
+  }
+
   // 公開API
   return {
     initialize,
-    bindEvents
+    bindEvents,
+    showToast,
+    updateMemberCount: updateParticipantCount,
+    loadHistory
   };
 })();
 
@@ -1708,6 +1727,112 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       window.ShufflyApp.initialize(config);
       window.ShufflyApp.bindEvents();
+
+      // 「続きからシャッフル」機能：ロードされたイベントデータを反映
+      if (container.dataset.loadEvent) {
+        try {
+          const loadedData = JSON.parse(container.dataset.loadEvent);
+          if (loadedData) {
+            // メンバーデータをロード
+            if (loadedData.members_json) {
+              const membersRawEl = document.getElementById('membersRaw');
+              if (membersRawEl) {
+                const members = JSON.parse(loadedData.members_json);
+                const membersText = members.map(m => {
+                  if (typeof m === 'object' && m.name) {
+                    return m.name + (m.history || []).join('');
+                  }
+                  return m;
+                }).join('\n');
+                membersRawEl.value = membersText;
+                // 表示エリアにも反映
+                const membersInputEl = document.getElementById('membersInput');
+                if (membersInputEl) {
+                  membersInputEl.value = membersText;
+                }
+                // メンバー数表示を更新
+                window.ShufflyApp.updateMemberCount();
+              }
+            }
+
+            // 履歴データをロード
+            if (loadedData.history_json) {
+              const historyJsonEl = document.getElementById('historyJsonInput');
+              if (historyJsonEl) {
+                historyJsonEl.value = loadedData.history_json;
+              }
+              window.ShufflyApp.loadHistory(JSON.parse(loadedData.history_json));
+
+              // 各回数表示を更新
+              updateOrderRoundDisplay();
+              updateRolesRoundDisplay();
+            }
+
+            // グループ結果をロードして表示
+            if (loadedData.member_results_json) {
+              const resultsJsonEl = document.getElementById('resultsJsonInput');
+              if (resultsJsonEl) {
+                resultsJsonEl.value = loadedData.member_results_json;
+                // グループ表示を更新
+                const results = JSON.parse(loadedData.member_results_json);
+                if (results && results.groups) {
+                  // showGroups()を呼び出して表示を更新
+                  const app = window.ShufflyApp || ShufflyApp;
+                  if (app && typeof showGroups === 'function') {
+                    showGroups();
+                    showStats();
+                    // グループ分け実行フラグをオンにする
+                    groupsAssigned = true;
+                  }
+                }
+              }
+            }
+
+            // 順番結果をロードして表示
+            if (loadedData.member_order_json) {
+              const orderJsonEl = document.getElementById('orderJsonInput');
+              if (orderJsonEl) {
+                orderJsonEl.value = loadedData.member_order_json;
+                // 順番表示を更新
+                const order = JSON.parse(loadedData.member_order_json);
+                if (Array.isArray(order) && order.length > 0) {
+                  const orderOutputEl = document.getElementById('orderOutput');
+                  if (orderOutputEl) {
+                    const lines = order.map((o, i) => `${i + 1}. ${o.name || o}`).join('\n');
+                    orderOutputEl.value = lines;
+                  }
+                  updateOrderRoundDisplay();
+                }
+              }
+            }
+
+            // 役割結果をロードして表示
+            if (loadedData.setting_json) {
+              const settingsJsonEl = document.getElementById('settingsJsonInput');
+              if (settingsJsonEl) {
+                settingsJsonEl.value = loadedData.setting_json;
+                // 役割表示を更新
+                const settings = JSON.parse(loadedData.setting_json);
+                if (settings && settings.role_assignments && Array.isArray(settings.role_assignments)) {
+                  const rolesOutputEl = document.getElementById('rolesOutput');
+                  if (rolesOutputEl) {
+                    const displayLines = settings.role_assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+                    rolesOutputEl.value = displayLines.join('\n');
+                  }
+                  updateRolesRoundDisplay();
+                }
+              }
+            }
+
+            // タイトルは既にコントローラーで設定されているのでJSでは不要
+
+            // トースト通知を表示
+            window.ShufflyApp.showToast('イベントデータを読み込みました', 2000);
+          }
+        } catch (e) {
+          console.error('Failed to load event data:', e);
+        }
+      }
     }
   }
 });

@@ -1,16 +1,30 @@
-<!-- ④ 出力 / 共有 / 保存 -->
+<!-- ============================================ -->
+<!-- ④ 共有・出力・保存セクション                -->
+<!-- 結果の共有、イベント保存、テキスト出力      -->
+<!-- ============================================ -->
 <div class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 py-8">
+
+  <!-- セクションヘッダー -->
   <div class="flex items-start gap-3 mb-4">
     <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">4</div>
     <h2 class="text-xl md:text-2xl font-semibold">共有 / 出力 / 保存する</h2>
   </div>
 
+  <!-- ========================================== -->
+  <!-- イベントタイトル入力                       -->
+  <!-- ========================================== -->
   <label class="block font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> イベントタイトル（任意）</label>
   <input id="shareEventTitle" type="text" value="<%= event.title %>" class="w-full border border-slate-300 rounded-xl px-3 py-2 mb-1 bg-white" placeholder="例：〇〇イベント">
+
+  <!-- ヒント・注意事項 -->
   <p class="text-sm mb-4 text-gray-500">↑ 結果共有やイベント保存のタイトル・出力テキストファイル名を設定できます。</p>
   <p class="text-sm mb-4 text-gray-500">※<span class="underline decoration-dashed">イベント保存にはログインが必要です。</span></p>
 
+  <!-- ========================================== -->
+  <!-- 操作ボタングループ                         -->
+  <!-- ========================================== -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
+    <!-- 結果共有表示ボタン -->
     <%= render 'shared/button',
           f: nil,
           button_text: '結果共有表示',
@@ -21,6 +35,8 @@
           extra_class: 'text-center px-6 py-3 bg-white border rounded-xl text-blue-600 hover:bg-gray-50 lg:min-w-[310px]',
           icon: 'icons/share_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
           icon_class: 'inline-block' %>
+
+    <!-- イベント保存ボタン -->
     <%= render 'shared/button',
           f: nil,
           button_text: 'イベント保存',
@@ -31,6 +47,8 @@
           extra_class: 'text-center px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 lg:min-w-[310px]',
           icon: 'icons/save_24dp_1F1F1F.svg',
           icon_class: 'inline-block' %>
+
+    <!-- テキスト出力ボタン -->
     <%= render 'shared/button',
           f: nil,
           button_text: 'テキスト出力',
@@ -43,7 +61,10 @@
           icon_class: 'inline-block' %>
   </div>
 
-  <!-- 非表示の保存フォーム（JS が submit を呼ぶ） -->
+  <!-- ========================================== -->
+  <!-- イベント保存フォーム（非表示）             -->
+  <!-- ========================================== -->
+  <!-- JavaScriptから送信されるhiddenフォーム -->
   <%= form_with(model: event, local: true, html: { id: 'saveForm', style: 'display:none' }) do |f| %>
     <%= f.hidden_field :members_json, id: 'membersJsonInput' %>
     <%= f.hidden_field :member_results_json, id: 'resultsJsonInput' %>

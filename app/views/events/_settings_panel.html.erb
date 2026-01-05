@@ -1,38 +1,45 @@
-<!-- ② 設定エリア（タブ切替でグループ / 順番 / 役割） -->
+<!-- ============================================ -->
+<!-- ② 設定パネル                                -->
+<!-- シャッフル設定（グループ/順番/役割）        -->
+<!-- ============================================ -->
 <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
+
+  <!-- パネルヘッダー -->
   <div class="flex items-start gap-3 mb-4">
     <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">2</div>
     <h2 class="text-xl md:text-2xl font-semibold">設定して実行する</h2>
   </div>
 
-  <!-- タブボタン（表示切替）: 新デザイン（ピル型） -->
+  <!-- ========================================== -->
+  <!-- タブナビゲーション                         -->
+  <!-- ========================================== -->
   <div class="mb-5">
-    <div class="inline-flex w-full items-center gap-2 bg-white rounded-xl p-1 border border-slate-200 shadow-sm">
-      <button id="tab-settings-groups" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm md:text-lg rounded-lg font-semibold text-blue-600 bg-blue-50 ring-1 ring-blue-100 shadow-sm">
-        <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "グループアイコン" %>
-        <span class="hidden sm:inline leading-none">グループ</span>
-      </button>
-      <button id="tab-settings-order"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm md:text-lg rounded-lg text-gray-600 hover:text-blue-500">
-        <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "順番アイコン" %>
-        <span class="hidden sm:inline leading-none">順番</span>
-      </button>
-      <button id="tab-settings-roles"  class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm md:text-lg rounded-lg text-gray-600 hover:text-blue-500">
-        <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "役割アイコン" %>
-        <span class="hidden sm:inline leading-none">役割</span>
-      </button>
-    </div>
+    <%= render 'shared/tabs',
+          tabs: [
+            { id: 'groups', text: 'グループ', icon: 'icons/diversity_3_24dp_1F1F1F.svg' },
+            { id: 'order', text: '順番', icon: 'icons/format_list_numbered_24dp_1F1F1F.svg' },
+            { id: 'roles', text: '役割', icon: 'icons/badge_24dp_1F1F1F.svg' }
+          ],
+          active_tab: 'groups',
+          id_prefix: 'tab-settings' %>
   </div>
 
-  <!-- グループ設定パネル -->
+  <!-- ========================================== -->
+  <!-- グループ分け設定パネル                     -->
+  <!-- ========================================== -->
   <div id="panel-settings-groups" class="settings-panel">
     <div class="mb-4">
       <label class="block mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> グループ分けオプション</label>
+
       <div class="flex flex-col gap-3 mb-2">
+        <!-- オプション: グループ数 -->
         <div>
           <label class="text-sm text-gray-600">グループ数*</label>
           <input id="groupCount" type="number" min="1" max="26" value="<%= event.group_count.presence || 3 %>" class="mt-1 w-full border border-slate-300 rounded-xl px-2 py-1 mb-1">
           <p class="text-sm text-gray-500 mb-1">↑ 26グループが最大です。</p>
         </div>
+
+        <!-- オプション: グループ名 -->
         <div>
           <label class="text-sm text-gray-600">グループ名（任意）</label>
           <textarea id="customGroupNames" rows="2" class="w-full border border-slate-300 rounded-xl px-2 py-1 mt-1" placeholder="例：グループA, グループB, ..."></textarea>
@@ -40,41 +47,61 @@
         </div>
       </div>
 
+      <!-- オプション: 分散固定メンバー -->
       <div>
         <label class="text-sm text-gray-600">分散固定メンバー（任意）</label>
         <textarea id="fixedMembersInput" rows="2" class="w-full border border-slate-300 rounded-xl px-2 py-1 mt-1" placeholder="例：メンバー3, メンバー5, ..."></textarea>
         <p class="text-sm text-gray-500 mb-6">↑ 改行またはカンマ区切りで入力してください。入力メンバーは可能な限り分散して各グループに固定されます。</p>
       </div>
 
-      <div id="groupSizeHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">現在の1グループあたり：<span class="font-bold">未計算</span></div>
+      <!-- グループサイズ表示インジケーター -->
+      <div id="groupSizeHint" class="text-base text-yellow-800 mt-1 mb-5 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+        現在の1グループあたり：<span class="font-bold">未計算</span>
+      </div>
+
+      <!-- 注意事項 -->
       <p class="text-sm text-gray-500">※<span class="underline decoration-dashed">グループ分けは複数回実行可能です。ボタンを押すたびに被りが最小限になるように振り分け、履歴も保持されます。</span></p>
     </div>
   </div>
 
-  <!-- 順番設定パネル -->
+  <!-- ========================================== -->
+  <!-- 順番決め設定パネル                         -->
+  <!-- ========================================== -->
   <div id="panel-settings-order" class="settings-panel hidden">
     <div class="mb-4">
       <label class="block mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> 順番決めオプション</label>
+
+      <!-- オプション: 順番固定メンバー -->
       <div class="mb-2">
         <label class="text-sm text-gray-600">順番固定メンバー（任意）</label>
         <textarea id="fixedOrderInput" rows="3" class="w-full border border-slate-300 rounded-xl px-2 py-1 mt-1" placeholder="例：1:メンバー3, 5:メンバー1, ..."></textarea>
         <p class="text-sm text-gray-500 mt-1">↑ 改行またはカンマ区切りで「番号:メンバー名」と入力してください。固定指定します。無効な指定は無視されます。</p>
       </div>
+
+      <!-- 注意事項 -->
       <p class="text-sm text-gray-500 mt-1">固定指定なしなら全員ランダムに順番が決まります。</p>
     </div>
   </div>
 
-  <!-- 役割設定パネル -->
+  <!-- ========================================== -->
+  <!-- 役割分担設定パネル                         -->
+  <!-- ========================================== -->
   <div id="panel-settings-roles" class="settings-panel hidden">
     <div class="mb-4">
       <label class="block mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> 役割決めオプション</label>
+
+      <!-- オプション: 役割名 -->
       <label class="text-sm text-gray-600">役割名*</label>
       <textarea id="rolesInput" rows="3" class="w-full border border-slate-300 rounded-xl px-2 py-1 mt-1" placeholder="例：司会, 書記, ..."><%= event.setting_json["roles"] rescue "" %></textarea>
       <p class="text-sm text-gray-500 mt-1">↑ 改行またはカンマ区切りで役割名を入力してください。割り当てはランダムです。</p>
     </div>
   </div>
 
-  <!-- 実行ボタン（パネルに応じて表示） -->
+  <!-- ========================================== -->
+  <!-- 実行ボタン（タブに応じて切り替え）         -->
+  <!-- ========================================== -->
+
+  <!-- グループ分け実行ボタン -->
   <div id="settings-action-groups" class="mt-4">
     <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 mb-3 w-full sm:place-items-center">
       <%= render 'shared/button',
@@ -90,6 +117,7 @@
     </div>
   </div>
 
+  <!-- 順番決め実行ボタン -->
   <div id="settings-action-order" class="mt-4 hidden">
     <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 mb-3 w-full sm:place-items-center">
       <%= render 'shared/button',
@@ -105,6 +133,7 @@
     </div>
   </div>
 
+  <!-- 役割決め実行ボタン -->
   <div id="settings-action-roles" class="mt-4 hidden">
     <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 mb-3 w-full sm:place-items-center">
       <%= render 'shared/button',
