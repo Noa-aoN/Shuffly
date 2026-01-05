@@ -38,13 +38,26 @@ const ShufflyApp = (function() {
     return {name, history: hist};
   }
 
-  function getCurrentRound(entries){
-    let max=0;
+  // グループ分けの現在のラウンド数を取得
+  // 返値: ラウンド数（1始まり）、グループ割当がない場合は null
+  function getGroupRound(entries, nextRound = false){
+    let max = 0;
+    let found = false;
     for(const e of entries) for(const h of e.history) {
       const m = h.match(/^#(\d+)/);
-      if(m) max=Math.max(max, parseInt(m[1]));
+      if(m){
+        found = true;
+        const num = parseInt(m[1], 10);
+        if(num > max) max = num;
+      }
     }
-    return max+1;
+    if(!found) return null;
+    return nextRound ? max + 1 : max;
+  }
+
+  // 互換性のためのエイリアス（次のラウンド番号を取得）
+  function getCurrentRound(entries){
+    return getGroupRound(entries, true) || 1;
   }
 
   function getCoOccurrenceMap(entries, ignoreLast=true){
@@ -701,30 +714,13 @@ const ShufflyApp = (function() {
     updateGroupRoundDisplay();
   }
 
-  // 新規: グループ分け回次を計算して表示するヘルパ
-  function getDisplayRound(entries){
-    let max = 0;
-    let found = false;
-    for(const e of entries){
-      for(const h of e.history){
-        const m = h.match(/^#(\d+)/);
-        if(m){
-          found = true;
-          const num = parseInt(m[1],10);
-          if(num > max) max = num;
-        }
-      }
-    }
-    return found ? max : null;
-  }
-
   function updateGroupRoundDisplay(){
     const el = document.getElementById('groupRoundHint');
     if(!el) return;
     const raw = getRawValue().trim();
     const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
     const entries = rawList.map(parseEntry);
-    const round = getDisplayRound(entries);
+    const round = getGroupRound(entries, false);
     if(round === null){
       el.innerHTML = '現在のグループ分け表示：<span class="font-bold">未実施</span>';
     } else {
@@ -907,19 +903,34 @@ const ShufflyApp = (function() {
         const entries = val ? val.split(/[\r\n,]+/).map(s=>parseEntry(s.trim())) : [];
         if(document.getElementById('membersJsonInput')) document.getElementById('membersJsonInput').value = JSON.stringify(entries);
       }catch(e){}
-      switchResultTab('groups');
+      updateGroupRoundDisplay();
+      // 現在のタブと異なる場合のみ切り替え
+      const activeTab = document.querySelector('#tab-groups:not(.border-transparent)') ? 'groups' :
+                        document.querySelector('#tab-order:not(.border-transparent)') ? 'order' :
+                        document.querySelector('#tab-roles:not(.border-transparent)') ? 'roles' : 'groups';
+      if(activeTab !== 'groups') switchResultTab('groups');
     } else if(entry.type === 'order') {
       const result = entry.data.result || [];
       const lines = result.map((name, idx) => `${idx+1}. ${name}`);
       document.getElementById('orderOutput').value = lines.join("\n");
       const orderJson = result.map((name, idx) => ({ name, order: idx+1 }));
       if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = JSON.stringify(orderJson);
-      switchResultTab('order');
+      updateOrderRoundDisplay();
+      // 現在のタブと異なる場合のみ切り替え
+      const activeTab = document.querySelector('#tab-groups:not(.border-transparent)') ? 'groups' :
+                        document.querySelector('#tab-order:not(.border-transparent)') ? 'order' :
+                        document.querySelector('#tab-roles:not(.border-transparent)') ? 'roles' : 'groups';
+      if(activeTab !== 'order') switchResultTab('order');
     } else if(entry.type === 'roles') {
       const assignments = entry.data.assignments || [];
       const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
       document.getElementById('rolesOutput').value = displayLines.join("\n");
-      switchResultTab('roles');
+      updateRolesRoundDisplay();
+      // 現在のタブと異なる場合のみ切り替え
+      const activeTab = document.querySelector('#tab-groups:not(.border-transparent)') ? 'groups' :
+                        document.querySelector('#tab-order:not(.border-transparent)') ? 'order' :
+                        document.querySelector('#tab-roles:not(.border-transparent)') ? 'roles' : 'groups';
+      if(activeTab !== 'roles') switchResultTab('roles');
     }
 
     showToast("1ステップ戻しました");
@@ -959,19 +970,25 @@ const ShufflyApp = (function() {
         const entries = val ? val.split(/[\r\n,]+/).map(s=>parseEntry(s.trim())) : [];
         if(document.getElementById('membersJsonInput')) document.getElementById('membersJsonInput').value = JSON.stringify(entries);
       }catch(e){}
-      switchResultTab('groups');
+      updateGroupRoundDisplay();
+      // 現在のタブと異なる場合のみ切り替え
+      if(activeTab !== 'groups') switchResultTab('groups');
     } else if(entry.type === 'order') {
       const result = entry.data.result || [];
       const lines = result.map((name, idx) => `${idx+1}. ${name}`);
       document.getElementById('orderOutput').value = lines.join("\n");
       const orderJson = result.map((name, idx) => ({ name, order: idx+1 }));
       if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = JSON.stringify(orderJson);
-      switchResultTab('order');
+      updateOrderRoundDisplay();
+      // 現在のタブと異なる場合のみ切り替え
+      if(activeTab !== 'order') switchResultTab('order');
     } else if(entry.type === 'roles') {
       const assignments = entry.data.assignments || [];
       const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
       document.getElementById('rolesOutput').value = displayLines.join("\n");
-      switchResultTab('roles');
+      updateRolesRoundDisplay();
+      // 現在のタブと異なる場合のみ切り替え
+      if(activeTab !== 'roles') switchResultTab('roles');
     }
 
     showToast("1ステップ進めました");
@@ -1575,93 +1592,21 @@ const ShufflyApp = (function() {
     // 結果の履歴移動（順番）
     bindIf('btn-prev-order', 'click', (e)=>{
       if(e) e.preventDefault();
-      // 順番履歴の中で現在より前のエントリーを探す
-      let prevIndex = -1;
-      for(let i = currentHistoryIndex - 1; i >= 0; i--){
-        if(shufflyHistory[i] && shufflyHistory[i].type === 'order'){
-          prevIndex = i;
-          break;
-        }
-      }
-      if(prevIndex === -1){
-        showToast("これ以上戻れません");
-        return;
-      }
-      currentHistoryIndex = prevIndex;
-      const entry = shufflyHistory[prevIndex];
-      const result = entry.data.result || [];
-      const orderText = result.map((name, i) => `${i + 1}. ${name}`).join('\n');
-      document.getElementById('orderOutput').value = orderText;
-      updateOrderRoundDisplay();
-      showToast("前回の順番決めを表示しました");
+      undoHistory();
     });
     bindIf('btn-next-order', 'click', (e)=>{
       if(e) e.preventDefault();
-      // 順番履歴の中で現在より後のエントリーを探す
-      let nextIndex = -1;
-      for(let i = currentHistoryIndex + 1; i < shufflyHistory.length; i++){
-        if(shufflyHistory[i] && shufflyHistory[i].type === 'order'){
-          nextIndex = i;
-          break;
-        }
-      }
-      if(nextIndex === -1){
-        showToast("これ以上進めません");
-        return;
-      }
-      currentHistoryIndex = nextIndex;
-      const entry = shufflyHistory[nextIndex];
-      const result = entry.data.result || [];
-      const orderText = result.map((name, i) => `${i + 1}. ${name}`).join('\n');
-      document.getElementById('orderOutput').value = orderText;
-      updateOrderRoundDisplay();
-      showToast("次回の順番決めを表示しました");
+      redoHistory();
     });
 
     // 結果の履歴移動（役割）
     bindIf('btn-prev-roles', 'click', (e)=>{
       if(e) e.preventDefault();
-      // 役割履歴の中で現在より前のエントリーを探す
-      let prevIndex = -1;
-      for(let i = currentHistoryIndex - 1; i >= 0; i--){
-        if(shufflyHistory[i] && shufflyHistory[i].type === 'roles'){
-          prevIndex = i;
-          break;
-        }
-      }
-      if(prevIndex === -1){
-        showToast("これ以上戻れません");
-        return;
-      }
-      currentHistoryIndex = prevIndex;
-      const entry = shufflyHistory[prevIndex];
-      const assignments = entry.data.assignments || [];
-      const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
-      document.getElementById('rolesOutput').value = displayLines.join('\n');
-      updateRolesRoundDisplay();
-      showToast("前回の役割分担を表示しました");
+      undoHistory();
     });
     bindIf('btn-next-roles', 'click', (e)=>{
       if(e) e.preventDefault();
-      // 役割履歴の中で現在より後のエントリーを探す
-      let nextIndex = -1;
-      for(let i = currentHistoryIndex + 1; i < shufflyHistory.length; i++){
-        if(shufflyHistory[i] && shufflyHistory[i].type === 'roles'){
-          nextIndex = i;
-          break;
-        }
-      }
-      if(nextIndex === -1){
-        showToast("これ以上進めません");
-        return;
-      }
-      currentHistoryIndex = nextIndex;
-      const entry = shufflyHistory[nextIndex];
-      const assignments = entry.data.assignments || [];
-      const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
-      document.getElementById('rolesOutput').value = displayLines.join('\n');
-      updateRolesRoundDisplay();
-      showToast("次回の役割分担を表示しました");
+      redoHistory();
     });
 
     // 共有 / エクスポート / 保存
@@ -1888,6 +1833,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const lines = order.map((o, i) => `${i + 1}. ${o.name || o}`).join('\n');
                     orderOutputEl.value = lines;
                   }
+
+                  // currentHistoryIndexを最新の順番決めエントリーに設定
+                  const orderEntries = shufflyHistory.filter(entry => entry.type === 'order');
+                  if (orderEntries.length > 0) {
+                    const lastOrderEntry = orderEntries[orderEntries.length - 1];
+                    const lastOrderIndex = shufflyHistory.lastIndexOf(lastOrderEntry);
+                    if (lastOrderIndex !== -1) {
+                      currentHistoryIndex = lastOrderIndex;
+                    }
+                  }
                 }
               }
             }
@@ -1904,6 +1859,16 @@ document.addEventListener('DOMContentLoaded', () => {
                   if (rolesOutputEl) {
                     const displayLines = settings.role_assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
                     rolesOutputEl.value = displayLines.join('\n');
+                  }
+
+                  // currentHistoryIndexを最新の役割分担エントリーに設定
+                  const rolesEntries = shufflyHistory.filter(entry => entry.type === 'roles');
+                  if (rolesEntries.length > 0) {
+                    const lastRolesEntry = rolesEntries[rolesEntries.length - 1];
+                    const lastRolesIndex = shufflyHistory.lastIndexOf(lastRolesEntry);
+                    if (lastRolesIndex !== -1) {
+                      currentHistoryIndex = lastRolesIndex;
+                    }
                   }
                 }
               }

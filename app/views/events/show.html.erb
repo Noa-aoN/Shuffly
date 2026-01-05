@@ -300,6 +300,23 @@
   </div>
 </div>
 
+<%# サーバーデータをdata属性に設定 %>
+<div id="events-show-data"
+     data-members="<%= raw @members.to_json %>"
+     data-results="<%= raw @results.to_json %>"
+     data-order="<%= raw @order.to_json %>"
+     data-settings="<%= raw @settings.to_json %>"
+     data-history="<%= raw @history.to_json %>"
+     data-title="<%= raw @event.title.to_json %>"
+     data-presentation-path="<%= presentation_events_path %>"
+     data-event-path="<%= event_path(@event) %>"
+     data-delete-confirm="<%= raw t("mypage.event_detail.delete_confirm_event").to_json %>"
+     data-copied="<%= raw t("mypage.event_detail.copied").to_json %>"
+     data-copy-failed="<%= raw t("mypage.event_detail.copy_failed").to_json %>"
+     data-no-data="<%= raw t("mypage.event_detail.no_data").to_json %>"
+     class="hidden">
+</div>
+
 <%# タブ切替用データ属性 %>
 <% content_for :javascript do %>
 <script>
@@ -344,15 +361,20 @@
           // 新形式の場合はtypeフィールドで厳密に判定
           if (parsed.type === 'groups') {
             const entryData = parsed.data;
-            if (entryData && (entryData.groups || entryData.membersRaw)) {
-              historyState.groups.history.push(parsed);
+            // dataフィールドがある場合のみチェック（membersRawは空文字列でもOK）
+            if (entryData) {
+              if (entryData.groups || (entryData.membersRaw && entryData.membersRaw.trim())) {
+                historyState.groups.history.push(parsed);
+              }
             }
           } else if (parsed.type === 'order') {
-            if (parsed.data && (parsed.data.result || parsed.data.order)) {
+            const entryData = parsed.data;
+            if (entryData && (entryData.result || entryData.order)) {
               historyState.order.history.push(parsed);
             }
           } else if (parsed.type === 'roles') {
-            if (parsed.data && (parsed.data.assignments || parsed.data.settings)) {
+            const entryData = parsed.data;
+            if (entryData && (entryData.assignments || entryData.settings)) {
               historyState.roles.history.push(parsed);
             }
           } else {
@@ -503,9 +525,9 @@
         const groupsData = dataToRender.groups || dataToRender;
         if (groupsData) {
           // membersRaw形式からgroupsを再構築する必要がある場合
-          if (dataToRender.membersRaw) {
+          if (groupsData.membersRaw) {
             // membersRawから履歴をパースしてグループを再構築
-            const raw = dataToRender.membersRaw;
+            const raw = groupsData.membersRaw;
             const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
             const entries = rawList.map(line => {
               const name = line.split('#')[0].trim();
@@ -659,10 +681,22 @@
         const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
         if (parsed) {
           // 新形式: typeフィールドで厳密に判断
-          if (parsed.type === 'groups') groupsCount++;
-          else if (parsed.type === 'order') orderCount++;
-          else if (parsed.type === 'roles') rolesCount++;
-          else {
+          if (parsed.type === 'groups') {
+            // dataフィールドがあり、有効なデータが含まれている場合のみカウント
+            if (parsed.data && (parsed.data.groups || (parsed.data.membersRaw && parsed.data.membersRaw.trim()))) {
+              groupsCount++;
+            }
+          } else if (parsed.type === 'order') {
+            // dataフィールドがあり、有効なデータが含まれている場合のみカウント
+            if (parsed.data && (parsed.data.result || parsed.data.order)) {
+              orderCount++;
+            }
+          } else if (parsed.type === 'roles') {
+            // dataフィールドがあり、有効なデータが含まれている場合のみカウント
+            if (parsed.data && (parsed.data.assignments || parsed.data.settings)) {
+              rolesCount++;
+            }
+          } else {
             // 旧形式: typeがない場合は各フィールドの有無で判定
             if (parsed.groups && !parsed.order && !parsed.settings) groupsCount++;
             if (parsed.order && !parsed.groups && !parsed.settings) orderCount++;
@@ -778,8 +812,14 @@
     // グループ分け履歴を出力（新形式と旧形式に対応）
     const groupsHistory = history.filter(entry => {
       const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
-      // 厳密な判定：新形式はtype、旧形式はgroupsのみ
-      return parsed && ((parsed.type === 'groups') || (!parsed.type && parsed.groups && !parsed.order && !parsed.settings));
+      if (!parsed) return false;
+      // 新形式: typeフィールドで厳密に判定
+      if (parsed.type === 'groups') {
+        // dataフィールドがあり、有効なデータが含まれている場合のみ
+        return parsed.data && (parsed.data.groups || (parsed.data.membersRaw && parsed.data.membersRaw.trim()));
+      }
+      // 旧形式: groupsのみ
+      return !parsed.type && parsed.groups && !parsed.order && !parsed.settings;
     });
 
     if (groupsHistory.length > 0) {
@@ -855,8 +895,14 @@
     // 順番決め履歴を出力（新形式と旧形式に対応）
     const orderHistory = history.filter(entry => {
       const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
-      // 厳密な判定：新形式はtype、旧形式はorderのみ
-      return parsed && ((parsed.type === 'order') || (!parsed.type && parsed.order && !parsed.groups && !parsed.settings));
+      if (!parsed) return false;
+      // 新形式: typeフィールドで厳密に判定
+      if (parsed.type === 'order') {
+        // dataフィールドがあり、有効なデータが含まれている場合のみ
+        return parsed.data && (parsed.data.result || parsed.data.order);
+      }
+      // 旧形式: orderのみ
+      return !parsed.type && parsed.order && !parsed.groups && !parsed.settings;
     });
 
     if (orderHistory.length > 0) {
@@ -892,8 +938,14 @@
     // 役割分担履歴を出力（新形式と旧形式に対応）
     const rolesHistory = history.filter(entry => {
       const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
-      // 厳密な判定：新形式はtype、旧形式はsettingsのみ
-      return parsed && ((parsed.type === 'roles') || (!parsed.type && parsed.settings && !parsed.groups && !parsed.order));
+      if (!parsed) return false;
+      // 新形式: typeフィールドで厳密に判定
+      if (parsed.type === 'roles') {
+        // dataフィールドがあり、有効なデータが含まれている場合のみ
+        return parsed.data && (parsed.data.assignments || parsed.data.settings);
+      }
+      // 旧形式: settingsのみ
+      return !parsed.type && parsed.settings && !parsed.groups && !parsed.order;
     });
 
     if (rolesHistory.length > 0) {
