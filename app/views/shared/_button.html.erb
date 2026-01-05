@@ -72,9 +72,9 @@
     <%= button_to path, button_opts do %>
       <% separator = icon_html.present? ? "　" : '' %>
       <% if icon_html.present? && icon_right %>
-        <%= content_tag(:span, button_text, class: 'font-semibold') + separator + icon_html.to_s %>
+        <%= raw(content_tag(:span, button_text, class: 'font-semibold') + separator + icon_html.to_s) %>
       <% else %>
-        <%= icon_html.to_s + separator + content_tag(:span, button_text, class: 'font-semibold') %>
+        <%= raw(icon_html.to_s + separator + content_tag(:span, button_text, class: 'font-semibold')) %>
       <% end %>
     <% end %>
   <% else %>
@@ -90,6 +90,6 @@
     <% else %>
       <% inner = (icon_html.to_s + separator + content_tag(:span, button_text, class: 'font-semibold')).html_safe %>
     <% end %>
-    <%= link_to inner, path, link_opts %>
+    <%= link_to raw(inner), path, link_opts %>
   <% end %>
 </div>

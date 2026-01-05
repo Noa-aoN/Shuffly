@@ -86,7 +86,7 @@
   <%# グループパネル %>
   <div id="panel-groups" class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 py-8">
     <h3 class="mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> グループ表示</h3>
-    <div id="pres-groups" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[120px]"></div>
+    <div id="pres-groups" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[480px] max-h-[480px] overflow-y-auto"></div>
 
     <%# 履歴インデックス %>
     <div class="text-base text-yellow-800 mt-1 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
@@ -139,7 +139,7 @@
   <%# 順番パネル %>
   <div id="panel-order" class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 py-8 hidden">
     <h3 class="font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> 順番表示</h3>
-    <div id="pres-order" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[120px]"></div>
+    <div id="pres-order" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[480px] max-h-[480px] overflow-y-auto"></div>
 
     <%# 履歴インデックス %>
     <div class="text-base text-yellow-800 mt-1 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
@@ -192,7 +192,7 @@
   <%# 役割パネル %>
   <div id="panel-roles" class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 py-8 hidden">
     <h3 class="font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> 役割表示</h3>
-    <div id="pres-roles" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[120px]"></div>
+    <div id="pres-roles" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[480px] max-h-[480px] overflow-y-auto"></div>
 
     <%# 履歴インデックス %>
     <div class="text-base text-yellow-800 mt-1 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
@@ -248,7 +248,7 @@
     <%= form_with model: @event, url: event_path(@event), method: :patch, id: 'memo-form', local: true, data: { turbo: false } do |f| %>
       <%= f.text_area :memo,
             rows: 3,
-            class: "w-full border border-slate-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-yellow-100",
+            class: "w-full border border-slate-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white",
             placeholder: t("mypage.event_detail.memo_placeholder") %>
       <div class="mt-3">
         <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 mb-2 w-full sm:place-items-center">
@@ -341,41 +341,44 @@
         // 新形式: { type: 'groups'|'order'|'roles', data: {...} }
         // 旧形式: { groups: {...} } または { order: {...} } または { settings: {...} }
         if (parsed) {
-          if (parsed.type === 'groups' || parsed.groups) {
-            // 新形式の場合はdata.groupsを、旧形式の場合はgroupsを直接使用
-            const entryData = parsed.type === 'groups' ? parsed.data : parsed;
+          // 新形式の場合はtypeフィールドで厳密に判定
+          if (parsed.type === 'groups') {
+            const entryData = parsed.data;
             if (entryData && (entryData.groups || entryData.membersRaw)) {
               historyState.groups.history.push(parsed);
             }
-          }
-          if (parsed.type === 'order') {
-            // 新形式: data.resultに配列が入っている
+          } else if (parsed.type === 'order') {
             if (parsed.data && (parsed.data.result || parsed.data.order)) {
               historyState.order.history.push(parsed);
             }
-          } else if (parsed.order) {
-            // 旧形式: 直接orderがある
-            historyState.order.history.push(parsed);
-          }
-          if (parsed.type === 'roles') {
-            // 新形式: data.assignmentsに配列が入っている
+          } else if (parsed.type === 'roles') {
             if (parsed.data && (parsed.data.assignments || parsed.data.settings)) {
               historyState.roles.history.push(parsed);
             }
-          } else if (parsed.settings) {
-            // 旧形式: 直接settingsがある
-            historyState.roles.history.push(parsed);
+          } else {
+            // 旧形式の場合：typeがない場合は各フィールドの有無で判定
+            if (parsed.groups && !parsed.order && !parsed.settings) {
+              historyState.groups.history.push(parsed);
+            }
+            if (parsed.order && !parsed.groups && !parsed.settings) {
+              historyState.order.history.push(parsed);
+            }
+            if (parsed.settings && !parsed.groups && !parsed.order) {
+              historyState.roles.history.push(parsed);
+            }
           }
         }
-      } catch(e) {}
+      } catch(e) {
+        console.error('Failed to parse history entry:', e, entry);
+      }
     });
   }
   parseHistoryByType();
 
-  // Set initial indices to first (1回目を最初に表示)
-  historyState.groups.index = historyState.groups.history.length > 0 ? 0 : -1;
-  historyState.order.index = historyState.order.history.length > 0 ? 0 : -1;
-  historyState.roles.index = historyState.roles.history.length > 0 ? 0 : -1;
+  // Set initial indices to last (最新の履歴を最初に表示 - events_new.jsと統一)
+  historyState.groups.index = historyState.groups.history.length > 0 ? historyState.groups.history.length - 1 : -1;
+  historyState.order.index = historyState.order.history.length > 0 ? historyState.order.history.length - 1 : -1;
+  historyState.roles.index = historyState.roles.history.length > 0 ? historyState.roles.history.length - 1 : -1;
 
   // Tab switching
   const tabs = document.querySelectorAll('#tab-groups, #tab-order, #tab-roles');
@@ -416,9 +419,14 @@
       const label = groupNames[k] || k;
       out += label + ' (' + members.length + '名):\n';
       members.forEach(m=>{
-        if(typeof m === 'string') out += '  - ' + m + '\n';
-        else if(m && (m.name || m.full_name)) out += '  - ' + (m.name || m.full_name) + (m.role ? (' — ' + m.role) : '') + '\n';
-        else out += '  - ' + JSON.stringify(m) + '\n';
+        if(typeof m === 'string') {
+          // 文字列の場合：そのまま表示（空文字列はスキップ）
+          if(m.trim()) out += '  - ' + m + '\n';
+        } else if(m && (m.name || m.full_name)) {
+          // オブジェクトの場合：名前と役割を表示
+          out += '  - ' + (m.name || m.full_name) + (m.role ? (' — ' + m.role) : '') + '\n';
+        }
+        // それ以外（無効なデータ）はスキップして表示しない
       });
       out += '\n';
     });
@@ -570,38 +578,57 @@
     }
   });
 
-  // Initial render - 履歴がある場合は1回目の履歴データを表示
-  // グループ: 1回目の履歴またはserverData.results
+  // Initial render - 履歴がある場合は最新の履歴データを表示（events_new.jsと統一）
+  // グループ: 履歴ベースでのみ表示（履歴がない場合は何も表示しない）
   if (historyState.groups.history.length > 0) {
-    const firstGroups = historyState.groups.history[0];
-    const groupsData = firstGroups.type === 'groups' ? firstGroups.data : firstGroups;
-    if (groupsData && groupsData.groups) {
-      renderGroups(groupsData);
-    } else {
-      renderGroups(serverData.results);
+    const latestGroups = historyState.groups.history[historyState.groups.history.length - 1];
+    const groupsData = latestGroups.type === 'groups' ? latestGroups.data : latestGroups;
+    if (groupsData && (groupsData.groups || groupsData.membersRaw)) {
+      if (groupsData.membersRaw) {
+        // membersRaw形式の場合はグループを再構築
+        const raw = groupsData.membersRaw;
+        const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+        const entries = rawList.map(line => {
+          const name = line.split('#')[0].trim();
+          const hist = line.match(/#\d+[A-Z]/g) || [];
+          return { name, history: hist };
+        });
+        // グループを再構築
+        const groups = {};
+        entries.forEach(e => {
+          const last = e.history.at(-1);
+          const m = last ? last.match(/#\d+([A-Z])$/) : null;
+          const groupId = m ? m[1] : null;
+          if (groupId) {
+            if (!groups[groupId]) groups[groupId] = [];
+            groups[groupId].push(e.name);
+          }
+        });
+        if (Object.keys(groups).length > 0) {
+          renderGroups({ groups: groups });
+        }
+      } else {
+        renderGroups(groupsData);
+      }
     }
-  } else {
-    renderGroups(serverData.results);
   }
+  // 履歴がない場合は何も表示しない（空白のまま）
 
-  // 順番: 1回目の履歴またはserverData.order
+  // 順番: 履歴ベースでのみ表示（最新を表示）
   if (historyState.order.history.length > 0) {
-    const firstOrder = historyState.order.history[0];
-    const orderData = firstOrder.type === 'order' ? firstOrder.data : firstOrder;
+    const latestOrder = historyState.order.history[historyState.order.history.length - 1];
+    const orderData = latestOrder.type === 'order' ? latestOrder.data : latestOrder;
     const orderArray = orderData ? (orderData.result || orderData.order || orderData) : null;
-    if (orderArray) {
+    if (orderArray && Array.isArray(orderArray)) {
       renderOrder(orderArray);
-    } else {
-      renderOrder(serverData.order);
     }
-  } else {
-    renderOrder(serverData.order);
   }
+  // 履歴がない場合は何も表示しない
 
-  // 役割: 1回目の履歴またはserverData.settings
+  // 役割: 履歴ベースでのみ表示（最新を表示）
   if (historyState.roles.history.length > 0) {
-    const firstRoles = historyState.roles.history[0];
-    const rolesData = firstRoles.type === 'roles' ? firstRoles.data : firstRoles;
+    const latestRoles = historyState.roles.history[historyState.roles.history.length - 1];
+    const rolesData = latestRoles.type === 'roles' ? latestRoles.data : latestRoles;
     const rolesSettings = rolesData ? (rolesData.assignments || rolesData.settings || rolesData) : null;
     if (rolesSettings) {
       // assignments形式をsettings形式に変換
@@ -610,12 +637,9 @@
       } else {
         renderRoles(rolesSettings);
       }
-    } else {
-      renderRoles(serverData.settings);
     }
-  } else {
-    renderRoles(serverData.settings);
   }
+  // 履歴がない場合は何も表示しない
 
   // Initialize history navigation
   ['groups', 'order', 'roles'].forEach(tab => updateHistoryIndex(tab));
@@ -634,17 +658,20 @@
       try {
         const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
         if (parsed) {
-          // 新形式: typeフィールドで判断
+          // 新形式: typeフィールドで厳密に判断
           if (parsed.type === 'groups') groupsCount++;
-          else if (parsed.groups) groupsCount++; // 旧形式
-
-          if (parsed.type === 'order') orderCount++;
-          else if (parsed.order) orderCount++; // 旧形式
-
-          if (parsed.type === 'roles') rolesCount++;
-          else if (parsed.settings) rolesCount++; // 旧形式
+          else if (parsed.type === 'order') orderCount++;
+          else if (parsed.type === 'roles') rolesCount++;
+          else {
+            // 旧形式: typeがない場合は各フィールドの有無で判定
+            if (parsed.groups && !parsed.order && !parsed.settings) groupsCount++;
+            if (parsed.order && !parsed.groups && !parsed.settings) orderCount++;
+            if (parsed.settings && !parsed.groups && !parsed.order) rolesCount++;
+          }
         }
-      } catch(e) {}
+      } catch(e) {
+        console.error('Failed to parse history entry for count:', e, entry);
+      }
     });
 
     if (groupsCountEl) groupsCountEl.textContent = groupsCount + '回';
@@ -751,7 +778,8 @@
     // グループ分け履歴を出力（新形式と旧形式に対応）
     const groupsHistory = history.filter(entry => {
       const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
-      return parsed && (parsed.type === 'groups' || parsed.groups);
+      // 厳密な判定：新形式はtype、旧形式はgroupsのみ
+      return parsed && ((parsed.type === 'groups') || (!parsed.type && parsed.groups && !parsed.order && !parsed.settings));
     });
 
     if (groupsHistory.length > 0) {
@@ -813,7 +841,7 @@
               const label = groupNames[k] || k;
               combinedContent += `${label} (${members.length}名):\n`;
               members.forEach(m => {
-                if(typeof m === 'string') combinedContent += `  - ${m}\n`;
+                if(typeof m === 'string' && m.trim()) combinedContent += `  - ${m}\n`;
                 else if(m && (m.name || m.full_name)) combinedContent += `  - ${m.name || m.full_name}${m.role ? ' — ' + m.role : ''}\n`;
               });
               combinedContent += '\n';
@@ -827,7 +855,8 @@
     // 順番決め履歴を出力（新形式と旧形式に対応）
     const orderHistory = history.filter(entry => {
       const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
-      return parsed && (parsed.type === 'order' || parsed.order);
+      // 厳密な判定：新形式はtype、旧形式はorderのみ
+      return parsed && ((parsed.type === 'order') || (!parsed.type && parsed.order && !parsed.groups && !parsed.settings));
     });
 
     if (orderHistory.length > 0) {
@@ -863,7 +892,8 @@
     // 役割分担履歴を出力（新形式と旧形式に対応）
     const rolesHistory = history.filter(entry => {
       const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
-      return parsed && (parsed.type === 'roles' || parsed.settings);
+      // 厳密な判定：新形式はtype、旧形式はsettingsのみ
+      return parsed && ((parsed.type === 'roles') || (!parsed.type && parsed.settings && !parsed.groups && !parsed.order));
     });
 
     if (rolesHistory.length > 0) {

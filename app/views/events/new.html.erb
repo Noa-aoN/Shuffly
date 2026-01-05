@@ -12,9 +12,26 @@
       data-icon-expand="<%= asset_path('icons/expand_more_24dp_1F1F1F.svg') %>"
       data-icon-collapse="<%= asset_path('icons/keyboard_arrow_up_24dp_1F1F1F.svg') %>"
       data-new-user-session-path="<%= new_user_session_path %>"
+      data-update-mode="<%= @update_mode ? 'true' : 'false' %>"
       <% if defined?(@load_event_data) && @load_event_data.present? %>
       data-load-event="<%= raw @load_event_data.to_json.html_safe %>"
       <% end %>>
+
+  <%# 更新モードの場合は通知メッセージを表示 %>
+  <% if @update_mode %>
+  <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-6">
+    <div class="flex items-start gap-3">
+      <%= image_tag 'icons/info_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, class: "text-blue-600 mt-0.5", alt: "info" %>
+      <div class="flex-1">
+        <p class="text-blue-900 font-medium mb-1">続きから編集中</p>
+        <p class="text-blue-700 text-sm">
+          保存すると既存のイベントが更新され、履歴も引き継がれます。
+          設定は初期状態に戻ります。
+        </p>
+      </div>
+    </div>
+  </div>
+  <% end %>
 
   <!-- ========================================== -->
   <!-- ページヘッダー                             -->
@@ -26,8 +43,13 @@
           class: "block",
           alt: "シャッフルアイコン" %>
     <span class="leading-none relative bottom-0.5">
-      <%= @event.title.presence || "新規シャッフルイベント" %>
+      <%= @event.title.presence || (@update_mode ? @event.title : "新規シャッフルイベント") %>
     </span>
+    <% if @update_mode && @load_event_data && @load_event_data[:created_at] %>
+      <span class="text-sm text-gray-500 font-normal mt-1 sm:mt-0 ml-0 sm:ml-2">
+        (<%= @load_event_data[:created_at] %>作成)
+      </span>
+    <% end %>
   </h1>
 
   <!-- ========================================== -->

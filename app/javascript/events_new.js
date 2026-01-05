@@ -845,7 +845,7 @@ const ShufflyApp = (function() {
       // 最後の履歴と同じ場合は追加しない
       if(currentHistoryIndex>=0) {
         const lastEntry = shufflyHistory[currentHistoryIndex];
-        if(lastEntry && lastEntry.type === 'groups' && lastEntry.data.membersRaw === text) return;
+        if(lastEntry && lastEntry.type === 'groups' && lastEntry.data && lastEntry.data.membersRaw === text) return;
       }
       historyData = { membersRaw: text };
     }
@@ -853,17 +853,17 @@ const ShufflyApp = (function() {
     // 履歴エントリの作成
     const historyEntry = {
       type: type,                    // 'groups', 'order', 'roles'
-      timestamp: Date.now(),          // タイムスタンプ
+      timestamp: Date.now(),          // タイムスタンプ（ミリ秒）
       data: historyData
     };
 
     // グループ分けの場合は round 情報も追加
-    if (type === 'groups') {
-      const entries = historyData.membersRaw ? historyData.membersRaw.split(/[\r\n,]+/).map(s=>parseEntry(s.trim())).filter(Boolean) : [];
+    if (type === 'groups' && historyData.membersRaw) {
+      const entries = historyData.membersRaw.split(/[\r\n,]+/).map(s=>parseEntry(s.trim())).filter(Boolean);
       historyEntry.round = getCurrentRound(entries);
     }
 
-    // 履歴を追加
+    // 履歴を追加（現在のインデックス以降を削除してから追加）
     shufflyHistory = shufflyHistory.slice(0, currentHistoryIndex + 1);
     shufflyHistory.push(historyEntry);
     currentHistoryIndex++;
@@ -1285,6 +1285,11 @@ const ShufflyApp = (function() {
     const titleField = document.getElementById('hiddenEventTitle');
     if(titleField) titleField.value = document.getElementById('shareEventTitle').value;
 
+    // メモを設定（results_panelのmemoTextから取得）
+    const memoField = document.getElementById('hiddenEventMemo');
+    const memoText = document.getElementById('memoText');
+    if(memoField && memoText) memoField.value = memoText.value;
+
     const payloadPreview = {
       members_json: document.getElementById('membersJsonInput').value,
       results_json: document.getElementById('resultsJsonInput').value,
@@ -1698,13 +1703,100 @@ const ShufflyApp = (function() {
     }
   }
 
+  // ロードしたデータの表示を更新する関数（続きからシャッフル用）
+  function refreshDisplayFromLoadedData() {
+    // メンバー数表示を更新
+    updateParticipantCount();
+
+    // 履歴があれば最新のグループ履歴を表示
+    const histField = document.getElementById('historyJsonInput');
+    if (histField && histField.value) {
+      try {
+        const history = JSON.parse(histField.value);
+        if (Array.isArray(history) && history.length > 0) {
+          // タイムスタンプでソートして、最新のグループ履歴を探す
+          const sortedHistory = history
+            .filter(e => e.type === 'groups' && e.data && e.data.membersRaw)
+            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+          if (sortedHistory.length > 0) {
+            // 最新のグループ履歴を復元
+            const latestEntry = sortedHistory[0];
+            setRawAndRefreshDisplay(latestEntry.data.membersRaw);
+            groupsAssigned = true;
+          } else {
+            // グループ履歴がない場合は、履歴全体の最後のエントリーを使用
+            const lastEntry = history[history.length - 1];
+            if (lastEntry && lastEntry.data && lastEntry.data.membersRaw) {
+              setRawAndRefreshDisplay(lastEntry.data.membersRaw);
+              groupsAssigned = true;
+            }
+          }
+        }
+      } catch(e) {
+        console.error('Failed to restore history display:', e);
+      }
+    }
+
+    // グループ表示と統計を更新
+    showGroups();
+    showStats();
+
+    // 回次表示を更新
+    updateGroupRoundDisplay();
+    updateOrderRoundDisplay();
+    updateRolesRoundDisplay();
+
+    // 設定データをUIに復元
+    restoreSettingsUI();
+  }
+
+  // 設定データをUIに復元する関数
+  function restoreSettingsUI() {
+    const settingsField = document.getElementById('settingsJsonInput');
+    if (!settingsField || !settingsField.value) return;
+
+    try {
+      const settings = JSON.parse(settingsField.value);
+      if (!settings) return;
+
+      // グループ数を復元
+      if (settings.group_count) {
+        const groupCountEl = document.getElementById('groupCount');
+        if (groupCountEl) {
+          groupCountEl.value = settings.group_count;
+        }
+      }
+
+      // カスタムグループ名を復元
+      if (settings.custom_group_names && Array.isArray(settings.custom_group_names) && settings.custom_group_names.length > 0) {
+        const customNamesEl = document.getElementById('customGroupNames');
+        if (customNamesEl) {
+          customNamesEl.value = settings.custom_group_names.join('\n');
+        }
+      }
+
+      // 役割名を復元
+      if (settings.roles) {
+        const rolesEl = document.getElementById('rolesInput');
+        if (rolesEl && !rolesEl.value) {
+          // 既に値がない場合のみ設定（既存の設定を上書きしない）
+          rolesEl.value = settings.roles;
+        }
+      }
+    } catch(e) {
+      console.error('Failed to restore settings UI:', e);
+    }
+  }
+
   // 公開API
   return {
     initialize,
     bindEvents,
     showToast,
     updateMemberCount: updateParticipantCount,
-    loadHistory
+    loadHistory,
+    refreshDisplayFromLoadedData
   };
 })();
 
@@ -1744,11 +1836,18 @@ document.addEventListener('DOMContentLoaded', () => {
                   }
                   return m;
                 }).join('\n');
+                // Rawエリアには履歴付きの完全なデータを設定
                 membersRawEl.value = membersText;
-                // 表示エリアにも反映
+                // 表示エリアには履歴なしの名前のみを表示（formatEntryForDisplayを使用）
                 const membersInputEl = document.getElementById('membersInput');
                 if (membersInputEl) {
-                  membersInputEl.value = membersText;
+                  const displayNames = members.map(m => {
+                    if (typeof m === 'object' && m.name) {
+                      return m.name;
+                    }
+                    return m.split('#')[0].trim();
+                  }).join('\n');
+                  membersInputEl.value = displayNames;
                 }
                 // メンバー数表示を更新
                 window.ShufflyApp.updateMemberCount();
@@ -1773,18 +1872,6 @@ document.addEventListener('DOMContentLoaded', () => {
               const resultsJsonEl = document.getElementById('resultsJsonInput');
               if (resultsJsonEl) {
                 resultsJsonEl.value = loadedData.member_results_json;
-                // グループ表示を更新
-                const results = JSON.parse(loadedData.member_results_json);
-                if (results && results.groups) {
-                  // showGroups()を呼び出して表示を更新
-                  const app = window.ShufflyApp || ShufflyApp;
-                  if (app && typeof showGroups === 'function') {
-                    showGroups();
-                    showStats();
-                    // グループ分け実行フラグをオンにする
-                    groupsAssigned = true;
-                  }
-                }
               }
             }
 
@@ -1801,7 +1888,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const lines = order.map((o, i) => `${i + 1}. ${o.name || o}`).join('\n');
                     orderOutputEl.value = lines;
                   }
-                  updateOrderRoundDisplay();
                 }
               }
             }
@@ -1819,12 +1905,64 @@ document.addEventListener('DOMContentLoaded', () => {
                     const displayLines = settings.role_assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
                     rolesOutputEl.value = displayLines.join('\n');
                   }
-                  updateRolesRoundDisplay();
                 }
               }
             }
 
+            // メモをロードして表示
+            if (loadedData.memo !== undefined && loadedData.memo !== null) {
+              const memoTextarea = document.getElementById('memoText');
+              if (memoTextarea) {
+                memoTextarea.value = loadedData.memo;
+              }
+            }
+
             // タイトルは既にコントローラーで設定されているのでJSでは不要
+
+            // 全データのロード後に表示を更新
+            window.ShufflyApp.refreshDisplayFromLoadedData();
+
+            // 更新モードの場合、フォームのactionを変更
+            if (loadedData.original_id) {
+              const form = document.querySelector('form[id^="edit_event"], form[action*="/events/"]');
+              if (form) {
+                // 既存のイベントを更新するURLに変更
+                form.action = `/events/${loadedData.original_id}`;
+                form.method = 'post'; // POSTメソッド（_method: patchで偽装）
+
+                // _method: patch を追加
+                let methodInput = form.querySelector('input[name="_method"]');
+                if (!methodInput) {
+                  methodInput = document.createElement('input');
+                  methodInput.type = 'hidden';
+                  methodInput.name = '_method';
+                  methodInput.value = 'patch';
+                  form.appendChild(methodInput);
+                } else {
+                  methodInput.value = 'patch';
+                }
+
+                // update_modeパラメータを追加
+                let updateModeInput = form.querySelector('input[name="update_mode"]');
+                if (!updateModeInput) {
+                  updateModeInput = document.createElement('input');
+                  updateModeInput.type = 'hidden';
+                  updateModeInput.name = 'update_mode';
+                  updateModeInput.value = 'true';
+                  form.appendChild(updateModeInput);
+                } else {
+                  updateModeInput.value = 'true';
+                }
+
+                // 保存ボタンのテキストを変更
+                const saveButton = form.querySelector('button[type="submit"], input[type="submit"]');
+                if (saveButton) {
+                  const originalText = saveButton.textContent || saveButton.value;
+                  saveButton.textContent = '更新';
+                  saveButton.dataset.originalText = originalText;
+                }
+              }
+            }
 
             // トースト通知を表示
             window.ShufflyApp.showToast('イベントデータを読み込みました', 2000);

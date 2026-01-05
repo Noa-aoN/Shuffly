@@ -71,6 +71,7 @@
     <%= f.hidden_field :member_order_json, id: 'orderJsonInput' %>
     <%= f.hidden_field :setting_json, id: 'settingsJsonInput' %>
     <%= f.hidden_field :history_json, id: 'historyJsonInput' %>
+    <%= f.hidden_field :memo, value: event.memo, name: 'event[memo]', id: 'hiddenEventMemo' %>
     <%= f.hidden_field :title, value: event.title, name: 'event[title]', id: 'hiddenEventTitle' %>
   <% end %>
 </div>

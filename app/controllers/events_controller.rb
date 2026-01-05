@@ -8,12 +8,16 @@ class EventsController < ApplicationController
 
   def new
     @event = Event.new
+    @update_mode = false  # 更新モードフラグの初期化
 
     # 「続きからシャッフル」機能：既存イベントのデータをロード
     if params[:load_event_id].present?
       @load_event = Event.find_by(id: params[:load_event_id])
       if @load_event
-        @event.title = @load_event.title
+        # 更新モード: 既存のイベントをそのまま使用
+        @event = @load_event
+        @update_mode = true  # 更新モードをオンにする
+
         # JavaScriptで使用するためのデータ
         @load_event_data = {
           members_json: @load_event.members_json,
@@ -21,16 +25,29 @@ class EventsController < ApplicationController
           member_order_json: @load_event.member_order_json,
           setting_json: @load_event.setting_json,
           history_json: @load_event.history_json,
-          title: @load_event.title
+          memo: @load_event.memo,  # メモを追加
+          title: @load_event.title,
+          original_id: @load_event.id,  # 元のイベントID
+          created_at: @load_event.created_at.strftime('%Y/%m/%d %H:%M')
         }
       end
     end
   end
 
   def create
+    # 更新モードの場合はupdateアクションに処理を委譲
+    if params[:update_mode] == 'true'
+      update
+      return
+    end
+
+    # 新規作成（既存の処理）
     @event = current_user ? current_user.events.build(event_params) : Event.new(event_params)
 
     if @event.save
+      # 新規作成後もupdated_atを明示的に更新
+      @event.touch
+
       redirect_to @event, notice: "イベントを保存しました"
     else
       render :new
@@ -54,6 +71,9 @@ class EventsController < ApplicationController
     Rails.logger.info "=== DEBUG: @event.memo before = #{@event.memo.inspect}"
 
     if @event.update(event_params)
+      # updated_atを明示的に更新
+      @event.touch
+
       Rails.logger.info "=== DEBUG: @event.memo after = #{@event.memo.inspect}"
       Rails.logger.info "=== DEBUG: update success"
 
