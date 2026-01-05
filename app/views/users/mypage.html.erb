@@ -3,26 +3,40 @@
 <div class="max-w-6xl mx-auto px-6 py-6 md:py-8">
   <%# ユーザー情報ヘッダー %>
   <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 mb-6">
-    <div class="flex items-center gap-4">
-      <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-        <%= image_tag 'icons/person_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 32, height: 32, class: "text-blue-600", alt: "ユーザーアイコン" %>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+          <%= image_tag 'icons/person_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 32, height: 32, class: "text-blue-600", alt: "ユーザーアイコン" %>
+        </div>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900"><%= @user.name.presence || @user.email.split('@').first %></h1>
+          <p class="text-gray-600 text-sm"><%= @user.email %></p>
+        </div>
       </div>
-      <div class="grow">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900"><%= @user.name.presence || @user.email.split('@').first %></h1>
-        <p class="text-gray-600 text-sm"><%= @user.email %></p>
+      <%# 統計情報 %>
+      <div class="flex flex-col sm:items-end gap-2 text-sm">
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full">
+          <%= image_tag 'icons/event_note_24dp_1F1F1F.svg', width: 16, height: 16, class: "text-blue-600", alt: "" %>
+          <%= @events.count %>件のイベント
+        </span>
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-50 text-green-700 rounded-full">
+          <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, class: "text-green-600", alt: "" %>
+          <%= @member_lists.count %>件のメンバーリスト
+        </span>
       </div>
     </div>
   </div>
 
   <%# タブナビゲーション - 統合パーシャル使用 %>
-  <%= render 'shared/tabs',
-        tabs: [
-          { id: 'events', text: t("mypage.tabs.events"), icon: 'icons/event_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'events') },
-          { id: 'member_lists', text: t("mypage.tabs.member_lists"), icon: 'icons/user_attributes_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'member_lists') },
-          { id: 'account', text: t("mypage.tabs.account"), icon: 'icons/settings_account_box_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'account') }
-        ],
-        active_tab: (params[:tab] || 'events'),
-        container_class: 'mb-6' %>
+  <div class="mb-6">
+    <%= render 'shared/tabs',
+          tabs: [
+            { id: 'events', text: t("mypage.tabs.events"), icon: 'icons/event_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'events') },
+            { id: 'member_lists', text: t("mypage.tabs.member_lists"), icon: 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'member_lists') },
+            { id: 'account', text: t("mypage.tabs.account"), icon: 'icons/settings_account_box_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'account') }
+          ],
+          active_tab: (params[:tab] || 'events') %>
+  </div>
 
   <%# タブコンテンツ %>
   <% case params[:tab]
@@ -48,12 +62,13 @@
                   </span>
                 </div>
               </div>
-              <div class="flex justify-end">
+              <div class="flex justify-center sm:justify-end w-full sm:w-auto">
                 <%= render 'shared/button',
                       button_text: '編集する',
                       path: edit_member_list_path(member_list),
                       variant: 'primary',
                       size: 'md',
+                      full_mobile: true,
                       icon: 'icons/edit_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                       icon_class: 'inline-block' %>
               </div>
@@ -62,23 +77,25 @@
         <% end %>
 
         <%# 新規作成ボタン（中央配置） %>
-        <div class="flex justify-center pt-4">
+        <div class="flex justify-center pt-4 w-full sm:w-auto">
           <%= render 'shared/button',
                 button_text: t("mypage.member_lists.create_new"),
                 path: new_member_list_path,
                 variant: 'primary',
-                size: 'md' %>
+                size: 'md',
+                full_mobile: true %>
         </div>
       <% else %>
         <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-12 text-center">
           <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 64, height: 64, class: "mx-auto text-gray-300 mb-4", alt: "空のメンバーリストアイコン" %>
           <p class="text-gray-600 mb-6"><%= t("mypage.member_lists.empty") %></p>
-          <div class="flex justify-center">
+          <div class="flex justify-center w-full">
             <%= render 'shared/button',
                   button_text: t("mypage.member_lists.create_new"),
                   path: new_member_list_path,
                   variant: 'primary',
-                  size: 'lg' %>
+                  size: 'lg',
+                  full_mobile: true %>
           </div>
         </div>
       <% end %>
@@ -115,15 +132,17 @@
               variant: 'tertiary',
               size: 'md',
               button_to_method: :delete,
+              full_mobile: true,
               extra_class: 'bg-gray-600 hover:bg-gray-700' %>
       </div>
     </div>
 
   <% else # events (default) %>
+    <%# イベントカード一覧コンテナ %>
     <div class="space-y-4">
       <% if @events.any? %>
         <% @events.each do |event| %>
-          <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md transition">
+          <div class="event-card bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md transition">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div class="grow">
                 <h3 class="font-semibold text-lg text-gray-900 mb-2 group relative">
@@ -150,12 +169,13 @@
                   </span>
                 </div>
               </div>
-              <div class="flex justify-end">
+              <div class="flex justify-center sm:justify-end w-full sm:w-auto">
                 <%= render 'shared/button',
                       button_text: t("mypage.events.view_details"),
                       path: event_path(event),
                       variant: 'primary',
                       size: 'md',
+                      full_mobile: true,
                       icon: 'icons/event_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                       icon_class: 'inline-block' %>
               </div>
@@ -164,23 +184,34 @@
         <% end %>
 
         <%# 新規作成ボタン（中央配置） %>
-        <div class="flex justify-center pt-4">
+        <div class="flex justify-center pt-4 w-full sm:w-auto">
           <%= render 'shared/button',
                 button_text: t("mypage.events.create_new"),
                 path: new_event_path,
                 variant: 'primary',
-                size: 'md' %>
+                size: 'md',
+                full_mobile: true %>
         </div>
       <% else %>
-        <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-12 text-center">
-          <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 64, height: 64, class: "mx-auto text-gray-300 mb-4", alt: "空のイベント履歴アイコン" %>
-          <p class="text-gray-600 mb-6"><%= t("mypage.events.empty") %></p>
-          <div class="flex justify-center">
+        <%# 空の状態 - 魅力的な表示 %>
+        <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-16 text-center">
+          <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <%= image_tag 'icons/event_note_24dp_1F1F1F.svg', width: 48, height: 48, class: "text-blue-400", alt: "イベントアイコン" %>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">イベントがありません</h3>
+          <p class="text-gray-600 mb-6 max-w-md mx-auto">
+            最初のイベントを作成して、メンバーをシャッフルしましょう。<br>
+            グループ分け、順番決め、役割分担などができます。
+          </p>
+          <div class="flex justify-center w-full">
             <%= render 'shared/button',
                   button_text: t("mypage.events.create_new"),
                   path: new_event_path,
                   variant: 'primary',
-                  size: 'lg' %>
+                  size: 'lg',
+                  full_mobile: true,
+                  icon: 'icons/play_arrow_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                  icon_class: 'inline-block' %>
           </div>
         </div>
       <% end %>
