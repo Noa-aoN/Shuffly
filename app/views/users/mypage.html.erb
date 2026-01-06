@@ -46,7 +46,7 @@
         <%# メンバーリストカード一覧 %>
         <% @member_lists.each do |member_list| %>
           <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md transition">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-start gap-4">
               <div class="grow">
                 <h3 class="font-semibold text-lg text-gray-900 mb-2">
                   <%= member_list.name %>
@@ -62,78 +62,169 @@
                   </span>
                 </div>
               </div>
-              <div class="flex justify-center sm:justify-end w-full sm:w-auto">
-                <%= render 'shared/button',
-                      button_text: '編集する',
-                      path: edit_member_list_path(member_list),
-                      variant: 'primary',
-                      size: 'md',
-                      full_mobile: true,
-                      icon: 'icons/edit_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-                      icon_class: 'inline-block' %>
-              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center mt-4 w-full">
+              <%= render 'shared/button',
+                    button_text: '編集する',
+                    path: edit_member_list_path(member_list),
+                    variant: 'primary',
+                    size: 'md',
+                    full_mobile: true,
+                    extra_class: 'w-full',
+                    icon: 'icons/edit_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                    icon_class: 'inline-block' %>
             </div>
           </div>
         <% end %>
 
         <%# 新規作成ボタン（中央配置） %>
-        <div class="flex justify-center pt-4 w-full sm:w-auto">
+        <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center mt-4 w-full">
           <%= render 'shared/button',
                 button_text: t("mypage.member_lists.create_new"),
                 path: new_member_list_path,
                 variant: 'primary',
                 size: 'md',
-                full_mobile: true %>
+                full_mobile: true,
+                extra_class: 'w-full',
+                icon: 'icons/add_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                icon_class: 'inline-block' %>
         </div>
+
+        <%# ページネーション %>
+        <% if @pagy_member_lists && @pagy_member_lists.pages > 1 %>
+          <div class="flex justify-center mt-6">
+            <%= pagy_nav(@pagy_member_lists, 'member_lists') %>
+          </div>
+        <% end %>
       <% else %>
         <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-12 text-center">
           <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 64, height: 64, class: "mx-auto text-gray-300 mb-4", alt: "空のメンバーリストアイコン" %>
           <p class="text-gray-600 mb-6"><%= t("mypage.member_lists.empty") %></p>
-          <div class="flex justify-center w-full">
+          <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center w-full">
             <%= render 'shared/button',
                   button_text: t("mypage.member_lists.create_new"),
                   path: new_member_list_path,
                   variant: 'primary',
                   size: 'lg',
-                  full_mobile: true %>
+                  full_mobile: true,
+                  extra_class: 'w-full',
+                  icon: 'icons/add_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                  icon_class: 'inline-block' %>
           </div>
         </div>
       <% end %>
     </div>
 
   <% when 'account' %>
-    <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
-      <h2 class="text-xl font-bold mb-6"><%= t("mypage.account.title") %></h2>
+    <div class="space-y-6">
+      <%# アカウント情報セクション %>
+      <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
+        <h2 class="text-xl font-bold mb-6"><%= t("mypage.account.title") %></h2>
 
-      <div class="space-y-4">
-        <div class="flex items-center justify-between py-3 border-b border-gray-100">
-          <div>
-            <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.email") %></p>
-            <p class="text-sm text-gray-600"><%= @user.email %></p>
-          </div>
-          <%= link_to t("mypage.account.edit_account"), edit_user_registration_path, class: "text-blue-600 hover:underline text-sm" %>
-        </div>
-
-        <% if @user.name.present? %>
+        <div class="space-y-4">
           <div class="flex items-center justify-between py-3 border-b border-gray-100">
             <div>
-              <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.name") %></p>
-              <p class="text-sm text-gray-600"><%= @user.name %></p>
+              <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.email") %></p>
+              <p class="text-sm text-gray-600"><%= @user.email %></p>
             </div>
             <%= link_to t("mypage.account.edit_account"), edit_user_registration_path, class: "text-blue-600 hover:underline text-sm" %>
           </div>
-        <% end %>
+
+          <% if @user.name.present? %>
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <div>
+                <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.name") %></p>
+                <p class="text-sm text-gray-600"><%= @user.name %></p>
+              </div>
+              <%= link_to t("mypage.account.edit_account"), edit_user_registration_path, class: "text-blue-600 hover:underline text-sm" %>
+            </div>
+          <% end %>
+        </div>
       </div>
 
-      <div class="mt-8 pt-6 border-t border-gray-200 flex justify-center">
-        <%= render 'shared/button',
-              button_text: t("mypage.account.logout"),
-              path: destroy_user_session_path,
-              variant: 'tertiary',
-              size: 'md',
-              button_to_method: :delete,
-              full_mobile: true,
-              extra_class: 'bg-gray-600 hover:bg-gray-700' %>
+      <%# スタイル設定セクション %>
+      <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+            <%= image_tag 'icons/palette_24dp_1F1F1F.svg',
+                          width: 24,
+                          height: 24,
+                          class: 'text-purple-600',
+                          alt: 'スタイル設定アイコン' %>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-gray-900">スタイル設定</h2>
+            <p class="text-sm text-gray-600">テーマや表示設定を変更できます</p>
+          </div>
+        </div>
+
+        <%# プレースホルダーコンテンツ %>
+        <div class="bg-gray-50 border border-gray-200 rounded-xl px-6 py-8 text-center">
+          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">準備中</h3>
+          <p class="text-gray-600 mb-6 max-w-md mx-auto">
+            テーマ切り替え機能は現在開発中です。<br>
+            各シーンに合わせたスタイルをまもなく利用可能になります。
+          </p>
+          <%# テーマプレビュー %>
+          <div class="flex flex-wrap justify-center gap-3 text-xs text-gray-600">
+            <span class="inline-flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-200">
+              <span class="w-4 h-4 rounded-full bg-blue-500 border-2 border-blue-600"></span>
+              シンプル
+            </span>
+            <span class="inline-flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-lg border border-amber-200">
+              <span class="w-4 h-4 rounded-full bg-amber-500 border-2 border-amber-600"></span>
+              スクール
+            </span>
+            <span class="inline-flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-300">
+              <span class="w-4 h-4 rounded-full bg-slate-600 border-2 border-slate-700"></span>
+              ワーク
+            </span>
+            <span class="inline-flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
+              <span class="w-4 h-4 rounded-full bg-green-500 border-2 border-green-600"></span>
+              スポーツ
+            </span>
+            <span class="inline-flex items-center gap-2 px-3 py-2 bg-pink-50 rounded-lg border border-pink-200">
+              <span class="w-4 h-4 rounded-full bg-pink-500 border-2 border-pink-600"></span>
+              パーティ
+            </span>
+            <span class="inline-flex items-center gap-2 px-3 py-2 bg-red-50 rounded-lg border border-red-200">
+              <span class="w-4 h-4 rounded-full bg-red-600 border-2 border-red-700"></span>
+              カジノ
+            </span>
+          </div>
+        </div>
+
+        <%# 現在のテーマ表示 %>
+        <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-blue-900">現在のテーマ</p>
+              <p class="text-xs text-blue-700 mt-1">デフォルトテーマを使用中</p>
+            </div>
+            <span class="inline-flex items-center px-3 py-1 bg-white text-blue-800 rounded-full text-sm font-medium border border-blue-200">
+              シンプル
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <%# ログアウトセクション %>
+      <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
+        <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center w-full">
+          <%= render 'shared/button',
+                button_text: t("mypage.account.logout"),
+                path: destroy_user_session_path,
+                variant: 'tertiary',
+                size: 'md',
+                button_to_method: :delete,
+                full_mobile: true,
+                extra_class: 'w-full bg-gray-600 hover:bg-gray-700' %>
+        </div>
       </div>
     </div>
 
@@ -143,55 +234,71 @@
       <% if @events.any? %>
         <% @events.each do |event| %>
           <div class="event-card bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md transition">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-start gap-4">
               <div class="grow">
-                <h3 class="font-semibold text-lg text-gray-900 mb-2 group relative">
-                  <span class="event-title cursor-pointer hover:text-blue-600 active:text-blue-700 transition flex items-center gap-2 touch-manipulation"
-                        data-event-id="<%= event.id %>"
-                        data-event-title="<%= event.title.presence || "イベント #{event.id}" %>">
-                    <%= event.title.presence || "イベント #{event.id}" %>
-                    <%= image_tag 'icons/edit_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, class: "inline opacity-0 group-hover:opacity-100 md:group-hover:opacity-100 transition", alt: "編集アイコン" %>
-                  </span>
-                  <input type="text"
-                         class="event-title-input hidden w-full border-2 border-blue-500 rounded-lg px-3 py-2 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 touch-manipulation"
-                         data-event-id="<%= event.id %>"
-                         value="<%= event.title.presence || "イベント #{event.id}" %>"
-                         maxlength="255">
+                <h3 class="font-semibold text-lg text-gray-900 mb-2">
+                  <%= event.title.presence || "イベント #{event.id}" %>
                 </h3>
-                <div class="flex items-center gap-4 text-sm text-gray-600">
+                <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                   <span class="flex items-center gap-1">
                     <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "更新日アイコン" %>
                     <%= event.updated_at.strftime('%Y年%m月%d日 %H:%M') %>
                   </span>
                   <span class="flex items-center gap-1">
                     <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "メンバー数アイコン" %>
-                    <%= event.members.count %>人
+                    <%= event.members_list.count %>人
                   </span>
+                  <%# 統計情報: シャッフル実行回数 %>
+                  <% group_count = event.group_history.count %>
+                  <% order_count = event.order_history.count %>
+                  <% role_count = event.role_history.count %>
+                  <% if group_count > 0 || order_count > 0 || role_count > 0 %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">
+                      グループ: <strong><%= group_count %></strong>回
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs">
+                      順番: <strong><%= order_count %></strong>回
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-xs">
+                      役割: <strong><%= role_count %></strong>回
+                    </span>
+                  <% end %>
                 </div>
               </div>
-              <div class="flex justify-center sm:justify-end w-full sm:w-auto">
-                <%= render 'shared/button',
-                      button_text: t("mypage.events.view_details"),
-                      path: event_path(event),
-                      variant: 'primary',
-                      size: 'md',
-                      full_mobile: true,
-                      icon: 'icons/event_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-                      icon_class: 'inline-block' %>
-              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center mt-4 w-full">
+              <%= render 'shared/button',
+                    button_text: t("mypage.events.view_details"),
+                    path: event_path(event),
+                    variant: 'primary',
+                    size: 'md',
+                    full_mobile: true,
+                    extra_class: 'w-full',
+                    icon: 'icons/event_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                    icon_class: 'inline-block' %>
             </div>
           </div>
         <% end %>
 
         <%# 新規作成ボタン（中央配置） %>
-        <div class="flex justify-center pt-4 w-full sm:w-auto">
+        <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center mt-4 w-full">
           <%= render 'shared/button',
                 button_text: t("mypage.events.create_new"),
                 path: new_event_path,
                 variant: 'primary',
                 size: 'md',
-                full_mobile: true %>
+                full_mobile: true,
+                extra_class: 'w-full',
+                icon: 'icons/add_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                icon_class: 'inline-block' %>
         </div>
+
+        <%# ページネーション %>
+        <% if @pagy_events && @pagy_events.pages > 1 %>
+          <div class="flex justify-center mt-6">
+            <%= pagy_nav(@pagy_events, 'events') %>
+          </div>
+        <% end %>
       <% else %>
         <%# 空の状態 - 魅力的な表示 %>
         <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-16 text-center">
@@ -203,14 +310,15 @@
             最初のイベントを作成して、メンバーをシャッフルしましょう。<br>
             グループ分け、順番決め、役割分担などができます。
           </p>
-          <div class="flex justify-center w-full">
+          <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center w-full">
             <%= render 'shared/button',
                   button_text: t("mypage.events.create_new"),
                   path: new_event_path,
                   variant: 'primary',
                   size: 'lg',
                   full_mobile: true,
-                  icon: 'icons/play_arrow_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                  extra_class: 'w-full',
+                  icon: 'icons/add_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                   icon_class: 'inline-block' %>
           </div>
         </div>
@@ -219,203 +327,4 @@
   <% end %>
 </div>
 
-<%# イベントタイトル編集用JavaScript %>
-<% content_for :javascript do %>
-<script>
-(function(){
-  // Toast notification function
-  function showToast(message) {
-    const toast = document.getElementById('toast-mypage');
-    if (!toast) {
-      const newToast = document.createElement('div');
-      newToast.id = 'toast-mypage';
-      newToast.className = 'fixed top-9 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 z-50';
-      newToast.style.top = '35px';
-      document.body.appendChild(newToast);
-      newToast.addEventListener('transitionend', function() {
-        if (newToast.classList.contains('opacity-0')) {
-          newToast.remove();
-        }
-      });
-    }
-
-    const toastEl = document.getElementById('toast-mypage');
-    toastEl.textContent = message;
-    toastEl.classList.remove('opacity-0');
-    toastEl.style.zIndex = '1000';
-
-    setTimeout(() => {
-      toastEl.classList.add('opacity-0');
-    }, 2000);
-  }
-
-  // イベントタイトルのインライン編集機能（モバイル最適化）
-  document.querySelectorAll('.event-title').forEach(titleSpan => {
-    // タッチデバイスとマウスの両方に対応
-    const startEdit = function(e) {
-      e.preventDefault();
-      const eventId = this.dataset.eventId;
-      const input = document.querySelector(`.event-title-input[data-event-id="${eventId}"]`);
-
-      // spanを非表示、inputを表示
-      this.classList.add('hidden');
-      input.classList.remove('hidden');
-
-      // モバイルでのフォーカスを改善
-      setTimeout(() => {
-        input.focus();
-        // テキスト選択（モバイルでも動作）
-        if (input.setSelectionRange) {
-          input.setSelectionRange(0, input.value.length);
-        } else {
-          input.select();
-        }
-      }, 100);
-    };
-
-    // クリックイベント（デスクトップ）
-    titleSpan.addEventListener('click', startEdit);
-
-    // タッチイベント（モバイル）- ダブルタップを防ぐ
-    let touchTimeout;
-    titleSpan.addEventListener('touchend', function(e) {
-      if (touchTimeout) {
-        clearTimeout(touchTimeout);
-        touchTimeout = null;
-        startEdit.call(this, e);
-      } else {
-        touchTimeout = setTimeout(() => {
-          touchTimeout = null;
-        }, 300);
-      }
-    });
-  });
-
-  // 入力フィールドの処理
-  document.querySelectorAll('.event-title-input').forEach(input => {
-    // Enterキーで保存
-    input.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        saveEventTitle(this);
-      }
-    });
-
-    // Escキーでキャンセル
-    input.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        cancelEdit(this);
-      }
-    });
-
-    // フォーカスが外れたら保存
-    input.addEventListener('blur', function() {
-      // 少し遅延させて、Escapeキーのキャンセル処理を優先
-      setTimeout(() => {
-        if (!this.classList.contains('hidden')) {
-          saveEventTitle(this);
-        }
-      }, 100);
-    });
-  });
-
-  function cancelEdit(input) {
-    const eventId = input.dataset.eventId;
-    const titleSpan = document.querySelector(`.event-title[data-event-id="${eventId}"]`);
-
-    // 元の値に戻す
-    input.value = titleSpan.dataset.eventTitle;
-
-    // inputを非表示、spanを表示
-    input.classList.add('hidden');
-    titleSpan.classList.remove('hidden');
-  }
-
-  function saveEventTitle(input) {
-    const eventId = input.dataset.eventId;
-    const newTitle = input.value.trim();
-    const titleSpan = document.querySelector(`.event-title[data-event-id="${eventId}"]`);
-    const oldTitle = titleSpan.dataset.eventTitle;
-
-    // 変更がない場合はキャンセル
-    if (newTitle === oldTitle) {
-      cancelEdit(input);
-      return;
-    }
-
-    // 空の場合はデフォルトタイトルを使用
-    const finalTitle = newTitle || `イベント ${eventId}`;
-
-    // 文字数制限チェック（255文字）
-    if (finalTitle.length > 255) {
-      alert('タイトルは255文字以内で入力してください');
-      cancelEdit(input);
-      return;
-    }
-
-    // サーバーに保存
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-    const formData = new FormData();
-    formData.append('event[title]', finalTitle);
-
-    fetch(`/events/${eventId}`, {
-      method: 'PATCH',
-      headers: {
-        'X-CSRF-Token': csrfToken,
-        'Accept': 'application/json'
-      },
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // 成功: タイトルを更新
-        const textNode = Array.from(titleSpan.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
-        if (textNode) {
-          textNode.textContent = finalTitle + ' ';
-        }
-        titleSpan.dataset.eventTitle = finalTitle;
-        input.value = finalTitle;
-
-        // inputを非表示、spanを表示
-        input.classList.add('hidden');
-        titleSpan.classList.remove('hidden');
-
-        // 更新日時を更新（現在時刻を表示）
-        const now = new Date();
-        const dateStr = now.getFullYear() + '年' +
-                       String(now.getMonth() + 1).padStart(2, '0') + '月' +
-                       String(now.getDate()).padStart(2, '0') + '日 ' +
-                       String(now.getHours()).padStart(2, '0') + ':' +
-                       String(now.getMinutes()).padStart(2, '0');
-        const dateSpan = titleSpan.closest('.grow').querySelector('.flex.items-center.gap-4 span:first-child');
-        if (dateSpan) {
-          const textContent = dateSpan.textContent || dateSpan.innerText;
-          // アイコンの後のテキストのみを更新
-          const iconImg = dateSpan.querySelector('img');
-          if (iconImg) {
-            // テキストノードを探して更新
-            Array.from(dateSpan.childNodes).forEach(node => {
-              if (node.nodeType === Node.TEXT_NODE) {
-                node.textContent = dateStr;
-              }
-            });
-          }
-        }
-
-        showToast('タイトルを更新しました');
-      } else {
-        alert('保存に失敗しました: ' + (data.errors || '不明なエラー'));
-        cancelEdit(input);
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('保存に失敗しました');
-      cancelEdit(input);
-    });
-  }
-})();
-</script>
-<% end %>
 <%= yield :javascript %>

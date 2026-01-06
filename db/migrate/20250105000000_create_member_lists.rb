@@ -8,6 +8,6 @@ class CreateMemberLists < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :member_lists, [:user_id, :name]
+    add_index :member_lists, [ :user_id, :name ]
   end
 end

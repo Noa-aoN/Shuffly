@@ -66,11 +66,12 @@
   <!-- ========================================== -->
   <!-- JavaScriptから送信されるhiddenフォーム -->
   <%= form_with(model: event, local: true, html: { id: 'saveForm', style: 'display:none' }) do |f| %>
-    <%= f.hidden_field :members_json, id: 'membersJsonInput' %>
-    <%= f.hidden_field :member_results_json, id: 'resultsJsonInput' %>
-    <%= f.hidden_field :member_order_json, id: 'orderJsonInput' %>
-    <%= f.hidden_field :setting_json, id: 'settingsJsonInput' %>
-    <%= f.hidden_field :history_json, id: 'historyJsonInput' %>
+    <%= f.hidden_field :data_version, value: 2, id: 'dataVersionInput' %>
+    <%= f.hidden_field :members_data, id: 'membersDataInput' %>
+    <%= f.hidden_field :group_rounds, id: 'groupRoundsInput' %>
+    <%= f.hidden_field :order_rounds, id: 'orderRoundsInput' %>
+    <%= f.hidden_field :role_rounds, id: 'roleRoundsInput' %>
+    <%= f.hidden_field :co_occurrence_cache, id: 'coOccurrenceCacheInput' %>
     <%= f.hidden_field :memo, value: event.memo, name: 'event[memo]', id: 'hiddenEventMemo' %>
     <%= f.hidden_field :title, value: event.title, name: 'event[title]', id: 'hiddenEventTitle' %>
   <% end %>

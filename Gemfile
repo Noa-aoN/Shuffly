@@ -36,6 +36,9 @@ gem "bootsnap", require: false
 # ログイン認証
 gem "devise"
 
+# ページネーション
+gem "pagy", "~> 6.0"
+
 # メタタグ・OGP設定
 gem "meta-tags"
 
