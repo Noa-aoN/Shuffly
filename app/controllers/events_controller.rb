@@ -28,7 +28,7 @@ class EventsController < ApplicationController
           memo: @load_event.memo,  # メモを追加
           title: @load_event.title,
           original_id: @load_event.id,  # 元のイベントID
-          created_at: @load_event.created_at.strftime('%Y/%m/%d %H:%M')
+          created_at: @load_event.created_at.strftime("%Y/%m/%d %H:%M")
         }
       end
     end
@@ -36,7 +36,7 @@ class EventsController < ApplicationController
 
   def create
     # 更新モードの場合はupdateアクションに処理を委譲
-    if params[:update_mode] == 'true'
+    if params[:update_mode] == "true"
       update
       return
     end
@@ -97,7 +97,7 @@ class EventsController < ApplicationController
 
   def destroy
     @event.destroy
-    redirect_to mypage_path(tab: 'events'), notice: "イベントを削除しました"
+    redirect_to mypage_path(tab: "events"), notice: "イベントを削除しました"
   end
 
   private

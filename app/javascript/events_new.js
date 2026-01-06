@@ -76,21 +76,27 @@ const ShufflyApp = (function() {
 
   // 新規: 履歴内で「1回目のグループ割当」が最初に発生したインデックスを返す
   function findFirstGroupHistoryIndex(){
+    // まずグループ履歴の最初のインデックスを取得
+    let firstGroupIndex = -1;
     for(let i=0;i<shufflyHistory.length;i++){
       const entry = shufflyHistory[i];
       if(!entry) continue;
 
       // 新形式の場合
       if(entry.type === 'groups' && entry.data && entry.data.membersRaw) {
+        if(firstGroupIndex === -1) firstGroupIndex = i;
         if(/#1[A-Z]/.test(entry.data.membersRaw)) return i;
       }
       // 旧形式との互換性（文字列の場合）
       else if(typeof entry === 'string') {
+        if(firstGroupIndex === -1) firstGroupIndex = i;
         if(/#1[A-Z]/.test(entry)) return i;
       }
     }
-    // 無ければ 0 を返し、従来の振る舞い（先頭まで戻れる）と互換性を保つ
-    return 0;
+    // グループ履歴がある場合はそのインデックスを返す（回次の1回目までしか遡れないようにする）
+    if(firstGroupIndex !== -1) return firstGroupIndex;
+    // 無ければ -1 を返す（履歴がないことを示す）
+    return -1;
   }
 
   // グループIDと表示名を決定（A,B,C...）
@@ -814,7 +820,8 @@ const ShufflyApp = (function() {
     }
 
     if(currentIndexInEntries === -1){
-      // 現在のエントリーが該当タイプでない場合、最後のエントリーを表示しているとみなす
+      // 現在のエントリーが該当タイプでない場合
+      // 最新のエントリーを表示しているとみなし、「前回」ボタンを有効化
       prevBtn.disabled = false;
       nextBtn.disabled = true;
     } else {
@@ -1061,6 +1068,8 @@ const ShufflyApp = (function() {
         el.classList.remove('border-transparent','text-gray-600');
         el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
       }
+      // Update navigation buttons
+      updateNavigationButtons('groups');
     }
     if(name==='order'){
       const panel = document.getElementById('panel-order'); if(panel) panel.classList.remove('hidden');
@@ -1069,6 +1078,8 @@ const ShufflyApp = (function() {
         el.classList.remove('border-transparent','text-gray-600');
         el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
       }
+      // Update navigation buttons
+      updateNavigationButtons('order');
     }
     if(name==='roles'){
       const panel = document.getElementById('panel-roles'); if(panel) panel.classList.remove('hidden');
@@ -1077,6 +1088,8 @@ const ShufflyApp = (function() {
         el.classList.remove('border-transparent','text-gray-600');
         el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
       }
+      // Update navigation buttons
+      updateNavigationButtons('roles');
     }
   }
 
@@ -1327,9 +1340,11 @@ const ShufflyApp = (function() {
       document.getElementById('membersJsonInput').value = JSON.stringify(entries);
     }catch(e){}
 
-    if(!document.getElementById('resultsJsonInput').value){
-      try { document.getElementById('resultsJsonInput').value = JSON.stringify({ groups: {}, group_names: {} }); } catch(e){}
-    }
+    // resultsJsonInputが空の場合は、空のグループ分け結果を設定しない（未実施状態を維持）
+    // if(!document.getElementById('resultsJsonInput').value){
+    //   try { document.getElementById('resultsJsonInput').value = JSON.stringify({ groups: {}, group_names: {} }); } catch(e){}
+    // }
+
     if(!document.getElementById('settingsJsonInput').value){
       try {
         const groupCount = document.getElementById('groupCount') ? document.getElementById('groupCount').value : '';
@@ -1357,13 +1372,17 @@ const ShufflyApp = (function() {
         }
       } catch(e){}
     }
-    if(!document.getElementById('orderJsonInput').value){
-      try {
-        const orderText = document.getElementById('orderOutput').value || '';
-        const names = orderText.split(/\r?\n/).map(l=>l.replace(/^\d+\.\s*/,'')).filter(Boolean);
-        document.getElementById('orderJsonInput').value = JSON.stringify(names.map((n,i)=>({name:n, order:i+1})));
-      }catch(e){}
-    }
+
+    // orderJsonInputが空の場合は、空の順番決め結果を設定しない（未実施状態を維持）
+    // if(!document.getElementById('orderJsonInput').value){
+    //   try {
+    //     const orderText = document.getElementById('orderOutput').value || '';
+    //     const names = orderText.split(/\r?\n/).map(l=>l.replace(/^\d+\.\s*/,'')).filter(Boolean);
+    //     document.getElementById('orderJsonInput').value = JSON.stringify(names.map((n,i)=>({name:n, order:i+1})));
+    //   }catch(e){}
+    // }
+
+    // historyJsonInputが空の場合は、空の履歴を設定しない（未実施状態を維持）
     if(!document.getElementById('historyJsonInput').value){
       try{ document.getElementById('historyJsonInput').value=JSON.stringify(shufflyHistory); }catch(e){}
     }

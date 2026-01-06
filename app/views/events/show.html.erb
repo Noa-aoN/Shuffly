@@ -577,6 +577,8 @@
             renderGroups(dataToRender);
           }
         }
+        // タブを切り替え
+        switchTab('groups');
       }
 
       if (tab === 'order') {
@@ -585,6 +587,8 @@
         if (orderArray && Array.isArray(orderArray)) {
           renderOrder(orderArray);
         }
+        // タブを切り替え
+        switchTab('order');
       }
 
       if (tab === 'roles') {
@@ -598,6 +602,8 @@
           // dataToRender自体がrole_assignmentsを持っている場合
           renderRoles(dataToRender);
         }
+        // タブを切り替え
+        switchTab('roles');
       }
 
       updateHistoryIndex(tab);
@@ -622,6 +628,45 @@
       });
     }
   });
+
+  // Setup tab switching
+  function switchTab(tabName) {
+    // Hide all panels
+    document.querySelectorAll('[id^="panel-"]').forEach(panel => {
+      panel.classList.add('hidden');
+    });
+
+    // Show selected panel
+    const selectedPanel = document.getElementById('panel-' + tabName);
+    if (selectedPanel) {
+      selectedPanel.classList.remove('hidden');
+    }
+
+    // Update tab styles
+    const tabs = ['groups', 'order', 'roles'];
+    tabs.forEach(tab => {
+      const tabEl = document.getElementById('tab-' + tab);
+      if (tabEl) {
+        if (tab === tabName) {
+          // Active tab styles
+          tabEl.classList.remove('text-gray-600', 'hover:text-blue-500');
+          tabEl.classList.add('text-blue-600', 'bg-blue-50', 'ring-1', 'ring-blue-100', 'shadow-sm');
+        } else {
+          // Inactive tab styles
+          tabEl.classList.remove('text-blue-600', 'bg-blue-50', 'ring-1', 'ring-blue-100', 'shadow-sm');
+          tabEl.classList.add('text-gray-600', 'hover:text-blue-500');
+        }
+      }
+    });
+
+    // Update navigation buttons for the current tab
+    updateHistoryIndex(tabName);
+  }
+
+  // Add click event listeners to tabs
+  document.getElementById('tab-groups').addEventListener('click', () => switchTab('groups'));
+  document.getElementById('tab-order').addEventListener('click', () => switchTab('order'));
+  document.getElementById('tab-roles').addEventListener('click', () => switchTab('roles'));
 
   // Initial render - 履歴がある場合は最新の履歴データを表示（events_new.jsと統一）
   // グループ: 履歴ベースでのみ表示（履歴がない場合は何も表示しない）
@@ -685,6 +730,24 @@
     }
   }
   // 履歴がない場合は何も表示しない
+
+  // Initialize navigation buttons and set initial tab
+  ['groups', 'order', 'roles'].forEach(tab => {
+    updateHistoryIndex(tab);
+  });
+
+  // Determine initial tab based on latest history entry
+  let initialTab = 'groups';
+  if (historyState.roles.history.length > 0) {
+    initialTab = 'roles';
+  } else if (historyState.order.history.length > 0) {
+    initialTab = 'order';
+  } else if (historyState.groups.history.length > 0) {
+    initialTab = 'groups';
+  }
+
+  // Switch to initial tab
+  switchTab(initialTab);
 
   // Parse entry to extract name and history (同じロジックをevents_new.jsから移植)
   function parseEntry(entry) {

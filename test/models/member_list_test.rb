@@ -39,13 +39,13 @@ class MemberListTest < ActiveSupport::TestCase
   end
 
   test "members_jsonは空配列ではいけない" do
-    member_list = MemberList.new(user: users(:one), name: "Test", members_json: '[]')
+    member_list = MemberList.new(user: users(:one), name: "Test", members_json: "[]")
     assert_not member_list.valid?
     assert_includes member_list.errors[:members_json], "must have at least one member"
   end
 
   test "members_jsonが不正なJSONの場合はエラー" do
-    member_list = MemberList.new(user: users(:one), name: "Test", members_json: 'invalid json')
+    member_list = MemberList.new(user: users(:one), name: "Test", members_json: "invalid json")
     assert_not member_list.valid?
     assert_includes member_list.errors[:members_json], "must be valid JSON"
   end
@@ -56,12 +56,12 @@ class MemberListTest < ActiveSupport::TestCase
 
   test "membersで配列を取得できる" do
     member_list = member_lists(:one)
-    assert_equal ["Alice", "Bob", "Charlie"], member_list.members
+    assert_equal [ "Alice", "Bob", "Charlie" ], member_list.members
   end
 
   test "members=で配列を設定できる" do
     member_list = MemberList.new(user: users(:one), name: "Test")
-    member_list.members = ["X", "Y", "Z"]
+    member_list.members = [ "X", "Y", "Z" ]
     assert_equal '["X","Y","Z"]', member_list.members_json
   end
 
@@ -95,10 +95,10 @@ class MemberListTest < ActiveSupport::TestCase
 
   test "特殊文字を含む名前も安全に処理できる" do
     member_list = MemberList.new(user: users(:one), name: "'; DROP TABLE users; --")
-    member_list.members = ["<script>alert('xss')</script>"]
+    member_list.members = [ "<script>alert('xss')</script>" ]
     assert member_list.save
     assert_equal "'; DROP TABLE users; --", member_list.name
-    assert_equal ["<script>alert('xss')</script>"], member_list.members
+    assert_equal [ "<script>alert('xss')</script>" ], member_list.members
   end
 
   # ============================================
