@@ -70,6 +70,7 @@ export default class extends Controller {
         return
       }
 
+      // メンバーリストアイテムを生成
       container.innerHTML = data.map(list => `
         <div class="member-list-item border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50 transition cursor-pointer"
              data-action="click->member-list-import#selectList"
@@ -85,7 +86,7 @@ export default class extends Controller {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
           </div>
-          ${list.members.length > 0 ? `
+          ${list.members && list.members.length > 0 ? `
             <div class="mt-2 text-xs text-gray-500">
               ${this.escapeHtml(list.members.slice(0, 3).join('、'))}
               ${list.members.length > 3 ? '...' : ''}
@@ -137,18 +138,19 @@ export default class extends Controller {
 
       if (membersInput && data.members) {
         const currentText = membersInput.value.trim()
-        const newMembers = data.members
+        const newMembers = data.members || []
 
         if (method === 'overwrite') {
           // 上書きモード
           membersInput.value = newMembers.join('\n')
         } else {
-          // 追記モード
+          // 追記モード - 現在のメンバーの後に追加（重複は除外）
           const currentMembers = currentText ? currentText.split('\n').map(m => m.trim()).filter(m => m) : []
-          const combinedMembers = [...currentMembers, ...newMembers]
-          // 重複を除去
-          const uniqueMembers = [...new Set(combinedMembers)]
-          membersInput.value = uniqueMembers.join('\n')
+
+          // 重複を除去して追加
+          const addedMembers = newMembers.filter(m => !currentMembers.includes(m))
+          const combinedMembers = [...currentMembers, ...addedMembers]
+          membersInput.value = combinedMembers.join('\n')
         }
 
         // inputイベントを発火してメンバー数表示を更新
@@ -158,7 +160,8 @@ export default class extends Controller {
         this.closeModal()
 
         // 成功トーストを表示
-        this.showToast(`${data.members_count}人のメンバーを${method === 'overwrite' ? '上書き' : '追記'}しました`)
+        const addedCount = method === 'overwrite' ? newMembers.length : newMembers.filter(m => !currentText.split('\n').map(x => x.trim()).filter(x => x).includes(m)).length
+        this.showToast(`${addedCount}人のメンバーを${method === 'overwrite' ? '上書き' : '追記'}しました`)
       }
     } catch (error) {
       console.error('Error importing members:', error)
