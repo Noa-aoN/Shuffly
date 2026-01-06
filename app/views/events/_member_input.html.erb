@@ -17,17 +17,11 @@
   <!-- ========================================== -->
   <!-- JSONフォーマットでメンバーデータを保持。履歴情報も含む -->
   <textarea id="membersRaw" rows="10" class="hidden" style="display:none;"><%= begin
-    members = event.members_json.present? ? JSON.parse(event.members_json) : []
+    members = event.members_data['members'] || []
     members.map do |m|
-      if m.is_a?(Hash)
-        name = m["name"]
-        hist = m["history"]&.join("") || ""
-        "#{name}#{hist}"
-      else
-        m
-      end
+      m.is_a?(Hash) ? m['name'] : m
     end.join("\n")
-  rescue JSON::ParserError
+  rescue
     ""
   end %></textarea>
 

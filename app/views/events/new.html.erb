@@ -14,7 +14,7 @@
       data-new-user-session-path="<%= new_user_session_path %>"
       data-update-mode="<%= @update_mode ? 'true' : 'false' %>"
       <% if defined?(@load_event_data) && @load_event_data.present? %>
-      data-load-event="<%= raw @load_event_data.to_json.html_safe %>"
+      data-load-event='<%= @load_event_data.to_json %>'
       <% end %>>
 
   <%# 更新モードの場合は通知メッセージを表示 %>

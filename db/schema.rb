@@ -10,21 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_06_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_07_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "events", force: :cascade do |t|
     t.bigint "user_id"
     t.string "title"
-    t.jsonb "members_json", default: []
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.jsonb "member_results_json", default: []
-    t.jsonb "member_order_json", default: []
-    t.jsonb "setting_json", default: {}
-    t.jsonb "history_json", default: []
     t.text "memo"
+    t.integer "data_version", default: 2, null: false, comment: "1=legacy JSON format, 2=normalized format, 3=hybrid (both formats present)"
+    t.jsonb "members_data", default: {}, comment: "Normalized members data with unique IDs: [{id: 1, name: \"John\"}, ...]"
+    t.jsonb "group_rounds", default: [], comment: "Group shuffle history: [{round: 1, assignments: [...], settings: {...}}, ...]"
+    t.jsonb "order_rounds", default: [], comment: "Order shuffle history: [{round: 1, order: [member_ids], ...}, ...]"
+    t.jsonb "role_rounds", default: [], comment: "Role assignment history: [{round: 1, assignments: [...], ...}, ...]"
+    t.jsonb "co_occurrence_cache", default: {}, comment: "Pre-calculated co-occurrence counts: {\"1_2\": 3, ...}"
+    t.index ["data_version"], name: "index_events_on_data_version"
     t.index ["user_id"], name: "index_events_on_user_id"
   end
 

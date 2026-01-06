@@ -1,6 +1,6 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: [ :show, :edit, :update, :destroy ]
-  skip_before_action :set_event, only: [ :presentation ]
+  before_action :set_event, only: [:show, :edit, :update, :destroy]
+  skip_before_action :set_event, only: [:presentation]
 
   def index
     @events = current_user ? current_user.events : Event.none
@@ -8,27 +8,28 @@ class EventsController < ApplicationController
 
   def new
     @event = Event.new
-    @update_mode = false  # 更新モードフラグの初期化
+    @update_mode = false
 
     # 「続きからシャッフル」機能：既存イベントのデータをロード
     if params[:load_event_id].present?
       @load_event = Event.find_by(id: params[:load_event_id])
       if @load_event
-        # 更新モード: 既存のイベントをそのまま使用
         @event = @load_event
-        @update_mode = true  # 更新モードをオンにする
+        @update_mode = true
 
-        # JavaScriptで使用するためのデータ
+        # JavaScriptで使用するためのデータ（正規化形式のみ）
         @load_event_data = {
-          members_json: @load_event.members_json,
-          member_results_json: @load_event.member_results_json,
-          member_order_json: @load_event.member_order_json,
-          setting_json: @load_event.setting_json,
-          history_json: @load_event.history_json,
-          memo: @load_event.memo,  # メモを追加
           title: @load_event.title,
-          original_id: @load_event.id,  # 元のイベントID
-          created_at: @load_event.created_at.strftime("%Y/%m/%d %H:%M")
+          memo: @load_event.memo,
+          original_id: @load_event.id,
+          created_at: @load_event.created_at.strftime("%Y/%m/%d %H:%M"),
+          # 正規化フィールド
+          data_version: @load_event.data_version,
+          members_data: @load_event.members_data,
+          group_rounds: @load_event.group_rounds,
+          order_rounds: @load_event.order_rounds,
+          role_rounds: @load_event.role_rounds,
+          co_occurrence_cache: @load_event.co_occurrence_cache
         }
       end
     end
@@ -41,13 +42,10 @@ class EventsController < ApplicationController
       return
     end
 
-    # 新規作成（既存の処理）
-    @event = current_user ? current_user.events.build(event_params) : Event.new(event_params)
+    @event = current_user ? current_user.events.build(normalized_event_params) : Event.new(normalized_event_params)
 
     if @event.save
-      # 新規作成後もupdated_atを明示的に更新
       @event.touch
-
       redirect_to @event, notice: "イベントを保存しました"
     else
       render :new
@@ -55,35 +53,36 @@ class EventsController < ApplicationController
   end
 
   def show
-    # 保存済み JSON をロード
-    @members = JSON.parse(@event.members_json || "[]")
-    @results = JSON.parse(@event.member_results_json || "{}")
-    @order = JSON.parse(@event.member_order_json || "{}")
-    @settings = JSON.parse(@event.setting_json || "{}")
-    @history = JSON.parse(@event.history_json || "[]")
+    # 正規化データのみを使用
+    @members = @event.members_list
+    @group_history = @event.group_history
+    @order_history = @event.order_history
+    @role_history = @event.role_history
+    @co_occurrence = @event.co_occurrence
+
+    # データ形式情報
+    @data_version = @event.data_version
+    @normalized = @event.normalized?
+
+    # 正規化データ
+    @members_data = @event.members_data
+    @group_rounds = @event.group_rounds
+    @order_rounds = @event.order_rounds
+    @role_rounds = @event.role_rounds
+    @co_occurrence_cache = @event.co_occurrence_cache
   end
 
   def edit; end
 
   def update
-    # デバッグログ
-    Rails.logger.info "=== DEBUG: event_params = #{event_params.inspect}"
-    Rails.logger.info "=== DEBUG: @event.memo before = #{@event.memo.inspect}"
-
-    if @event.update(event_params)
-      # updated_atを明示的に更新
+    if @event.update(normalized_event_params)
       @event.touch
-
-      Rails.logger.info "=== DEBUG: @event.memo after = #{@event.memo.inspect}"
-      Rails.logger.info "=== DEBUG: update success"
 
       respond_to do |format|
         format.html { redirect_to @event, notice: "イベントを更新しました" }
         format.json { render json: { success: true, message: "イベントを更新しました" }, status: :ok }
       end
     else
-      Rails.logger.info "=== DEBUG: errors = #{@event.errors.full_messages.inspect}"
-
       respond_to do |format|
         format.html { render :edit }
         format.json { render json: { success: false, errors: @event.errors.full_messages }, status: :unprocessable_entity }
@@ -102,8 +101,6 @@ class EventsController < ApplicationController
 
   private
 
-  # set_event を厳密化して、誤って "show" 等が id として渡された場合に
-  # ActiveRecord::RecordNotFound を発生させないようにする。
   def set_event
     id = params[:id].to_s
 
@@ -124,6 +121,38 @@ class EventsController < ApplicationController
   end
 
   def event_params
-    params.require(:event).permit(:title, :members_json, :member_results_json, :member_order_json, :setting_json, :history_json, :memo)
+    # 正規化フィールドのみを許可
+    params.require(:event).permit(
+      :title,
+      :memo,
+      :data_version,
+      :members_data,
+      :group_rounds,
+      :order_rounds,
+      :role_rounds,
+      :co_occurrence_cache
+    )
+  end
+
+  def normalized_event_params
+    params_hash = event_params.to_h
+
+    # JSON文字列をパースしてHashまたはArrayに変換
+    ['members_data', 'group_rounds', 'order_rounds', 'role_rounds', 'co_occurrence_cache'].each do |key|
+      if params_hash[key].is_a?(String) && params_hash[key].present?
+        begin
+          params_hash[key] = JSON.parse(params_hash[key])
+        rescue JSON::ParserError => e
+          Rails.logger.error "Failed to parse #{key}: #{e.message}"
+          # パースに失敗した場合はデフォルト値を設定
+          params_hash[key] = (key == 'members_data' || key == 'co_occurrence_cache') ? {} : []
+        end
+      elsif params_hash[key].blank?
+        # 空の場合もデフォルト値を設定
+        params_hash[key] = (key == 'members_data' || key == 'co_occurrence_cache') ? {} : []
+      end
+    end
+
+    params_hash
   end
 end
