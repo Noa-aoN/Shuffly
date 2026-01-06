@@ -2,12 +2,26 @@
 <!-- ① メンバー入力パネル                        -->
 <!-- メンバーリストの入力と管理                  -->
 <!-- ============================================ -->
-<div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
+<div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8"
+     data-controller="member-list-import">
 
   <!-- パネルヘッダー -->
-  <div class="flex items-start gap-3 mb-4">
-    <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">1</div>
-    <h2 class="text-xl md:text-2xl font-semibold">メンバーを入力する</h2>
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-start gap-3">
+      <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">1</div>
+      <h2 class="text-xl md:text-2xl font-semibold">メンバーを入力する</h2>
+    </div>
+    <%# 履歴クリアボタン（カード右上に配置） %>
+    <%= render 'shared/button',
+          f: nil,
+          button_text: '履歴をクリア',
+          id: 'btn-clear-history',
+          path: '#',
+          variant: 'tertiary',
+          size: 'sm',
+          extra_class: 'text-sm',
+          icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+          icon_class: 'inline-block' %>
   </div>
 
   <label class="block mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> メンバーリスト</label>
@@ -68,16 +82,117 @@
           icon_class: 'inline-block' %>
     <input id="importFile" type="file" accept=".txt,.csv" class="hidden">
 
-    <!-- 履歴クリアボタン -->
+    <!-- メンバーリストから入力ボタン -->
     <%= render 'shared/button',
           f: nil,
-          button_text: '履歴をクリア',
-          id: 'btn-clear-history',
+          button_text: 'メンバーリストから入力',
+          id: 'btn-import-member-list',
           path: '#',
           variant: 'tertiary',
           full_mobile: true,
           extra_class: 'w-full',
-          icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+          data_action: 'click->member-list-import#openModal',
+          icon: 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
           icon_class: 'inline-block' %>
   </div>
 </div>
+
+<%# メンバーリストインポート用モーダル %>
+<%# Stimulus targets: modal, container %>
+<div id="member-list-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center"
+     data-member-list-import-target="modal">
+  <%# 背景オーバーレイ %>
+  <div id="member-list-modal-backdrop" class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+       data-action="click->member-list-import#closeModal"></div>
+
+  <%# モーダルパネル %>
+  <div class="relative z-10 w-full max-w-2xl mx-4 bg-white rounded-2xl shadow-xl border border-gray-200 px-6 py-6 max-h-[80vh] overflow-hidden flex flex-col">
+    <%# ヘッダー %>
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-bold text-gray-900">メンバーリストを選択</h3>
+      <button type="button" id="btn-close-modal"
+              data-action="click->member-list-import#closeModal"
+              class="text-gray-400 hover:text-gray-600 transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <%# コンテンツエリア %>
+    <div class="flex-1 overflow-y-auto">
+      <div id="member-lists-container" class="space-y-3"
+           data-member-list-import-target="container">
+        <div class="text-center text-gray-500 py-8">読み込み中...</div>
+      </div>
+    </div>
+
+    <%# フッター %>
+    <div class="mt-4 pt-4 border-t border-gray-200">
+      <%= render 'shared/button',
+            f: nil,
+            button_text: 'キャンセル',
+            path: '#',
+            id: 'btn-cancel-modal',
+            data_action: 'click->member-list-import#closeModal',
+            variant: 'secondary',
+            size: 'md',
+            extra_class: 'w-full' %>
+    </div>
+  </div>
+</div>
+
+<%# インポート方法選択モーダル（上書き/追記） %>
+<div id="import-method-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center"
+     data-member-list-import-target="methodModal">
+  <div id="import-method-modal-backdrop" class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+       data-action="click->member-list-import#closeMethodModal"></div>
+
+  <div class="relative z-10 w-full max-w-md mx-4 bg-white rounded-2xl shadow-xl border border-gray-200 px-6 py-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">インポート方法を選択</h3>
+    <p class="text-sm text-gray-600 mb-6">現在のメンバー入力欄にメンバーを追加する方法を選択してください。</p>
+
+    <div class="space-y-3 mb-6">
+      <button type="button" id="btn-import-overwrite"
+              data-action="click->member-list-import#importOverwrite"
+              class="w-full text-left px-4 py-3 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="font-medium text-gray-900">上書き</p>
+            <p class="text-xs text-gray-600 mt-1">現在のメンバーをクリアして置き換え</p>
+          </div>
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </div>
+      </button>
+
+      <button type="button" id="btn-import-append"
+              data-action="click->member-list-import#importAppend"
+              class="w-full text-left px-4 py-3 border border-gray-200 rounded-lg hover:bg-green-50 hover:border-green-300 transition">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="font-medium text-gray-900">追記</p>
+            <p class="text-xs text-gray-600 mt-1">現在のメンバーの後に追加</p>
+          </div>
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+        </div>
+      </button>
+    </div>
+
+    <div class="flex gap-2">
+      <%= render 'shared/button',
+            f: nil,
+            button_text: 'キャンセル',
+            path: '#',
+            id: 'btn-cancel-import-method',
+            data_action: 'click->member-list-import#closeMethodModal',
+            variant: 'secondary',
+            size: 'sm',
+            extra_class: 'flex-1' %>
+    </div>
+  </div>
+</div>
+

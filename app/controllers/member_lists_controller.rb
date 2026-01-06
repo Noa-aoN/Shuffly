@@ -1,9 +1,37 @@
 class MemberListsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_member_list, only: [ :edit, :update, :destroy ]
+  before_action :set_member_list, only: [:edit, :update, :destroy, :show]
 
   def index
     @member_lists = current_user.member_lists.order(created_at: :desc)
+
+    respond_to do |format|
+      format.html
+      format.json do
+        render json: @member_lists.map { |ml|
+          {
+            id: ml.id,
+            name: ml.name,
+            members: ml.members,
+            members_count: ml.members.count,
+            created_at: ml.created_at.strftime('%Y年%m月%d日')
+          }
+        }
+      end
+    end
+  end
+
+  def show
+    respond_to do |format|
+      format.json do
+        render json: {
+          id: @member_list.id,
+          name: @member_list.name,
+          members: @member_list.members,
+          members_count: @member_list.members.count
+        }
+      end
+    end
   end
 
   def new

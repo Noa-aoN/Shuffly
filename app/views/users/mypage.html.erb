@@ -85,6 +85,13 @@
                 size: 'md',
                 full_mobile: true %>
         </div>
+
+        <%# ページネーション %>
+        <% if @pagy_member_lists && @pagy_member_lists.pages > 1 %>
+          <div class="flex justify-center mt-6">
+            <%= pagy_nav(@pagy_member_lists, 'member_lists') %>
+          </div>
+        <% end %>
       <% else %>
         <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-12 text-center">
           <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 64, height: 64, class: "mx-auto text-gray-300 mb-4", alt: "空のメンバーリストアイコン" %>
@@ -102,38 +109,115 @@
     </div>
 
   <% when 'account' %>
-    <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
-      <h2 class="text-xl font-bold mb-6"><%= t("mypage.account.title") %></h2>
+    <div class="space-y-6">
+      <%# アカウント情報セクション %>
+      <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
+        <h2 class="text-xl font-bold mb-6"><%= t("mypage.account.title") %></h2>
 
-      <div class="space-y-4">
-        <div class="flex items-center justify-between py-3 border-b border-gray-100">
-          <div>
-            <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.email") %></p>
-            <p class="text-sm text-gray-600"><%= @user.email %></p>
-          </div>
-          <%= link_to t("mypage.account.edit_account"), edit_user_registration_path, class: "text-blue-600 hover:underline text-sm" %>
-        </div>
-
-        <% if @user.name.present? %>
+        <div class="space-y-4">
           <div class="flex items-center justify-between py-3 border-b border-gray-100">
             <div>
-              <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.name") %></p>
-              <p class="text-sm text-gray-600"><%= @user.name %></p>
+              <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.email") %></p>
+              <p class="text-sm text-gray-600"><%= @user.email %></p>
             </div>
             <%= link_to t("mypage.account.edit_account"), edit_user_registration_path, class: "text-blue-600 hover:underline text-sm" %>
           </div>
-        <% end %>
+
+          <% if @user.name.present? %>
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+              <div>
+                <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.name") %></p>
+                <p class="text-sm text-gray-600"><%= @user.name %></p>
+              </div>
+              <%= link_to t("mypage.account.edit_account"), edit_user_registration_path, class: "text-blue-600 hover:underline text-sm" %>
+            </div>
+          <% end %>
+        </div>
       </div>
 
-      <div class="mt-8 pt-6 border-t border-gray-200 flex justify-center">
-        <%= render 'shared/button',
-              button_text: t("mypage.account.logout"),
-              path: destroy_user_session_path,
-              variant: 'tertiary',
-              size: 'md',
-              button_to_method: :delete,
-              full_mobile: true,
-              extra_class: 'bg-gray-600 hover:bg-gray-700' %>
+      <%# スタイル設定セクション %>
+      <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+            <%= image_tag 'icons/palette_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                          width: 24,
+                          height: 24,
+                          class: 'text-purple-600',
+                          alt: 'スタイル設定アイコン' %>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-gray-900">スタイル設定</h2>
+            <p class="text-sm text-gray-600">テーマや表示設定を変更できます</p>
+          </div>
+        </div>
+
+        <%# プレースホルダーコンテンツ %>
+        <div class="bg-gray-50 border border-gray-200 rounded-xl px-6 py-8 text-center">
+          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">準備中</h3>
+          <p class="text-gray-600 mb-6 max-w-md mx-auto">
+            テーマ切り替え機能は現在開発中です。<br>
+            各シーンに合わせたスタイルをまもなく利用可能になります。
+          </p>
+          <%# テーマプレビュー %>
+          <div class="flex flex-wrap justify-center gap-3 text-xs text-gray-600">
+            <span class="inline-flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-200">
+              <span class="w-4 h-4 rounded-full bg-blue-500 border-2 border-blue-600"></span>
+              シンプル
+            </span>
+            <span class="inline-flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-lg border border-amber-200">
+              <span class="w-4 h-4 rounded-full bg-amber-500 border-2 border-amber-600"></span>
+              スクール
+            </span>
+            <span class="inline-flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-300">
+              <span class="w-4 h-4 rounded-full bg-slate-600 border-2 border-slate-700"></span>
+              ワーク
+            </span>
+            <span class="inline-flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
+              <span class="w-4 h-4 rounded-full bg-green-500 border-2 border-green-600"></span>
+              スポーツ
+            </span>
+            <span class="inline-flex items-center gap-2 px-3 py-2 bg-pink-50 rounded-lg border border-pink-200">
+              <span class="w-4 h-4 rounded-full bg-pink-500 border-2 border-pink-600"></span>
+              パーティ
+            </span>
+            <span class="inline-flex items-center gap-2 px-3 py-2 bg-red-50 rounded-lg border border-red-200">
+              <span class="w-4 h-4 rounded-full bg-red-600 border-2 border-red-700"></span>
+              カジノ
+            </span>
+          </div>
+        </div>
+
+        <%# 現在のテーマ表示 %>
+        <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-blue-900">現在のテーマ</p>
+              <p class="text-xs text-blue-700 mt-1">デフォルトテーマを使用中</p>
+            </div>
+            <span class="inline-flex items-center px-3 py-1 bg-white text-blue-800 rounded-full text-sm font-medium border border-blue-200">
+              シンプル
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <%# ログアウトセクション %>
+      <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
+        <div class="flex justify-center">
+          <%= render 'shared/button',
+                button_text: t("mypage.account.logout"),
+                path: destroy_user_session_path,
+                variant: 'tertiary',
+                size: 'md',
+                button_to_method: :delete,
+                full_mobile: true,
+                extra_class: 'bg-gray-600 hover:bg-gray-700' %>
+        </div>
       </div>
     </div>
 
@@ -158,7 +242,7 @@
                          value="<%= event.title.presence || "イベント #{event.id}" %>"
                          maxlength="255">
                 </h3>
-                <div class="flex items-center gap-4 text-sm text-gray-600">
+                <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                   <span class="flex items-center gap-1">
                     <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "更新日アイコン" %>
                     <%= event.updated_at.strftime('%Y年%m月%d日 %H:%M') %>
@@ -167,6 +251,21 @@
                     <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "メンバー数アイコン" %>
                     <%= event.members_list.count %>人
                   </span>
+                  <%# 統計情報: シャッフル実行回数 %>
+                  <% group_count = event.group_history.count %>
+                  <% order_count = event.order_history.count %>
+                  <% role_count = event.role_history.count %>
+                  <% if group_count > 0 || order_count > 0 || role_count > 0 %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">
+                      グループ: <strong><%= group_count %></strong>回
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs">
+                      順番: <strong><%= order_count %></strong>回
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-xs">
+                      役割: <strong><%= role_count %></strong>回
+                    </span>
+                  <% end %>
                 </div>
               </div>
               <div class="flex justify-center sm:justify-end w-full sm:w-auto">
@@ -192,6 +291,13 @@
                 size: 'md',
                 full_mobile: true %>
         </div>
+
+        <%# ページネーション %>
+        <% if @pagy_events && @pagy_events.pages > 1 %>
+          <div class="flex justify-center mt-6">
+            <%= pagy_nav(@pagy_events, 'events') %>
+          </div>
+        <% end %>
       <% else %>
         <%# 空の状態 - 魅力的な表示 %>
         <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-16 text-center">
