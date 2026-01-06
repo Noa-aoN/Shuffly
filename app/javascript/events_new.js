@@ -892,6 +892,13 @@ const ShufflyApp = (function() {
       const text = getRawValue();
       // 履歴が空で現在の raw が空文字列の場合は履歴に追加しない
       if (shufflyHistory.length === 0 && text.trim() === "") return;
+      // グループ分けが実行されているかチェック（履歴情報 #1A などが含まれているか）
+      // これによりメンバー入力時の「未実施」状態が履歴に保存されるのを防ぐ
+      const hasGroupHistory = /#\d+[A-Z]/.test(text);
+      if (!hasGroupHistory) {
+        // グループ分けが実行されていない場合は履歴に追加しない
+        return;
+      }
       // 最後の履歴と同じ場合は追加しない
       if(currentHistoryIndex>=0) {
         const lastEntry = shufflyHistory[currentHistoryIndex];
@@ -1505,8 +1512,9 @@ const ShufflyApp = (function() {
       updateDisplayFromRaw();
     }
     updateParticipantCount();
-    // 変更: 初回 push は現在の raw が空でない場合のみ行う（空状態を履歴に残さない）
-    if(shufflyHistory.length === 0 && getRawValue().trim() !== "") pushToHistory('groups');
+    // 初期化時には履歴を作成しない（グループ分け実行時のみ履歴を保存）
+    // これにより「0回目（未実施）」が履歴として保存される問題を回避
+    // if(shufflyHistory.length === 0 && getRawValue().trim() !== "") pushToHistory('groups');
     switchResultTab('groups');
     switchSettingsTab('groups');
 
