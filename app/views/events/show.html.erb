@@ -358,7 +358,14 @@
     roles: { index: -1, history: [] }
   };
 
-  // Parse history and extract by type
+  // Actual execution counts (全体統計と同じカウント方法で計算された実際の回数)
+  const actualCounts = {
+    groups: 0,
+    order: 0,
+    roles: 0
+  };
+
+  // Parse history and extract by type (重複除外なし - 全ての実行を履歴として保持)
   function parseHistoryByType() {
     const history = Array.isArray(serverData.history) ? serverData.history : [];
 
@@ -501,14 +508,19 @@
     const prevBtn = document.getElementById('btn-prev-' + tab);
     const nextBtn = document.getElementById('btn-next-' + tab);
 
-    if (state.history.length === 0) {
+    // 履歴エントリー数を取得（重複除外なしの全履歴数）
+    const totalCount = state.history.length;
+
+    if (totalCount === 0) {
       idxEl.textContent = '未実施';
       prevBtn.disabled = true;
       nextBtn.disabled = true;
     } else {
-      idxEl.textContent = `${state.index + 1}/${state.history.length}回目`;
+      // 現在のインデックス（0始まり）を1始まりの回数に変換
+      const currentRound = state.index + 1;
+      idxEl.textContent = `${currentRound}/${totalCount}回目`;
       prevBtn.disabled = (state.index <= 0);
-      nextBtn.disabled = (state.index >= state.history.length - 1);
+      nextBtn.disabled = (state.index >= totalCount - 1);
     }
   }
 
@@ -674,56 +686,55 @@
   }
   // 履歴がない場合は何も表示しない
 
-  // Initialize history navigation
-  ['groups', 'order', 'roles'].forEach(tab => updateHistoryIndex(tab));
+  // Parse entry to extract name and history (同じロジックをevents_new.jsから移植)
+  function parseEntry(entry) {
+    const name = entry.split('#')[0].trim();
+    const hist = entry.match(/#\d+[A-Z]/g) || [];
+    return {name, history: hist};
+  }
 
-  // Update execution counts
+  // Get group round number from entries (events_new.jsと同じロジック)
+  function getGroupRound(entries, nextRound = false) {
+    let max = 0;
+    let found = false;
+    for(const e of entries) {
+      for(const h of e.history) {
+        const m = h.match(/^#(\d+)/);
+        if(m){
+          found = true;
+          const num = parseInt(m[1], 10);
+          if(num > max) max = num;
+        }
+      }
+    }
+    if(!found) return null;
+    return nextRound ? max + 1 : max;
+  }
+
+  // Update execution counts (historyState.history.lengthを使用して全履歴数をカウント)
   function updateExecutionCounts() {
     const groupsCountEl = document.getElementById('groups-count');
     const orderCountEl = document.getElementById('order-count');
     const rolesCountEl = document.getElementById('roles-count');
 
-    let groupsCount = 0, orderCount = 0, rolesCount = 0;
-
-    const history = Array.isArray(serverData.history) ? serverData.history : [];
-
-    history.forEach(entry => {
-      try {
-        const parsed = typeof entry === 'string' ? safeParse(entry) : entry;
-        if (parsed) {
-          // 新形式: typeフィールドで厳密に判断
-          if (parsed.type === 'groups') {
-            // dataフィールドがあり、有効なデータが含まれている場合のみカウント
-            if (parsed.data && (parsed.data.groups || (parsed.data.membersRaw && parsed.data.membersRaw.trim()))) {
-              groupsCount++;
-            }
-          } else if (parsed.type === 'order') {
-            // dataフィールドがあり、有効なデータが含まれている場合のみカウント
-            if (parsed.data && (parsed.data.result || parsed.data.order)) {
-              orderCount++;
-            }
-          } else if (parsed.type === 'roles') {
-            // dataフィールドがあり、有効なデータが含まれている場合のみカウント
-            if (parsed.data && (parsed.data.assignments || parsed.data.settings)) {
-              rolesCount++;
-            }
-          } else {
-            // 旧形式: typeがない場合は各フィールドの有無で判定
-            if (parsed.groups && !parsed.order && !parsed.settings) groupsCount++;
-            if (parsed.order && !parsed.groups && !parsed.settings) orderCount++;
-            if (parsed.settings && !parsed.groups && !parsed.order) rolesCount++;
-          }
-        }
-      } catch(e) {
-        console.error('Failed to parse history entry for count:', e, entry);
-      }
-    });
+    // historyStateから履歴エントリー数を取得（重複除外なしの全履歴数）
+    const groupsCount = historyState.groups.history.length;
+    const orderCount = historyState.order.history.length;
+    const rolesCount = historyState.roles.history.length;
 
     if (groupsCountEl) groupsCountEl.textContent = groupsCount + '回';
     if (orderCountEl) orderCountEl.textContent = orderCount + '回';
     if (rolesCountEl) rolesCountEl.textContent = rolesCount + '回';
+
+    // 計算した回数をグローバル変数に保存
+    actualCounts.groups = groupsCount;
+    actualCounts.order = orderCount;
+    actualCounts.roles = rolesCount;
   }
   updateExecutionCounts();
+
+  // Initialize history navigation (actualCountsが計算された後に実行)
+  ['groups', 'order', 'roles'].forEach(tab => updateHistoryIndex(tab));
 
   // Copy function with toast notification
   function copyToClipboard(text, successMsg) {

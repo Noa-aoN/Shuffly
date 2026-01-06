@@ -39,6 +39,16 @@
               icon: 'icons/format_list_numbered_24dp_1F1F1F.svg',
               icon_class: 'inline-block' %>
         <%= render 'shared/button',
+              button_text: 'テキスト/CSVから入力',
+              path: '#',
+              variant: 'tertiary',
+              size: 'sm',
+              full_mobile: true,
+              extra_class: 'w-full sm:place-items-center',
+              id: 'btn-import-file',
+              icon: 'icons/upload_file_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+        <%= render 'shared/button',
               button_text: t("member_lists.form.clear_button"),
               path: '#',
               variant: 'tertiary',
@@ -47,27 +57,21 @@
               extra_class: 'w-full sm:place-items-center',
               id: 'btn-clear-members',
               data_action: 'click->members-input#clear',
-              icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-              icon_class: 'inline-block' %>
-        <%= render 'shared/button',
-              button_text: t("member_lists.form.count_button"),
-              path: '#',
-              variant: 'secondary',
-              size: 'sm',
-              full_mobile: true,
-              extra_class: 'w-full sm:place-items-center',
-              id: 'btn-count-members',
-              data_action: 'click->members-input#count',
-              icon: 'icons/patient_list_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
               icon_class: 'inline-block' %>
       </div>
-      <p id="members-count" class="text-sm text-gray-600 mt-2"></p>
+      <input id="import-file-input" type="file" accept=".txt,.csv" class="hidden">
+
+      <%# 人数表示インジケーター %>
+      <div id="members-count" class="text-base text-yellow-800 mt-3 mb-2 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+        現在のメンバー数：<span class="font-bold">未入力</span>
+      </div>
     </div>
 
     <%# アクションボタン %>
     <% if member_list.persisted? %>
       <%# 編集時: マイページに戻る・更新・削除をgridで並べる %>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <%= render 'shared/button',
               button_text: 'マイページに戻る',
               path: mypage_path(tab: 'member_lists'),
@@ -134,11 +138,11 @@
   function updateCount() {
     const text = membersInput.value.trim();
     if (!text) {
-      countDisplay.textContent = '';
+      countDisplay.innerHTML = '現在のメンバー数：<span class="font-bold">未入力</span>';
       return;
     }
     const members = text.split('\n').filter(m => m.trim());
-    countDisplay.textContent = <%= raw t("member_lists.form.members_count", count: "__COUNT__").to_json %>.replace("__COUNT__", members.length);
+    countDisplay.innerHTML = `現在のメンバー数：<span class="font-bold">${members.length}人</span>`;
   }
 
   function parseMembers() {
@@ -173,23 +177,41 @@
     });
   }
 
+  // Import from file
+  const btnImport = document.getElementById('btn-import-file');
+  const fileInput = document.getElementById('import-file-input');
+  if (btnImport && fileInput) {
+    btnImport.addEventListener('click', function(e){
+      e.preventDefault();
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function(e){
+      const file = e.target.files ? e.target.files[0] : null;
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        const text = ev.target.result;
+        const current = membersInput.value.trim();
+        const merged = (current ? current + "\n" : "") + text.replace(/\r/g, '').trim();
+        membersInput.value = merged;
+        updateCount();
+      };
+      reader.readAsText(file, 'utf-8');
+      fileInput.value = '';
+    });
+  }
+
   // Clear members
   const btnClear = document.getElementById('btn-clear-members');
   if (btnClear) {
     btnClear.addEventListener('click', function(e){
       e.preventDefault();
-      membersInput.value = '';
-      updateCount();
-    });
-  }
-
-  // Count members
-  const btnCount = document.getElementById('btn-count-members');
-  if (btnCount) {
-    btnCount.addEventListener('click', function(e){
-      e.preventDefault();
-      const members = parseMembers();
-      alert(<%= raw t("member_lists.form.count_alert", count: "__COUNT__").to_json %>.replace("__COUNT__", members.length));
+      if (window.confirm('メンバーリストをクリアしてもよろしいですか？')) {
+        membersInput.value = '';
+        updateCount();
+      }
     });
   }
 
