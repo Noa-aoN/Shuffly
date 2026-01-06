@@ -1,0 +1,224 @@
+<%# メンバーリストフォームパーシャル %>
+
+<div class="bg-white rounded-xl shadow-sm p-6">
+  <%= form_with(model: member_list, local: true, class: "space-y-6") do |f| %>
+    <%= render "shared/error_messages", resource: member_list %>
+
+    <%# メンバーリスト名 %>
+    <div>
+      <%= f.label :name, class: "block text-sm font-medium text-gray-700" do %>
+        <%= t("member_lists.form.name_label") %>
+        <span class="text-red-500 ml-1">*</span>
+      <% end %>
+      <%= f.text_field :name,
+            class: "mt-1 w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition",
+            placeholder: t("member_lists.form.name_placeholder") %>
+    </div>
+
+    <%# メンバー一覧 %>
+    <div>
+      <%= f.label :members_text, t("member_lists.form.members_label"), class: "block text-sm font-medium text-gray-700" %>
+      <p class="text-xs text-gray-500 mb-2"><%= t("member_lists.form.members_hint") %></p>
+      <%= f.text_area :members_text,
+            rows: 10,
+            class: "w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition font-mono text-sm",
+            placeholder: t("member_lists.form.members_placeholder"),
+            id: "members-input" %>
+
+      <%# 補助ボタン %>
+      <div class="mt-2 grid grid-cols-3 gap-2">
+        <%= render 'shared/button',
+              button_text: t("member_lists.form.sample_button"),
+              path: '#',
+              variant: 'tertiary',
+              size: 'sm',
+              full_mobile: true,
+              extra_class: 'w-full sm:place-items-center',
+              id: 'btn-sample-members',
+              data_action: 'click->members-input#sample',
+              icon: 'icons/format_list_numbered_24dp_1F1F1F.svg',
+              icon_class: 'inline-block' %>
+        <%= render 'shared/button',
+              button_text: 'テキスト/CSVから入力',
+              path: '#',
+              variant: 'tertiary',
+              size: 'sm',
+              full_mobile: true,
+              extra_class: 'w-full sm:place-items-center',
+              id: 'btn-import-file',
+              icon: 'icons/upload_file_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+        <%= render 'shared/button',
+              button_text: t("member_lists.form.clear_button"),
+              path: '#',
+              variant: 'tertiary',
+              size: 'sm',
+              full_mobile: true,
+              extra_class: 'w-full sm:place-items-center',
+              id: 'btn-clear-members',
+              data_action: 'click->members-input#clear',
+              icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
+      <input id="import-file-input" type="file" accept=".txt,.csv" class="hidden">
+
+      <%# 人数表示インジケーター %>
+      <div id="members-count" class="text-base text-yellow-800 mt-3 mb-2 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+        現在のメンバー数：<span class="font-bold">未入力</span>
+      </div>
+    </div>
+
+    <%# アクションボタン %>
+    <% if member_list.persisted? %>
+      <%# 編集時: マイページに戻る・更新・削除をgridで並べる %>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <%= render 'shared/button',
+              button_text: 'マイページに戻る',
+              path: mypage_path(tab: 'member_lists'),
+              variant: 'secondary',
+              size: 'md',
+              full_mobile: true,
+              extra_class: 'w-full sm:place-items-center',
+              icon: 'icons/keyboard_return_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+        <%= render 'shared/button',
+              f: f,
+              button_text: '更新する',
+              variant: 'primary',
+              size: 'md',
+              full_mobile: true,
+              extra_class: 'w-full sm:place-items-center',
+              icon: 'icons/save_24dp_1F1F1F.svg',
+              icon_class: 'inline-block' %>
+        <%= render 'shared/button',
+              button_text: '削除する',
+              path: member_list_path(member_list),
+              variant: 'danger',
+              size: 'md',
+              button_to_method: :delete,
+              confirm_message: "#{member_list.name}を削除してもよろしいですか？",
+              full_mobile: true,
+              extra_class: 'w-full sm:place-items-center bg-red-600 hover:bg-red-700',
+              icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
+    <% else %>
+      <%# 新規作成時 %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-4">
+        <%= render 'shared/button',
+              button_text: 'マイページに戻る',
+              path: mypage_path(tab: 'member_lists'),
+              variant: 'secondary',
+              size: 'md',
+              full_mobile: true,
+              extra_class: 'w-full sm:place-items-center',
+              icon: 'icons/keyboard_return_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+        <%= render 'shared/button',
+              f: f,
+              button_text: '保存',
+              variant: 'primary',
+              size: 'md',
+              full_mobile: true,
+              extra_class: 'w-full sm:place-items-center',
+              icon: 'icons/play_arrow_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
+    <% end %>
+  <% end %>
+</div>
+
+<script>
+(function(){
+  const membersInput = document.getElementById('members-input');
+  const countDisplay = document.getElementById('members-count');
+
+  if (!membersInput || !countDisplay) return;
+
+  function updateCount() {
+    const text = membersInput.value.trim();
+    if (!text) {
+      countDisplay.innerHTML = '現在のメンバー数：<span class="font-bold">未入力</span>';
+      return;
+    }
+    const members = text.split('\n').filter(m => m.trim());
+    countDisplay.innerHTML = `現在のメンバー数：<span class="font-bold">${members.length}人</span>`;
+  }
+
+  function parseMembers() {
+    const text = membersInput.value.trim();
+    if (!text) return [];
+    return text.split('\n').filter(m => m.trim()).map(m => m.trim());
+  }
+
+  function formatMembers(members) {
+    return members.join('\n');
+  }
+
+  // Sample members
+  const btnSample = document.getElementById('btn-sample-members');
+  if (btnSample) {
+    btnSample.addEventListener('click', function(e){
+      e.preventDefault();
+      const sample = [
+        "田中 太郎",
+        "山田 花子",
+        "佐藤 次郎",
+        "鈴木 三郎",
+        "高橋 四郎",
+        "伊藤 五郎",
+        "渡辺 六郎",
+        "中村 七郎",
+        "小林 八郎",
+        "加藤 九郎"
+      ];
+      membersInput.value = formatMembers(sample);
+      updateCount();
+    });
+  }
+
+  // Import from file
+  const btnImport = document.getElementById('btn-import-file');
+  const fileInput = document.getElementById('import-file-input');
+  if (btnImport && fileInput) {
+    btnImport.addEventListener('click', function(e){
+      e.preventDefault();
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function(e){
+      const file = e.target.files ? e.target.files[0] : null;
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        const text = ev.target.result;
+        const current = membersInput.value.trim();
+        const merged = (current ? current + "\n" : "") + text.replace(/\r/g, '').trim();
+        membersInput.value = merged;
+        updateCount();
+      };
+      reader.readAsText(file, 'utf-8');
+      fileInput.value = '';
+    });
+  }
+
+  // Clear members
+  const btnClear = document.getElementById('btn-clear-members');
+  if (btnClear) {
+    btnClear.addEventListener('click', function(e){
+      e.preventDefault();
+      if (window.confirm('メンバーリストをクリアしてもよろしいですか？')) {
+        membersInput.value = '';
+        updateCount();
+      }
+    });
+  }
+
+  // Update count on input
+  membersInput.addEventListener('input', updateCount);
+
+  // Initial count
+  updateCount();
+})();
+</script>

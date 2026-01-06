@@ -1,0 +1,61 @@
+<!-- ============================================ -->
+<!-- 機能カードパーシャル                        -->
+<!-- トップページで使用する機能説明カード        -->
+<!-- ============================================ -->
+
+<%
+  # ========================================
+  # パラメータ設定
+  # ========================================
+  # - icon: アイコンパス（オプション）
+  # - icon_bg: アイコン背景色（デフォルト: 'bg-white'）
+  # - card_bg: カード背景色（デフォルト: 'bg-gray-50'）
+  # - title: タイトル
+  # - description: 説明（HTMLセーフ）
+  # - number: 番号（オプション、使い方カードの場合）
+  # - wrapper: ラッパー要素が必要か（デフォルト: false）
+  # - text_center: テキスト中央揃え（デフォルト: true）
+
+  icon ||= nil
+  icon_bg ||= 'bg-white'
+  card_bg ||= 'bg-gray-50'
+  number ||= nil
+  wrapper ||= false
+  text_center ||= true
+%>
+
+<!-- ========================================== -->
+<!-- ラッパー開始（オプション）                 -->
+<!-- ========================================== -->
+<% if wrapper %>
+  <div>
+<% end %>
+
+    <!-- ========================================== -->
+    <!-- カード本体                                 -->
+    <!-- ========================================== -->
+    <div class="index-feature-card p-6 <%= card_bg %> rounded-xl shadow-sm flex flex-col items-center <%= 'text-center' if text_center %>">
+      <!-- 番号またはアイコン表示 -->
+      <% if number %>
+        <!-- 番号表示（使い方カード用） -->
+        <div class="w-15 h-15 bg-blue-500 text-white rounded-full flex items-center justify-center mb-4 font-bold text-xl"><%= number %></div>
+      <% elsif icon %>
+        <!-- アイコン表示 -->
+        <div class="w-16 h-16 <%= icon_bg %> rounded-full flex items-center justify-center mb-4">
+          <%= image_tag icon, width: 24, height: 24, alt: "#{title}アイコン" %>
+        </div>
+      <% end %>
+
+      <!-- タイトル -->
+      <h4 class="font-semibold mb-2"><%= title %></h4>
+
+      <!-- 説明文 -->
+      <p class="text-sm text-gray-600"><%= raw description %></p>
+    </div>
+
+<!-- ========================================== -->
+<!-- ラッパー終了（オプション）                 -->
+<!-- ========================================== -->
+<% if wrapper %>
+  </div>
+<% end %>

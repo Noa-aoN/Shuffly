@@ -20,6 +20,9 @@ Rails.application.routes.draw do
   # マイページ
   get "mypage", to: "users#mypage", as: :mypage
 
+  # メンバーリスト管理
+  resources :member_lists
+
   # ---- 以下、システム関連 ----
   get "up" => "rails/health#show", as: :rails_health_check
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker

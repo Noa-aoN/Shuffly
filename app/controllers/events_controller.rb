@@ -1,5 +1,5 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: [ :show, :edit, :update ]
+  before_action :set_event, only: [ :show, :edit, :update, :destroy ]
   skip_before_action :set_event, only: [ :presentation ]
 
   def index
@@ -8,12 +8,46 @@ class EventsController < ApplicationController
 
   def new
     @event = Event.new
+    @update_mode = false  # 更新モードフラグの初期化
+
+    # 「続きからシャッフル」機能：既存イベントのデータをロード
+    if params[:load_event_id].present?
+      @load_event = Event.find_by(id: params[:load_event_id])
+      if @load_event
+        # 更新モード: 既存のイベントをそのまま使用
+        @event = @load_event
+        @update_mode = true  # 更新モードをオンにする
+
+        # JavaScriptで使用するためのデータ
+        @load_event_data = {
+          members_json: @load_event.members_json,
+          member_results_json: @load_event.member_results_json,
+          member_order_json: @load_event.member_order_json,
+          setting_json: @load_event.setting_json,
+          history_json: @load_event.history_json,
+          memo: @load_event.memo,  # メモを追加
+          title: @load_event.title,
+          original_id: @load_event.id,  # 元のイベントID
+          created_at: @load_event.created_at.strftime('%Y/%m/%d %H:%M')
+        }
+      end
+    end
   end
 
   def create
+    # 更新モードの場合はupdateアクションに処理を委譲
+    if params[:update_mode] == 'true'
+      update
+      return
+    end
+
+    # 新規作成（既存の処理）
     @event = current_user ? current_user.events.build(event_params) : Event.new(event_params)
 
     if @event.save
+      # 新規作成後もupdated_atを明示的に更新
+      @event.touch
+
       redirect_to @event, notice: "イベントを保存しました"
     else
       render :new
@@ -32,15 +66,38 @@ class EventsController < ApplicationController
   def edit; end
 
   def update
+    # デバッグログ
+    Rails.logger.info "=== DEBUG: event_params = #{event_params.inspect}"
+    Rails.logger.info "=== DEBUG: @event.memo before = #{@event.memo.inspect}"
+
     if @event.update(event_params)
-      redirect_to @event, notice: "イベントを更新しました"
+      # updated_atを明示的に更新
+      @event.touch
+
+      Rails.logger.info "=== DEBUG: @event.memo after = #{@event.memo.inspect}"
+      Rails.logger.info "=== DEBUG: update success"
+
+      respond_to do |format|
+        format.html { redirect_to @event, notice: "イベントを更新しました" }
+        format.json { render json: { success: true, message: "イベントを更新しました" }, status: :ok }
+      end
     else
-      render :edit
+      Rails.logger.info "=== DEBUG: errors = #{@event.errors.full_messages.inspect}"
+
+      respond_to do |format|
+        format.html { render :edit }
+        format.json { render json: { success: false, errors: @event.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
   def presentation
     render :presentation
+  end
+
+  def destroy
+    @event.destroy
+    redirect_to mypage_path(tab: 'events'), notice: "イベントを削除しました"
   end
 
   private
@@ -67,6 +124,6 @@ class EventsController < ApplicationController
   end
 
   def event_params
-    params.require(:event).permit(:title, :members_json, :member_results_json, :member_order_json, :setting_json, :history_json)
+    params.require(:event).permit(:title, :members_json, :member_results_json, :member_order_json, :setting_json, :history_json, :memo)
   end
 end

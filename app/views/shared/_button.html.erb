@@ -8,6 +8,8 @@
 <% extra_class = local_assigns.fetch(:extra_class, '') %>
 <% id = local_assigns.key?(:id) ? local_assigns[:id] : nil %>
 <% data_action = local_assigns.key?(:data_action) ? local_assigns[:data_action] : nil %>
+<% button_to_method = local_assigns.key?(:button_to_method) ? local_assigns[:button_to_method] : nil %>
+<% confirm_message = local_assigns.key?(:confirm_message) ? local_assigns[:confirm_message] : nil %>
 
 <%# 新規オプション: icon (asset パス or URL), icon_class, icon_alt, 既に構築済みの icon_html があれば優先する %>
 <% icon_html = local_assigns.fetch(:icon_html, nil) %>
@@ -58,6 +60,23 @@
     <% end %>
     <% opts.delete_if { |_, v| v.nil? } %>
     <%= f.submit button_text, opts %>
+  <% elsif button_to_method.present? %>
+    <%# button_to for non-GET requests (delete, post, etc.) %>
+    <% button_opts = { class: classes, method: button_to_method, id: id } %>
+    <% button_opts[:data] = { turbo: false } %>
+    <% if confirm_message.present? %>
+      <% button_opts[:data][:confirm] = confirm_message %>
+    <% end %>
+    <% button_opts.delete_if { |_, v| v.nil? || v == {} } %>
+    <%# ブロック形式でiconを含むHTMLを渡す %>
+    <%= button_to path, button_opts do %>
+      <% separator = icon_html.present? ? "　" : '' %>
+      <% if icon_html.present? && icon_right %>
+        <%= raw(content_tag(:span, button_text, class: 'font-semibold') + separator + icon_html.to_s) %>
+      <% else %>
+        <%= raw(icon_html.to_s + separator + content_tag(:span, button_text, class: 'font-semibold')) %>
+      <% end %>
+    <% end %>
   <% else %>
     <% link_opts = { class: classes, role: 'button', id: id, 'aria-disabled' => disabled ? 'true' : nil } %>
     <% if data_action.present? %>
@@ -71,6 +90,6 @@
     <% else %>
       <% inner = (icon_html.to_s + separator + content_tag(:span, button_text, class: 'font-semibold')).html_safe %>
     <% end %>
-    <%= link_to inner, path, link_opts %>
+    <%= link_to raw(inner), path, link_opts %>
   <% end %>
 </div>

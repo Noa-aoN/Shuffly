@@ -1,1 +1,57 @@
 @import "tailwindcss";
+
+/* ========================================
+   フォーカス状態の視覚化（アクセシビリティ向上）
+   ========================================
+
+   目的：
+   - キーボードでページを操作するユーザー（視覚障害者、マウスを使わないユーザー等）が
+     現在どの要素にフォーカスしているか明確にわかるようにする
+   - マウスユーザーには不要な視覚的ノイズを減らす
+
+   動作：
+   1. キーボード（Tab キー）でフォーカス移動時 → 青いリングと影を表示
+   2. マウスでクリック時 → リングを表示しない（視覚的にスッキリ）
+   ======================================== */
+
+/*
+   基本のフォーカススタイル
+   - すべてのインタラクティブ要素に適用
+   - 青色（#3b82f6 = Tailwind の blue-500）のアウトラインを表示
+*/
+input:focus,
+textarea:focus,
+select:focus,
+button:focus,
+a:focus {
+  outline: 2px solid #3b82f6;  /* 2px幅の青いアウトライン */
+  outline-offset: 2px;          /* 要素から2px離して表示 */
+}
+
+/*
+   マウスクリック時はフォーカスリングを非表示
+   - :focus-visible は「キーボードフォーカス」のみを検出する疑似クラス
+   - :not(:focus-visible) でマウスクリックを除外
+*/
+input:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;  /* マウスクリック時はアウトラインを消す */
+}
+
+/*
+   キーボードナビゲーション時は明確なフォーカスリングを表示
+   - :focus-visible は Tab キーでフォーカスした時のみ適用される
+   - アウトラインに加えて、淡い影（box-shadow）も追加して視認性を向上
+*/
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #3b82f6;                      /* 青いアウトライン */
+  outline-offset: 2px;                              /* 要素から2px離す */
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);   /* 淡い青の影（10%透明度） */
+}

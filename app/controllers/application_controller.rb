@@ -22,6 +22,11 @@ class ApplicationController < ActionController::Base
     stored_location_for(resource) || mypage_path
   end
 
+  # option: サインアウト後の遷移先
+  def after_sign_out_path_for(resource_or_scope)
+    root_path
+  end
+
   private
 
   def set_default_meta

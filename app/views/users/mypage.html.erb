@@ -1,10 +1,421 @@
-<h1 class="text-2xl font-bold mb-4">マイページ</h1>
+<%# マイページ %>
 
-<p>ようこそ、<%= @user.name || @user.email %></p>
+<div class="max-w-6xl mx-auto px-6 py-6 md:py-8">
+  <%# ユーザー情報ヘッダー %>
+  <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+          <%= image_tag 'icons/person_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 32, height: 32, class: "text-blue-600", alt: "ユーザーアイコン" %>
+        </div>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900"><%= @user.name.presence || @user.email.split('@').first %></h1>
+          <p class="text-gray-600 text-sm"><%= @user.email %></p>
+        </div>
+      </div>
+      <%# 統計情報 %>
+      <div class="flex flex-col sm:items-end gap-2 text-sm">
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full">
+          <%= image_tag 'icons/event_note_24dp_1F1F1F.svg', width: 16, height: 16, class: "text-blue-600", alt: "" %>
+          <%= @events.count %>件のイベント
+        </span>
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-50 text-green-700 rounded-full">
+          <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, class: "text-green-600", alt: "" %>
+          <%= @member_lists.count %>件のメンバーリスト
+        </span>
+      </div>
+    </div>
+  </div>
 
-<h2 class="mt-6 text-lg font-semibold">あなたの作成したイベント</h2>
-<ul>
-  <% @events.each do |ev| %>
-    <li><%= link_to ev.title.presence || "イベント #{ev.id}", event_path(ev) %> — <%= ev.created_at.to_date %></li>
+  <%# タブナビゲーション - 統合パーシャル使用 %>
+  <div class="mb-6">
+    <%= render 'shared/tabs',
+          tabs: [
+            { id: 'events', text: t("mypage.tabs.events"), icon: 'icons/event_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'events') },
+            { id: 'member_lists', text: t("mypage.tabs.member_lists"), icon: 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'member_lists') },
+            { id: 'account', text: t("mypage.tabs.account"), icon: 'icons/settings_account_box_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'account') }
+          ],
+          active_tab: (params[:tab] || 'events') %>
+  </div>
+
+  <%# タブコンテンツ %>
+  <% case params[:tab]
+     when 'member_lists' %>
+    <div class="space-y-4">
+      <% if @member_lists && @member_lists.any? %>
+        <%# メンバーリストカード一覧 %>
+        <% @member_lists.each do |member_list| %>
+          <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md transition">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="grow">
+                <h3 class="font-semibold text-lg text-gray-900 mb-2">
+                  <%= member_list.name %>
+                </h3>
+                <div class="flex items-center gap-4 text-sm text-gray-600">
+                  <span class="flex items-center gap-1">
+                    <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "メンバー数アイコン" %>
+                    <%= member_list.members.count %>人
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "作成日アイコン" %>
+                    <%= member_list.created_at.strftime('%Y年%m月%d日') %>
+                  </span>
+                </div>
+              </div>
+              <div class="flex justify-center sm:justify-end w-full sm:w-auto">
+                <%= render 'shared/button',
+                      button_text: '編集する',
+                      path: edit_member_list_path(member_list),
+                      variant: 'primary',
+                      size: 'md',
+                      full_mobile: true,
+                      icon: 'icons/edit_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                      icon_class: 'inline-block' %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <%# 新規作成ボタン（中央配置） %>
+        <div class="flex justify-center pt-4 w-full sm:w-auto">
+          <%= render 'shared/button',
+                button_text: t("mypage.member_lists.create_new"),
+                path: new_member_list_path,
+                variant: 'primary',
+                size: 'md',
+                full_mobile: true %>
+        </div>
+      <% else %>
+        <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-12 text-center">
+          <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 64, height: 64, class: "mx-auto text-gray-300 mb-4", alt: "空のメンバーリストアイコン" %>
+          <p class="text-gray-600 mb-6"><%= t("mypage.member_lists.empty") %></p>
+          <div class="flex justify-center w-full">
+            <%= render 'shared/button',
+                  button_text: t("mypage.member_lists.create_new"),
+                  path: new_member_list_path,
+                  variant: 'primary',
+                  size: 'lg',
+                  full_mobile: true %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+  <% when 'account' %>
+    <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
+      <h2 class="text-xl font-bold mb-6"><%= t("mypage.account.title") %></h2>
+
+      <div class="space-y-4">
+        <div class="flex items-center justify-between py-3 border-b border-gray-100">
+          <div>
+            <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.email") %></p>
+            <p class="text-sm text-gray-600"><%= @user.email %></p>
+          </div>
+          <%= link_to t("mypage.account.edit_account"), edit_user_registration_path, class: "text-blue-600 hover:underline text-sm" %>
+        </div>
+
+        <% if @user.name.present? %>
+          <div class="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.name") %></p>
+              <p class="text-sm text-gray-600"><%= @user.name %></p>
+            </div>
+            <%= link_to t("mypage.account.edit_account"), edit_user_registration_path, class: "text-blue-600 hover:underline text-sm" %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-gray-200 flex justify-center">
+        <%= render 'shared/button',
+              button_text: t("mypage.account.logout"),
+              path: destroy_user_session_path,
+              variant: 'tertiary',
+              size: 'md',
+              button_to_method: :delete,
+              full_mobile: true,
+              extra_class: 'bg-gray-600 hover:bg-gray-700' %>
+      </div>
+    </div>
+
+  <% else # events (default) %>
+    <%# イベントカード一覧コンテナ %>
+    <div class="space-y-4">
+      <% if @events.any? %>
+        <% @events.each do |event| %>
+          <div class="event-card bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md transition">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="grow">
+                <h3 class="font-semibold text-lg text-gray-900 mb-2 group relative">
+                  <span class="event-title cursor-pointer hover:text-blue-600 active:text-blue-700 transition flex items-center gap-2 touch-manipulation"
+                        data-event-id="<%= event.id %>"
+                        data-event-title="<%= event.title.presence || "イベント #{event.id}" %>">
+                    <%= event.title.presence || "イベント #{event.id}" %>
+                    <%= image_tag 'icons/edit_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, class: "inline opacity-0 group-hover:opacity-100 md:group-hover:opacity-100 transition", alt: "編集アイコン" %>
+                  </span>
+                  <input type="text"
+                         class="event-title-input hidden w-full border-2 border-blue-500 rounded-lg px-3 py-2 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 touch-manipulation"
+                         data-event-id="<%= event.id %>"
+                         value="<%= event.title.presence || "イベント #{event.id}" %>"
+                         maxlength="255">
+                </h3>
+                <div class="flex items-center gap-4 text-sm text-gray-600">
+                  <span class="flex items-center gap-1">
+                    <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "更新日アイコン" %>
+                    <%= event.updated_at.strftime('%Y年%m月%d日 %H:%M') %>
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "メンバー数アイコン" %>
+                    <%= event.members.count %>人
+                  </span>
+                </div>
+              </div>
+              <div class="flex justify-center sm:justify-end w-full sm:w-auto">
+                <%= render 'shared/button',
+                      button_text: t("mypage.events.view_details"),
+                      path: event_path(event),
+                      variant: 'primary',
+                      size: 'md',
+                      full_mobile: true,
+                      icon: 'icons/event_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                      icon_class: 'inline-block' %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <%# 新規作成ボタン（中央配置） %>
+        <div class="flex justify-center pt-4 w-full sm:w-auto">
+          <%= render 'shared/button',
+                button_text: t("mypage.events.create_new"),
+                path: new_event_path,
+                variant: 'primary',
+                size: 'md',
+                full_mobile: true %>
+        </div>
+      <% else %>
+        <%# 空の状態 - 魅力的な表示 %>
+        <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-16 text-center">
+          <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <%= image_tag 'icons/event_note_24dp_1F1F1F.svg', width: 48, height: 48, class: "text-blue-400", alt: "イベントアイコン" %>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">イベントがありません</h3>
+          <p class="text-gray-600 mb-6 max-w-md mx-auto">
+            最初のイベントを作成して、メンバーをシャッフルしましょう。<br>
+            グループ分け、順番決め、役割分担などができます。
+          </p>
+          <div class="flex justify-center w-full">
+            <%= render 'shared/button',
+                  button_text: t("mypage.events.create_new"),
+                  path: new_event_path,
+                  variant: 'primary',
+                  size: 'lg',
+                  full_mobile: true,
+                  icon: 'icons/play_arrow_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                  icon_class: 'inline-block' %>
+          </div>
+        </div>
+      <% end %>
+    </div>
   <% end %>
-</ul>
+</div>
+
+<%# イベントタイトル編集用JavaScript %>
+<% content_for :javascript do %>
+<script>
+(function(){
+  // Toast notification function
+  function showToast(message) {
+    const toast = document.getElementById('toast-mypage');
+    if (!toast) {
+      const newToast = document.createElement('div');
+      newToast.id = 'toast-mypage';
+      newToast.className = 'fixed top-9 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 z-50';
+      newToast.style.top = '35px';
+      document.body.appendChild(newToast);
+      newToast.addEventListener('transitionend', function() {
+        if (newToast.classList.contains('opacity-0')) {
+          newToast.remove();
+        }
+      });
+    }
+
+    const toastEl = document.getElementById('toast-mypage');
+    toastEl.textContent = message;
+    toastEl.classList.remove('opacity-0');
+    toastEl.style.zIndex = '1000';
+
+    setTimeout(() => {
+      toastEl.classList.add('opacity-0');
+    }, 2000);
+  }
+
+  // イベントタイトルのインライン編集機能（モバイル最適化）
+  document.querySelectorAll('.event-title').forEach(titleSpan => {
+    // タッチデバイスとマウスの両方に対応
+    const startEdit = function(e) {
+      e.preventDefault();
+      const eventId = this.dataset.eventId;
+      const input = document.querySelector(`.event-title-input[data-event-id="${eventId}"]`);
+
+      // spanを非表示、inputを表示
+      this.classList.add('hidden');
+      input.classList.remove('hidden');
+
+      // モバイルでのフォーカスを改善
+      setTimeout(() => {
+        input.focus();
+        // テキスト選択（モバイルでも動作）
+        if (input.setSelectionRange) {
+          input.setSelectionRange(0, input.value.length);
+        } else {
+          input.select();
+        }
+      }, 100);
+    };
+
+    // クリックイベント（デスクトップ）
+    titleSpan.addEventListener('click', startEdit);
+
+    // タッチイベント（モバイル）- ダブルタップを防ぐ
+    let touchTimeout;
+    titleSpan.addEventListener('touchend', function(e) {
+      if (touchTimeout) {
+        clearTimeout(touchTimeout);
+        touchTimeout = null;
+        startEdit.call(this, e);
+      } else {
+        touchTimeout = setTimeout(() => {
+          touchTimeout = null;
+        }, 300);
+      }
+    });
+  });
+
+  // 入力フィールドの処理
+  document.querySelectorAll('.event-title-input').forEach(input => {
+    // Enterキーで保存
+    input.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveEventTitle(this);
+      }
+    });
+
+    // Escキーでキャンセル
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        cancelEdit(this);
+      }
+    });
+
+    // フォーカスが外れたら保存
+    input.addEventListener('blur', function() {
+      // 少し遅延させて、Escapeキーのキャンセル処理を優先
+      setTimeout(() => {
+        if (!this.classList.contains('hidden')) {
+          saveEventTitle(this);
+        }
+      }, 100);
+    });
+  });
+
+  function cancelEdit(input) {
+    const eventId = input.dataset.eventId;
+    const titleSpan = document.querySelector(`.event-title[data-event-id="${eventId}"]`);
+
+    // 元の値に戻す
+    input.value = titleSpan.dataset.eventTitle;
+
+    // inputを非表示、spanを表示
+    input.classList.add('hidden');
+    titleSpan.classList.remove('hidden');
+  }
+
+  function saveEventTitle(input) {
+    const eventId = input.dataset.eventId;
+    const newTitle = input.value.trim();
+    const titleSpan = document.querySelector(`.event-title[data-event-id="${eventId}"]`);
+    const oldTitle = titleSpan.dataset.eventTitle;
+
+    // 変更がない場合はキャンセル
+    if (newTitle === oldTitle) {
+      cancelEdit(input);
+      return;
+    }
+
+    // 空の場合はデフォルトタイトルを使用
+    const finalTitle = newTitle || `イベント ${eventId}`;
+
+    // 文字数制限チェック（255文字）
+    if (finalTitle.length > 255) {
+      alert('タイトルは255文字以内で入力してください');
+      cancelEdit(input);
+      return;
+    }
+
+    // サーバーに保存
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    const formData = new FormData();
+    formData.append('event[title]', finalTitle);
+
+    fetch(`/events/${eventId}`, {
+      method: 'PATCH',
+      headers: {
+        'X-CSRF-Token': csrfToken,
+        'Accept': 'application/json'
+      },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // 成功: タイトルを更新
+        const textNode = Array.from(titleSpan.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
+        if (textNode) {
+          textNode.textContent = finalTitle + ' ';
+        }
+        titleSpan.dataset.eventTitle = finalTitle;
+        input.value = finalTitle;
+
+        // inputを非表示、spanを表示
+        input.classList.add('hidden');
+        titleSpan.classList.remove('hidden');
+
+        // 更新日時を更新（現在時刻を表示）
+        const now = new Date();
+        const dateStr = now.getFullYear() + '年' +
+                       String(now.getMonth() + 1).padStart(2, '0') + '月' +
+                       String(now.getDate()).padStart(2, '0') + '日 ' +
+                       String(now.getHours()).padStart(2, '0') + ':' +
+                       String(now.getMinutes()).padStart(2, '0');
+        const dateSpan = titleSpan.closest('.grow').querySelector('.flex.items-center.gap-4 span:first-child');
+        if (dateSpan) {
+          const textContent = dateSpan.textContent || dateSpan.innerText;
+          // アイコンの後のテキストのみを更新
+          const iconImg = dateSpan.querySelector('img');
+          if (iconImg) {
+            // テキストノードを探して更新
+            Array.from(dateSpan.childNodes).forEach(node => {
+              if (node.nodeType === Node.TEXT_NODE) {
+                node.textContent = dateStr;
+              }
+            });
+          }
+        }
+
+        showToast('タイトルを更新しました');
+      } else {
+        alert('保存に失敗しました: ' + (data.errors || '不明なエラー'));
+        cancelEdit(input);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('保存に失敗しました');
+      cancelEdit(input);
+    });
+  }
+})();
+</script>
+<% end %>
+<%= yield :javascript %>

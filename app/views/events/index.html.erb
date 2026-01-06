@@ -1,8 +1,17 @@
-<div class="min-h-screen pb-10">
+<!-- ============================================ -->
+<!-- トップページ（ランディングページ）          -->
+<!-- サービス紹介、機能説明、使い方ガイド        -->
+<!-- ============================================ -->
+<div class="events-index-page min-h-screen pb-10">
 
-  <!-- 背景アニメーションレイヤー -->
+  <!-- ========================================== -->
+  <!-- 背景アニメーションレイヤー                 -->
+  <!-- ========================================== -->
   <div class="pointer-events-none fixed inset-0 -z-10 bg-icons-animation"></div>
 
+  <!-- ========================================== -->
+  <!-- アニメーションスタイル定義                 -->
+  <!-- ========================================== -->
   <style>
     .bg-icons-animation {
       background-image: url("<%= asset_path 'icons/shuffle_24dp_1F1F1F.svg' %>");
@@ -10,85 +19,74 @@
       background-repeat: repeat;
       opacity: 0.06;
       animation:
-        moveRight 70s linear infinite,
-        diagonalFlip 6s ease-in-out infinite,
-        scatterEffect 60s ease-in-out infinite;
-      will-change: transform, background-position;
+        smoothFlow 40s linear infinite,
+        shuffleMoment 12s ease-in-out infinite;
+      will-change: background-position, transform;
     }
 
-    /* 基本移動を右方向に変更。途中で小さな乱れ（シャッフル）を入れる */
-    @keyframes moveRight {
+    /* 基本：滑らかに右方向へ流れる */
+    @keyframes smoothFlow {
       0% {
         background-position: 0 0;
       }
-      70% {
-        background-position: 2100px 0;
-      }
-      /* たまにシャッフルされるジャークを入れる（短いタイミングで位置が乱れる） */
-      78% {
-        background-position: 2150px -8px;
-      }
-      80% {
-        background-position: 2080px 6px;
-      }
-      82% {
-        background-position: 2220px -4px;
-      }
-      84% {
-        background-position: 2180px 3px;
-      }
       100% {
-        background-position: 3000px 0;
+        background-position: 2000px 0;
       }
     }
 
-    @keyframes diagonalFlip {
-      0%, 100% {
-        transform: translate(0, 0);
+    /* たまにシャッフル効果：位置と回転が一瞬ランダムに動く */
+    @keyframes shuffleMoment {
+      0%, 85% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
       }
-      50% {
-        transform: translate(-40px, 40px);
+      87% {
+        transform: translate(12px, -8px) rotate(2deg) scale(1.02);
       }
-    }
-
-    @keyframes scatterEffect {
-      0%, 92%, 100% {
-        transform: scale(1) rotate(0deg);
+      89% {
+        transform: translate(-10px, 6px) rotate(-1.5deg) scale(0.98);
       }
-      94% {
-        transform: scale(1.03) rotate(1.2deg) translate(8px, -12px);
+      91% {
+        transform: translate(8px, -5px) rotate(1deg) scale(1.01);
       }
-      96% {
-        transform: scale(0.985) rotate(-0.9deg) translate(-10px, 8px);
+      93% {
+        transform: translate(-6px, 4px) rotate(-0.5deg) scale(0.99);
+      }
+      95%, 100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
       }
     }
 
     /* 各カード（9枚想定）にマウスオーバーでピクッと動く動作を付与 */
-    /* 対象は p-6 + rounded-xl + shadow-sm を持つカード群（既存のカード要素に影響） */
-    .p-6.rounded-xl.shadow-sm {
+    /* スコープを限定してこのページ内のカードのみに適用 */
+    .events-index-page .index-feature-card {
       transition: transform 140ms cubic-bezier(.2,.8,.2,1), box-shadow 140ms;
       will-change: transform;
     }
-    .p-6.rounded-xl.shadow-sm:hover {
+    .events-index-page .index-feature-card:hover {
       transform: translateY(-6px) rotate(-0.6deg);
       box-shadow: 0 12px 28px rgba(10, 25, 47, 0.08);
     }
     /* 少し短い急なピクッのバリエーション（マウスエンター直後の感触向上） */
-    .p-6.rounded-xl.shadow-sm:active {
+    .events-index-page .index-feature-card:active {
       transform: translateY(-2px) rotate(-0.2deg);
       transition-duration: 80ms;
     }
   </style>
 
-  <!-- メインヒーロー：タイトルとCTA -->
+  <!-- ========================================== -->
+  <!-- メインヒーローセクション                   -->
+  <!-- ========================================== -->
   <section class="py-24 pb-30 w-full">
     <div class="max-w-5xl mx-auto text-center px-6 py-6 lg:py-14">
+      <!-- サービスタイトル -->
       <p class="text-xl font-semibold tracking-wide mb-1">シャッフリー</p>
       <h2 class="text-6xl font-extrabold mb-4 tracking-wide">Shuffly</h2>
       <p class="text-lg mb-8"><span class="bg-yellow-200 px-1"><b>グループ・順番・役割決め</b></span>が、簡単かつスピーディに。</p>
 
+      <!-- CTAボタングループ -->
       <div class="max-w-[650px] mx-auto">
         <div class="grid grid-cols-1 gap-2 mb-2 w-full sm:place-items-center">
+          <!-- すぐに使うボタン -->
           <%= render 'shared/button',
                 button_text: 'すぐに使う',
                 path: new_event_path,
@@ -97,13 +95,17 @@
                 extra_class: 'text-center px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600',
                 icon: 'icons/bolt_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                 icon_class: 'inline-block' %>
-          <% if user_signed_in? %>
-            <%= link_to "イベントを作成・確認する", new_event_path, class: "w-full text-center px-6 py-3 bg-white border rounded-xl text-blue-600 hover:bg-gray-50" %>
 
-            <div class="hidden sm:flex items-center gap-2 sm:ml-2">
-              <%= link_to "マイページ", mypage_path, class: "px-4 py-2 bg-gray-100 rounded-xl text-sm text-gray-700 hover:bg-gray-200" %>
-              <%= link_to "ログアウト", destroy_user_session_path, method: :delete, data: { confirm: "ログアウトしますか？" }, class: "px-4 py-2 bg-red-500 text-white rounded-xl text-sm hover:bg-red-600" %>
-            </div>
+          <!-- マイページ/ログインボタン（ログイン状態で切り替え） -->
+          <% if user_signed_in? %>
+            <%= render 'shared/button',
+                  button_text: 'マイページへ',
+                  path: mypage_path,
+                  variant: 'secondary',
+                  full_mobile: true,
+                  extra_class: 'text-center px-6 py-3 bg-white border rounded-xl text-blue-600 hover:bg-gray-50',
+                  icon: 'icons/account_circle_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                  icon_class: 'inline-block' %>
           <% else %>
             <%= render 'shared/button',
                   button_text: 'ログインして使う',
@@ -119,79 +121,81 @@
     </div>
   </section>
 
-  <!-- セクション：特徴（白背景） -->
+  <!-- ========================================== -->
+  <!-- できることセクション（白背景）             -->
+  <!-- ========================================== -->
   <section class="py-20 bg-white w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 py-1">
+      <!-- セクションタイトル -->
       <h3 class="text-2xl md:text-3xl text-center text-blue-600 mb-3 font-bold">できること</h3>
       <p class="text-gray-600 mb-8 text-center">Shufflyで、あらゆる「分ける」「決める」を瞬時に解決。</p>
+
+      <!-- 機能カード3枚 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- グループ分け -->
+        <%= render 'events/feature_card',
+              icon: 'icons/diversity_3_24dp_1F1F1F.svg',
+              icon_bg: 'bg-white',
+              card_bg: 'bg-gray-50',
+              title: 'グループ分け',
+              description: 'メンバーリストから指定した数のグループを<br>複数回・被りづらく自動で作成します。',
+              wrapper: true %>
 
-        <!-- 特徴：グループ分け -->
-        <div>
-          <div class="p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center text-center">
-            <!-- アイコン：白い丸枠内にSVGを表示 -->
-            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
-              <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24 %>
-            </div>
-            <h4 class="font-semibold mb-2">グループ分け</h4>
-            <p class="text-sm text-gray-600">メンバーリストから指定した数のグループを<br>複数回・被りづらく自動で作成します。</p>
-          </div>
-        </div>
+        <!-- 順番決め -->
+        <%= render 'events/feature_card',
+              icon: 'icons/format_list_numbered_24dp_1F1F1F.svg',
+              icon_bg: 'bg-white',
+              card_bg: 'bg-gray-50',
+              title: '順番決め',
+              description: '発表や作業の順番を<br>ワンクリックでランダムに決定します。' %>
 
-        <!-- 特徴：順番決め -->
-        <div class="p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center text-center">
-          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
-            <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24 %>
-          </div>
-          <h4 class="font-semibold mb-2">順番決め</h4>
-          <p class="text-sm text-gray-600">発表や作業の順番を<br>ワンクリックでランダムに決定します。</p>
-        </div>
-
-        <!-- 特徴：役割分担 -->
-        <div class="p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center text-center">
-          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
-            <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24 %>
-          </div>
-          <h4 class="font-semibold mb-2">役割分担</h4>
-          <p class="text-sm text-gray-600">司会や書記等の役割を公平に振り分けます。</p>
-        </div>
+        <!-- 役割分担 -->
+        <%= render 'events/feature_card',
+              icon: 'icons/badge_24dp_1F1F1F.svg',
+              icon_bg: 'bg-white',
+              card_bg: 'bg-gray-50',
+              title: '役割分担',
+              description: '司会や書記等の役割を公平に振り分けます。' %>
 
       </div>
     </div>
   </section>
 
-  <!-- セクション：ログイン時特徴（グレー背景） -->
+  <!-- ========================================== -->
+  <!-- ログインするとできることセクション         -->
+  <!-- ========================================== -->
   <section class="py-20 w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 py-1">
+      <!-- セクションタイトル -->
       <h3 class="text-2xl md:text-3xl text-center text-blue-600 mb-3 font-bold">ログインするとできること</h3>
       <p class="text-gray-600 mb-8 text-center">アカウントを作成して、さらに便利な機能を活用しましょう。</p>
 
+      <!-- 機能カード3枚 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-        <!-- ログイン時特徴：メンバーリストの保存 -->
-        <div class="p-6 bg-white rounded-xl shadow-sm flex flex-col items-center text-center">
+        <!-- メンバーリストの保存 -->
+        <div class="index-feature-card p-6 bg-white rounded-xl shadow-sm flex flex-col items-center text-center">
           <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <%= image_tag "icons/save_24dp_1F1F1F.svg", width: 24, height: 24 %>
+            <%= image_tag "icons/save_24dp_1F1F1F.svg", width: 24, height: 24, alt: "保存アイコン" %>
           </div>
           <h4 class="font-semibold mb-2">メンバーリストの保存</h4>
           <p class="text-sm text-gray-600">よく使うメンバーリストを保存して<br>いつでも呼び出せます。</p>
         </div>
 
-        <!-- ログイン時特徴：シャッフル履歴の確認 -->
-        <div class="p-6 bg-white rounded-xl shadow-sm flex flex-col items-center text-center">
+        <!-- シャッフル履歴の確認 -->
+        <div class="index-feature-card p-6 bg-white rounded-xl shadow-sm flex flex-col items-center text-center">
           <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <%= image_tag "icons/content_paste_search_24dp_1F1F1F.svg", width: 24, height: 24 %>
+            <%= image_tag "icons/content_paste_search_24dp_1F1F1F.svg", width: 24, height: 24, alt: "履歴確認アイコン" %>
           </div>
           <h4 class="font-semibold mb-2">シャッフル履歴の確認</h4>
           <p class="text-sm text-gray-600">過去のグループ分けや順番決めの結果を<br>保存・確認できます。</p>
         </div>
 
-        <!-- ログイン時特徴：画面スタイルの変更 -->
-        <div class="p-6 bg-white rounded-xl shadow-sm flex flex-col items-center text-center">
+        <!-- 画面スタイルの変更 -->
+        <div class="index-feature-card p-6 bg-white rounded-xl shadow-sm flex flex-col items-center text-center">
           <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <%= image_tag "icons/palette_24dp_1F1F1F.svg", width: 24, height: 24 %>
+            <%= image_tag "icons/palette_24dp_1F1F1F.svg", width: 24, height: 24, alt: "スタイル変更アイコン" %>
           </div>
-          <h4 class="font-semibold mb-2">画割スタイルの変更</h4>
+          <h4 class="font-semibold mb-2">画面スタイルの変更</h4>
           <p class="text-sm text-gray-600">テーマや表示スタイルを切り替えられます。</p>
         </div>
 
@@ -199,27 +203,33 @@
     </div>
   </section>
 
-  <!-- セクション：使い方（白背景） -->
+  <!-- ========================================== -->
+  <!-- 使い方セクション（白背景）                 -->
+  <!-- ========================================== -->
   <section class="py-20 bg-white w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 text-center py-1">
+      <!-- セクションタイトル -->
       <h3 class="text-2xl md:text-3xl text-center text-blue-600 mb-3 font-bold">使い方</h3>
       <p class="text-gray-600 mb-8 text-center">たった3ステップで、面倒な作業はすべて完了。</p>
 
+      <!-- ステップカード3枚 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-        <div class="p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center">
+        <!-- ステップ1: メンバーを入力 -->
+        <div class="index-feature-card p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center">
           <div class="w-15 h-15 bg-blue-500 text-white rounded-full flex items-center justify-center mb-4 font-bold text-xl">1</div>
           <h4 class="font-semibold mb-2">メンバーを入力</h4>
           <p class="text-sm text-gray-600">名前を一人ずつ入力するか<br>リストを貼り付けます。</p>
         </div>
 
-        <div class="p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center">
+        <!-- ステップ2: 条件を設定 -->
+        <div class="index-feature-card p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center">
           <div class="w-15 h-15 bg-blue-500 text-white rounded-full flex items-center justify-center mb-4 font-bold text-xl">2</div>
           <h4 class="font-semibold mb-2">条件を設定</h4>
           <p class="text-sm text-gray-600">グループ数やグループ名<br>順番や役割設定を選びます。</p>
         </div>
 
-        <div class="p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center">
+        <!-- ステップ3: シャッフル！ -->
+        <div class="index-feature-card p-6 bg-gray-50 rounded-xl shadow-sm flex flex-col items-center">
           <div class="w-15 h-15 bg-blue-500 text-white rounded-full flex items-center justify-center mb-4 font-bold text-xl">3</div>
           <h4 class="font-semibold mb-2">シャッフル！</h4>
           <p class="text-sm text-gray-600">ボタンを押すだけで結果がすぐに表示されます。</p>

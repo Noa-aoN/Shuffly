@@ -1,0 +1,145 @@
+ja:
+  devise:
+    sessions:
+      new:
+        title: "ログイン"
+        submit: "ログイン"
+        remember_me: "ログイン状態を保持する"
+    registrations:
+      new:
+        title: "アカウント登録"
+        submit: "アカウント登録"
+        password_min_length: "%{count}文字以上"
+      edit:
+        title: "アカウント情報編集"
+        email_pending: "確認待ちのメールアドレス: %{email}"
+        password_hint: "変更しない場合は空欄"
+        password_min_length: "%{count}文字以上"
+        current_password_hint: "変更を確認するために現在のパスワードが必要です"
+        submit: "更新"
+        cancel_account_title: "アカウント削除"
+        cancel_account_message: "ご利用ありがとうございました"
+        cancel_account_button: "アカウント削除"
+        cancel_account_confirm: "本当に削除しますか？"
+        back: "戻る"
+    passwords:
+      new:
+        title: "パスワードをお忘れですか？"
+        submit: "パスワード再設定メールを送る"
+    shared:
+      links:
+        log_in: "ログイン"
+        sign_up: "アカウント登録"
+        forgot_password: "パスワードをお忘れですか？"
+        didnt_receive_confirmation: "確認メールが届きませんか？"
+        didnt_receive_unlock: "ロック解除メールが届きませんか？"
+        sign_in_with: "%{provider}でログイン"
+  member_lists:
+    new:
+      title: "メンバーリスト作成"
+    edit:
+      title: "メンバーリスト編集"
+      delete: "削除"
+      delete_confirm: "本当にこのメンバーリストを削除しますか？この操作は取り消せません。"
+    form:
+      name_label: "リスト名"
+      name_placeholder: "例：営業チーム、クラスA、..."
+      members_label: "メンバー一覧"
+      members_hint: "1行に1名ずつ入力してください。改行またはカンマ区切りで入力できます。"
+      members_placeholder: "田中 太郎\n山田 花子\n..."
+      sample_button: "サンプルを入力"
+      clear_button: "クリア"
+      count_button: "人数をカウント"
+      count_alert: "%{count}名のメンバーが入力されています"
+      members_count: "%{count}名"
+      submit: "保存"
+      cancel: "キャンセル"
+  mypage:
+    title: "マイページ"
+    welcome: "ようこそ、%{name}さん"
+    tabs:
+      events: "イベント履歴"
+      member_lists: "メンバーリスト"
+      account: "アカウント設定"
+    events:
+      title: "イベント履歴"
+      empty: "まだイベントを作成していません"
+      created_at: "作成日"
+      view_details: "詳細を見る"
+      create_new: "新規イベントを作成"
+    member_lists:
+      title: "メンバーリスト"
+      empty: "まだメンバーリストを作成していません"
+      view_details: "詳細を見る"
+      create_new: "新規メンバーリストを作成"
+    account:
+      title: "アカウント設定"
+      email: "メールアドレス"
+      name: "名前"
+      edit_account: "アカウント情報を編集"
+      logout: "ログアウト"
+    event_detail:
+      title: "イベント詳細"
+      edit: "編集"
+      delete: "イベント履歴を削除"
+      delete_confirm: "本当にこのイベントを削除しますか？この操作は取り消せません。"
+      delete_confirm_event: "本当にこのイベント履歴を削除しますか？"
+      back: "マイページに戻る"
+      presentation: "プレゼン表示"
+      copy: "コピー"
+      copied: "コピーしました"
+      copy_failed: "コピーに失敗しました"
+      groups: "グループ"
+      order: "順番"
+      roles: "役割"
+      history: "履歴"
+      history_empty: "履歴がありません"
+      snapshot_index: "%{current}/%{total}"
+      prev: "前へ"
+      next: "次へ"
+      snapshot: "履歴スナップショット"
+      no_data: "データがありません"
+      members_count: "%{count}名"
+      created_at: "作成日"
+      updated_at: "更新日"
+      export: "エクスポート"
+      memo: "メモ"
+      memo_placeholder: "イベントに関するメモを入力してください..."
+      save_memo: "メモ保存"
+  activerecord:
+    attributes:
+      user:
+        email: "メールアドレス"
+        password: "パスワード"
+        password_confirmation: "パスワード（確認）"
+        current_password: "現在のパスワード"
+        remember_me: "ログイン状態を保持する"
+        name: "名前"
+        nickname: "ニックネーム"
+      member_list:
+        name: "リスト名"
+        members_json: "メンバー一覧"
+      event:
+        title: "イベントタイトル"
+        memo: "メモ"
+    errors:
+      models:
+        user:
+          attributes:
+            email:
+              blank: "を入力してください"
+              invalid: "は有効なメールアドレスではありません"
+              taken: "は既に使用されています"
+            password:
+              blank: "を入力してください"
+              too_short: "は%{count}文字以上で入力してください"
+              confirmation: "と確認用パスワードが一致しません"
+            password_confirmation:
+              confirmation: "とパスワードが一致しません"
+        member_list:
+          attributes:
+            name:
+              blank: "を入力してください"
+              too_long: "は%{count}文字以内で入力してください"
+            members_json:
+              blank: "を入力してください"

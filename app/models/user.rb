@@ -3,4 +3,5 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
   has_many :events, dependent: :nullify
+  has_many :member_lists, dependent: :destroy
 end
