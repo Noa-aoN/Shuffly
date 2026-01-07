@@ -5,6 +5,11 @@ class EventsLinkingController < ApplicationController
     # ログイン後にLocalStorageのデータをサーバーに保存する確認画面を表示
     # トークンがセッションにある場合のみ表示
     @pending_token = session[:pending_event_token]
+    @just_signed_up = session.delete(:just_signed_up)  # サインアップ後かどうかのフラグ（使用後すぐに削除）
+
+    unless @pending_token
+      redirect_to root_path, alert: "無効なリンクです"
+    end
   end
 
   def create
