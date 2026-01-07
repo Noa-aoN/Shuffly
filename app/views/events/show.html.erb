@@ -21,11 +21,11 @@
       <div class="flex flex-wrap gap-4 text-base text-gray-600">
         <span class="flex items-center gap-1">
           <%= image_tag 'icons/today_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "作成日アイコン" %>
-          <%= t("mypage.event_detail.created_at") %>: <%= @event.created_at.in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M') %>
+          <%= t("mypage.event_detail.created_at") %>: <%= format_datetime_short(@event.created_at) %>
         </span>
         <span class="flex items-center gap-1">
           <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "更新日アイコン" %>
-          <%= t("mypage.event_detail.updated_at") %>: <%= @event.updated_at.in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M') %>
+          <%= t("mypage.event_detail.updated_at") %>: <%= format_datetime_short(@event.updated_at) %>
         </span>
         <span class="flex items-center gap-1">
           <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "人数アイコン" %>
