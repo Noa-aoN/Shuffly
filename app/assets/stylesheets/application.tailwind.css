@@ -55,3 +55,32 @@ a:focus-visible {
   outline-offset: 2px;                              /* 要素から2px離す */
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);   /* 淡い青の影（10%透明度） */
 }
+
+/* ========================================
+   Shuffly Toast - CSP対応
+   ========================================
+
+   目的：
+   - CSP（Content Security Policy）のinline style警告を解消
+   - インラインスタイルをCSSクラスに置き換え
+
+   動作：
+   - トーストの位置固定と表示制御
+   ======================================== */
+
+.shuffly-toast {
+  top: 30px;
+  bottom: auto;
+}
+
+/* スマホのみ：トーストの位置を下に調整 */
+@media (max-width: 767px) {
+  .shuffly-toast-visible {
+    top: 80px !important;
+  }
+}
+
+.shuffly-toast-visible {
+  top: 30px !important;
+  z-index: 1000 !important;
+}

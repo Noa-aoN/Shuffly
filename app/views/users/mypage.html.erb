@@ -242,11 +242,11 @@
                 <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                   <span class="flex items-center gap-1">
                     <%= image_tag 'icons/today_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "作成日アイコン" %>
-                    作成: <%= event.created_at.strftime('%Y年%m月%d日') %>
+                    作成: <%= event.created_at.in_time_zone('Tokyo').strftime('%Y年%m月%d日 %H:%M') %>
                   </span>
                   <span class="flex items-center gap-1">
                     <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "更新日アイコン" %>
-                    更新: <%= event.updated_at.strftime('%Y年%m月%d日 %H:%M') %>
+                    更新: <%= event.updated_at.in_time_zone('Tokyo').strftime('%Y年%m月%d日 %H:%M') %>
                   </span>
                   <span class="flex items-center gap-1">
                     <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "メンバー数アイコン" %>

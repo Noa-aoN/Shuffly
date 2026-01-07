@@ -21,11 +21,11 @@
       <div class="flex flex-wrap gap-4 text-base text-gray-600">
         <span class="flex items-center gap-1">
           <%= image_tag 'icons/today_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "作成日アイコン" %>
-          <%= t("mypage.event_detail.created_at") %>: <%= @event.created_at.strftime('%Y/%m/%d %H:%M') %>
+          <%= t("mypage.event_detail.created_at") %>: <%= @event.created_at.in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M') %>
         </span>
         <span class="flex items-center gap-1">
           <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "更新日アイコン" %>
-          <%= t("mypage.event_detail.updated_at") %>: <%= @event.updated_at.strftime('%Y/%m/%d %H:%M') %>
+          <%= t("mypage.event_detail.updated_at") %>: <%= @event.updated_at.in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M') %>
         </span>
         <span class="flex items-center gap-1">
           <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "人数アイコン" %>
@@ -1141,8 +1141,7 @@
       // Create toast element if it doesn't exist
       const newToast = document.createElement('div');
       newToast.id = 'toast';
-      newToast.className = 'fixed top-9 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 z-50';
-      newToast.style.top = '35px';
+      newToast.className = 'shuffly-toast fixed top-9 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 z-50';
       document.body.appendChild(newToast);
       newToast.addEventListener('transitionend', function() {
         if (newToast.classList.contains('opacity-0')) {
@@ -1154,9 +1153,10 @@
     const toastEl = document.getElementById('toast');
     toastEl.textContent = message;
     toastEl.classList.remove('opacity-0');
-    toastEl.style.zIndex = '1000';
+    toastEl.classList.add('shuffly-toast-visible');
 
     setTimeout(() => {
+      toastEl.classList.remove('shuffly-toast-visible');
       toastEl.classList.add('opacity-0');
     }, 2000);
   }
