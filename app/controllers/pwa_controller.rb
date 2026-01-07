@@ -3,10 +3,6 @@ class PwaController < ApplicationController
   skip_before_action :set_default_meta, only: [:service_worker, :manifest]
   skip_before_action :configure_permitted_parameters, only: [:service_worker, :manifest], raise: false
 
-  # allow_browser をスキップ
-  def browser
-  end
-
   def service_worker
     # Service WorkerのJavaScriptファイルを返す
     render file: Rails.root.join('app', 'javascript', 'pwa', 'service_worker.js'),

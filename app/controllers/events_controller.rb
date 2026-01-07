@@ -1,6 +1,5 @@
 class EventsController < ApplicationController
   before_action :set_event, only: [:show, :edit, :update, :destroy]
-  skip_before_action :set_event, only: [:presentation]
 
   def index
     @events = current_user ? current_user.events : Event.none
