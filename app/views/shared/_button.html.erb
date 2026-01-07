@@ -10,6 +10,8 @@
 <% data_action = local_assigns.key?(:data_action) ? local_assigns[:data_action] : nil %>
 <% button_to_method = local_assigns.key?(:button_to_method) ? local_assigns[:button_to_method] : nil %>
 <% confirm_message = local_assigns.key?(:confirm_message) ? local_assigns[:confirm_message] : nil %>
+<% is_button = local_assigns.key?(:is_button) ? local_assigns[:is_button] : nil %>
+<% data = local_assigns.fetch(:data, {}) %>
 
 <%# 新規オプション: icon (asset パス or URL), icon_class, icon_alt, 既に構築済みの icon_html があれば優先する %>
 <% icon_html = local_assigns.fetch(:icon_html, nil) %>
@@ -53,7 +55,25 @@
 <% icon_right = icon_class.to_s.split(/\s+/).include?('icon_right') %>
 
 <div class="mt-2">
-  <% if f %>
+  <% if is_button %>
+    <%# JavaScript用のボタン: type="button" %>
+    <% button_opts = {
+      class: classes,
+      type: 'button',
+      id: id,
+      disabled: disabled,
+      data: data.merge(data_action.present? ? { action: data_action } : {})
+    } %>
+    <% button_opts.delete_if { |_, v| v.nil? || v == {} } %>
+    <%# アイコンがある場合はアイコンとテキストの間に全角スペースを1つ挿入する %>
+    <% separator = icon_html.present? ? "　" : '' %>
+    <% if icon_html.present? && icon_right %>
+      <% inner = (content_tag(:span, button_text, class: 'font-semibold') + separator + icon_html.to_s).html_safe %>
+    <% else %>
+      <% inner = (icon_html.to_s + separator + content_tag(:span, button_text, class: 'font-semibold')).html_safe %>
+    <% end %>
+    <%= content_tag(:button, inner, button_opts) %>
+  <% elsif f %>
     <% opts = { class: classes, id: id, disabled: disabled } %>
     <% if data_action.present? %>
       <% opts[:data] = { action: data_action } %>
