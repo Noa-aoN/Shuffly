@@ -333,6 +333,8 @@ const ShufflyApp = (function() {
     // 正規化形式では履歴から構築するため、ここでの保存は不要
 
     updateParticipantCount(); showGroups(); showStats(); pushToHistory();
+    // 回次表示を更新（履歴を追加した後に確実に更新）
+    updateGroupRoundDisplay();
     // 追加: 実行成功時にトースト表示
     showToast("グループに振り分けました");
     switchResultTab('groups');
@@ -416,10 +418,11 @@ const ShufflyApp = (function() {
 
     // 履歴に保存
     pushToHistory('order', { result: result });
+    // 回次表示を更新（履歴を追加した後に確実に更新）
+    updateOrderRoundDisplay();
 
     showToast("順番を割り当てました");
     switchResultTab('order');
-    updateOrderRoundDisplay();
   }
 
   function assignRoles(){
@@ -473,10 +476,11 @@ const ShufflyApp = (function() {
 
     // 履歴に保存
     pushToHistory('roles', { assignments: assignments });
+    // 回次表示を更新（履歴を追加した後に確実に更新）
+    updateRolesRoundDisplay();
 
     showToast("役割を割り当てました");
     switchResultTab('roles');
-    updateRolesRoundDisplay();
   }
 
   function showGroups(){
