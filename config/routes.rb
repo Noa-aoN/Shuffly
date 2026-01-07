@@ -24,6 +24,11 @@ Rails.application.routes.draw do
   # マイページ
   get "mypage", to: "users#mypage", as: :mypage
 
+  # ユーザー設定
+  resources :users, only: [] do
+    patch :update_preferences, on: :collection
+  end
+
   # メンバーリスト管理
   resources :member_lists
 

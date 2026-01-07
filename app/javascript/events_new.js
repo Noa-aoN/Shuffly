@@ -892,16 +892,13 @@ const ShufflyApp = (function() {
   function showToast(msg){
     const toast = document.getElementById('toast');
     if(!toast) return;
-    // 優先して top を固定、bottom は解除
-    toast.style.top = TOAST_TOP_POSITION;
-    toast.style.bottom = 'auto';
-    // 中央揃えの transform / left を確実に適用
-    toast.style.left = '50%';
-    // 前面に出す
-    toast.style.zIndex = '1000';
     toast.textContent = msg;
     toast.classList.remove('opacity-0');
-    setTimeout(()=>toast.classList.add('opacity-0'), TOAST_DURATION);
+    toast.classList.add('shuffly-toast-visible');
+    setTimeout(()=>{
+      toast.classList.remove('shuffly-toast-visible');
+      toast.classList.add('opacity-0');
+    }, TOAST_DURATION);
   }
 
   // 統一された履歴保存関数

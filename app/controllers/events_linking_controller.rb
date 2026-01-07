@@ -15,6 +15,9 @@ class EventsLinkingController < ApplicationController
   def create
     @event = current_user.events.build(normalized_event_params)
 
+    # 履歴データから created_at を設定（未ログインユーザーの問題対策）
+    set_created_at_from_history(@event)
+
     Rails.logger.debug "=== EventsLinkingController#create ==="
     Rails.logger.debug "current_user: #{current_user.id}"
     Rails.logger.debug "event params: #{normalized_event_params.inspect}"
@@ -48,6 +51,42 @@ class EventsLinkingController < ApplicationController
   end
 
   private
+
+  def set_created_at_from_history(event)
+    timestamps = collect_timestamps_from_rounds(event)
+
+    if timestamps.any?
+      # 最も古いタイムスタンプを created_at に設定（日本時間）
+      event.created_at = Time.at(timestamps.min / 1000).in_time_zone('Tokyo')
+    end
+  end
+
+  def collect_timestamps_from_rounds(event)
+    timestamps = []
+
+    # group_rounds からタイムスタンプを収集
+    if event.group_rounds.is_a?(Array)
+      event.group_rounds.each do |round|
+        timestamps << round['timestamp'] if round['timestamp'].is_a?(Numeric)
+      end
+    end
+
+    # order_rounds からタイムスタンプを収集
+    if event.order_rounds.is_a?(Array)
+      event.order_rounds.each do |round|
+        timestamps << round['timestamp'] if round['timestamp'].is_a?(Numeric)
+      end
+    end
+
+    # role_rounds からタイムスタンプを収集
+    if event.role_rounds.is_a?(Array)
+      event.role_rounds.each do |round|
+        timestamps << round['timestamp'] if round['timestamp'].is_a?(Numeric)
+      end
+    end
+
+    timestamps
+  end
 
   def event_params
     params.require(:event).permit(
