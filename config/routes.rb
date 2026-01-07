@@ -5,6 +5,10 @@ Rails.application.routes.draw do
   # メイン画面をイベントページに統一 (SPA)
   root "events#index"
 
+  # 非ログイン時のイベント紐付け（resources :events の前に定義）
+  get "events/link_pending", to: "events_linking#show", as: :link_pending_event
+  post "events/link_pending", to: "events_linking#create"
+
   # イベント管理（JSON保存やSPA向け更新含む）
   resources :events do
     collection do
@@ -20,10 +24,6 @@ Rails.application.routes.draw do
   # マイページ
   get "mypage", to: "users#mypage", as: :mypage
 
-  # 非ログイン時のイベント紐付け
-  get "events/link_pending", to: "events_linking#show", as: :link_pending_event
-  post "events/link_pending", to: "events_linking#create"
-
   # メンバーリスト管理
   resources :member_lists
 
@@ -32,7 +32,8 @@ Rails.application.routes.draw do
   get "terms", to: "pages#terms", as: :terms
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # PWA対応
-  get "service_worker.js", to: "pwa#service_worker", as: :pwa_service_worker
-  get "manifest.json", to: "pwa#manifest", as: :pwa_manifest
+  # PWA対応 - 静的ファイルとして配信（publicディレクトリ）
+  # サービスを再起動した後、以下のルートは不要になります
+  # get "service_worker.js", to: "pwa#service_worker", as: :pwa_service_worker
+  # get "manifest.json", to: "pwa#manifest", as: :pwa_manifest
 end

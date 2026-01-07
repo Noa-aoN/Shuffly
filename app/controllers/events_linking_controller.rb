@@ -3,21 +3,38 @@ class EventsLinkingController < ApplicationController
 
   def show
     # ログイン後にLocalStorageのデータをサーバーに保存する確認画面を表示
-    # セッションに一時保存されたデータがある場合のみ表示
-    @pending_data = session[:pending_shuffly_event]
+    # トークンがセッションにある場合のみ表示
+    @pending_token = session[:pending_event_token]
   end
 
   def create
     @event = current_user.events.build(normalized_event_params)
 
+    Rails.logger.debug "=== EventsLinkingController#create ==="
+    Rails.logger.debug "current_user: #{current_user.id}"
+    Rails.logger.debug "event params: #{normalized_event_params.inspect}"
+    Rails.logger.debug "@event valid?: #{@event.valid?}"
+    Rails.logger.debug "@event errors: #{@event.errors.full_messages.inspect}" if @event.invalid?
+
     if @event.save
-      session[:pending_shuffly_event] = nil
+      Rails.logger.debug "Event saved successfully: #{@event.id}"
+      Rails.logger.debug "Redirect URL: #{event_path(@event)}"
+      Rails.logger.debug "Event attributes: #{@event.attributes.except('members_data', 'group_rounds', 'order_rounds', 'role_rounds', 'co_occurrence_cache').inspect}"
+      # トークンをクリア
+      session[:pending_event_token] = nil
 
       respond_to do |format|
         format.html { redirect_to @event, notice: "ログインしたのでイベントを保存しました" }
-        format.json { render json: { success: true, redirect_url: event_path(@event), message: "イベントを保存しました" }, status: :ok }
+        format.json do
+          redirect_url = "/events/#{@event.id}"
+          Rails.logger.debug "Generated redirect_url: #{redirect_url}"
+          render json: { success: true, redirect_url: redirect_url, message: "イベントを保存しました" }, status: :ok
+        end
       end
     else
+      Rails.logger.debug "Event save FAILED!"
+      Rails.logger.debug "@event errors: #{@event.errors.full_messages.inspect}"
+
       respond_to do |format|
         format.html { render :show, alert: "イベントの保存に失敗しました" }
         format.json { render json: { success: false, errors: @event.errors.full_messages }, status: :unprocessable_entity }

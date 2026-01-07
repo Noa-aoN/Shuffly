@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 
   <title><%= content_for?(:title) ? yield(:title) : "Shuffly" %></title>
 
@@ -15,7 +15,10 @@
   <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
 
   <%= favicon_link_tag 'favicon.ico' %>
-  <link rel="apple-touch-icon" href="<%= asset_path 'apple-touch-icon-180x180.png' %>">
+  <link rel="apple-touch-icon" href="/icon-512x512.png">
+
+  <%# iOS向けPWA設定 %>
+  <meta name="mobile-web-app-capable" content="yes">
 
   <%# PWA Manifest %>
   <link rel="manifest" href="/manifest.json">
@@ -108,6 +111,31 @@
         if(params.get('maintenance') === '1' && !hidden) setVisible(true);
         else if(window.DEFAULT_MAINTENANCE && !hidden) setVisible(true);
       }catch(e){}
+    })();
+  </script>
+
+  <%# Service Worker Registration（Capacitor対応） %>
+  <%# 開発環境では ?pwa=1 で有効化、本番環境では常に有効 %>
+  <script>
+    (function() {
+      // 開発環境ではURLパラメータで制御
+      const isDev = <%= Rails.env.development? ? 'true' : 'false' %>;
+      const pwaParam = new URLSearchParams(window.location.search).get('pwa');
+
+      // 本番環境、または ?pwa=1 の場合のみ登録
+      if (!isDev || pwaParam === '1') {
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service_worker.js')
+              .then((registration) => {
+                console.log('ServiceWorker registered:', registration.scope);
+              })
+              .catch((error) => {
+                console.warn('ServiceWorker registration failed:', error);
+              });
+          });
+        }
+      }
     })();
   </script>
 </body>

@@ -3,7 +3,11 @@
 <%= render 'shared/devise_card', title: t("devise.sessions.new.title") do %>
   <%= render "devise/shared/error_messages", resource: resource %>
 
-  <%= form_for(resource, as: resource_name, url: session_path(resource_name), data: { turbo: false }) do |f| %>
+  <%= form_for(resource, as: resource_name, url: session_path(resource_name), data: { turbo: false }, html: { id: 'new_user_session' }, authenticity_token: true) do |f| %>
+    <!-- クエリパラメータを保持するhiddenフィールド -->
+    <%= hidden_field_tag :pending_event_token, params[:pending_event_token] %>
+    <%= hidden_field_tag :redirect_to, params[:redirect_to] %>
+
     <div class="mb-4">
       <%= f.label :email, class: "block text-sm font-medium text-gray-700" do %>
         <%= t("activerecord.attributes.user.email") %>
@@ -37,9 +41,6 @@
       </div>
     <% end %>
 
-    <!-- LocalStorageのペンディングデータを送信するhiddenフィールド -->
-    <input type="hidden" name="pending_event_data" id="pending_event_data">
-
     <div class="flex justify-center mt-6">
       <%= render 'shared/button',
             f: f,
@@ -67,13 +68,4 @@ function togglePasswordVisibility(fieldId) {
     icon.innerHTML = '<path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />';
   }
 }
-
-// LocalStorageからペンディングデータを取得してhiddenフィールドに設定
-document.addEventListener('DOMContentLoaded', () => {
-  const pendingData = localStorage.getItem('pending_shuffly_event');
-  const hiddenInput = document.getElementById('pending_event_data');
-  if (pendingData && hiddenInput) {
-    hiddenInput.value = pendingData;
-  }
-});
 </script>

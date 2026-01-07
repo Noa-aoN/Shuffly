@@ -20,8 +20,9 @@ class ApplicationController < ActionController::Base
   # option: サインイン後の遷移先
   def after_sign_in_path_for(resource)
     # 非ログイン時にLocalStorageに保存していたイベントデータがある場合は紐付け画面へ
-    if params[:pending_event_data].present?
-      session[:pending_shuffly_event] = params[:pending_event_data]
+    # データはLocalStorageにあるため、トークンだけをsessionに保存（Cookie Overflow対策）
+    if params[:pending_event_token].present?
+      session[:pending_event_token] = params[:pending_event_token]
       link_pending_event_path
     else
       stored_location_for(resource) || mypage_path
