@@ -1,6 +1,5 @@
 class EventsController < ApplicationController
   before_action :set_event, only: [:show, :edit, :update, :destroy]
-  skip_before_action :set_event, only: [:presentation]
 
   def index
     @events = current_user ? current_user.events : Event.none
@@ -45,7 +44,6 @@ class EventsController < ApplicationController
     @event = current_user ? current_user.events.build(normalized_event_params) : Event.new(normalized_event_params)
 
     if @event.save
-      @event.touch
       redirect_to @event, notice: "イベントを保存しました"
     else
       render :new
@@ -76,8 +74,6 @@ class EventsController < ApplicationController
 
   def update
     if @event.update(normalized_event_params)
-      @event.touch
-
       respond_to do |format|
         format.html { redirect_to @event, notice: "イベントを更新しました" }
         format.json { render json: { success: true, message: "イベントを更新しました" }, status: :ok }

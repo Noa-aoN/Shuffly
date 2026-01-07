@@ -19,7 +19,18 @@ class ApplicationController < ActionController::Base
 
   # option: サインイン後の遷移先
   def after_sign_in_path_for(resource)
-    stored_location_for(resource) || mypage_path
+    # 非ログイン時にLocalStorageに保存していたイベントデータがある場合は紐付け画面へ
+    # データはLocalStorageにあるため、トークンだけをsessionに保存（Cookie Overflow対策）
+    if params[:pending_event_token].present?
+      session[:pending_event_token] = params[:pending_event_token]
+      # サインアップ後かどうかを判別するためにresource.created_atを確認
+      # 作成から5秒以内ならサインアップ直後とみなす
+      just_signed_up = resource.created_at > 5.seconds.ago
+      session[:just_signed_up] = just_signed_up
+      link_pending_event_path
+    else
+      stored_location_for(resource) || mypage_path
+    end
   end
 
   # option: サインアウト後の遷移先

@@ -1454,8 +1454,14 @@ const ShufflyApp = (function() {
           co_occurrence_cache: document.getElementById('coOccurrenceCacheInput').value,
           title: document.getElementById('hiddenEventTitle') ? document.getElementById('hiddenEventTitle').value : ''
         };
+
+        // トークンを生成（Cookie Overflow対策）
+        const token = 'shuffly_token_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15);
+
         try {
+          // データとトークンを保存
           localStorage.setItem('pending_shuffly_event', JSON.stringify(payloadPreview));
+          localStorage.setItem('pending_shuffly_token', token);
         } catch(storageError) {
           if (storageError.name === 'QuotaExceededError') {
             console.warn('localStorage quota exceeded', storageError);
@@ -1465,7 +1471,9 @@ const ShufflyApp = (function() {
             throw storageError;
           }
         }
-        const loginUrl = new_user_session_path + "?redirect_to=" + encodeURIComponent(window.location.href);
+
+        // トークンをクエリパラメータで渡す
+        const loginUrl = new_user_session_path + "?redirect_to=" + encodeURIComponent(window.location.href) + "&pending_event_token=" + encodeURIComponent(token);
         window.location.href = loginUrl;
       } catch(e){
         showToast("保存処理に失敗しました");

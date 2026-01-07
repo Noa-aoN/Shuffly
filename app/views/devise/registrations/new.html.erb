@@ -3,7 +3,10 @@
 <%= render 'shared/devise_card', title: t("devise.registrations.new.title") do %>
   <%= render "devise/shared/error_messages", resource: resource %>
 
-  <%= form_for(resource, as: resource_name, url: registration_path(resource_name), data: { turbo: false }) do |f| %>
+  <%= form_for(resource, as: resource_name, url: registration_path(resource_name), data: { turbo: false }, html: { authenticity_token: true }) do |f| %>
+    <%# クエリパラメータを保持するhiddenフィールド %>
+    <%= hidden_field_tag :pending_event_token, params[:pending_event_token] %>
+    <%= hidden_field_tag :redirect_to, params[:redirect_to] %>
     <div class="mb-4">
       <%= f.label :email, class: "block text-sm font-medium text-gray-700" do %>
         <%= t("activerecord.attributes.user.email") %>
