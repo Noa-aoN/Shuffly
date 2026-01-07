@@ -560,80 +560,79 @@
         dataToRender = entry;
       }
 
-      if (tab === 'groups') {
-        const groupsData = dataToRender.groups || dataToRender;
-
-        // assignments形式の場合
-        if (dataToRender.assignments && Array.isArray(dataToRender.assignments)) {
-          // assignments形式をgroups形式に変換
-          const groups = {};
-          dataToRender.assignments.forEach(assignment => {
-            const groupId = assignment.group_id || assignment.group_name;
-            groups[groupId] = assignment.members.map(m => m.name);
-          });
-          renderGroups({ groups: groups });
-        }
-        // groups形式の場合
-        else if (groupsData && typeof groupsData === 'object' && !groupsData.membersRaw) {
-          renderGroups(dataToRender);
-        }
-        // membersRaw形式の場合
-        else if (groupsData && groupsData.membersRaw) {
-          // membersRawから履歴をパースしてグループを再構築
-          const raw = groupsData.membersRaw;
-          const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
-          const entries = rawList.map(line => {
-            const name = line.split('#')[0].trim();
-            const hist = line.match(/#\d+[A-Z]/g) || [];
-            return { name, history: hist };
-          });
-
-          // グループを再構築
-          const groups = {};
-          entries.forEach(e => {
-            const last = e.history.at(-1);
-            const m = last ? last.match(/#\d+([A-Z])$/) : null;
-            const groupId = m ? m[1] : null;
-            if (groupId) {
-              if (!groups[groupId]) groups[groupId] = [];
-              groups[groupId].push(e.name);
-            }
-          });
-
-          if (Object.keys(groups).length > 0) {
+      try {
+        if (tab === 'groups') {
+          // assignments形式の場合
+          if (dataToRender.assignments && Array.isArray(dataToRender.assignments)) {
+            // assignments形式をgroups形式に変換
+            const groups = {};
+            dataToRender.assignments.forEach(assignment => {
+              const groupId = assignment.group_id || assignment.group_name;
+              groups[groupId] = assignment.members.map(m => m.name);
+            });
             renderGroups({ groups: groups });
           }
-        }
-        // タブを切り替え
-        switchTab('groups');
-      }
+          // groups形式の場合
+          else if (dataToRender.groups && typeof dataToRender.groups === 'object') {
+            renderGroups(dataToRender);
+          }
+          // membersRaw形式の場合
+          else if (dataToRender.membersRaw) {
+            // membersRawから履歴をパースしてグループを再構築
+            const raw = dataToRender.membersRaw;
+            const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
+            const entries = rawList.map(line => {
+              const name = line.split('#')[0].trim();
+              const hist = line.match(/#\d+[A-Z]/g) || [];
+              return { name, history: hist };
+            });
 
-      if (tab === 'order') {
-        // 新形式: data.result、旧形式: order
-        const orderArray = dataToRender.result || dataToRender.order || dataToRender;
-        if (orderArray && Array.isArray(orderArray)) {
-          renderOrder(orderArray);
-        }
-        // タブを切り替え
-        switchTab('order');
-      }
+            // グループを再構築
+            const groups = {};
+            entries.forEach(e => {
+              const last = e.history.at(-1);
+              const m = last ? last.match(/#\d+([A-Z])$/) : null;
+              const groupId = m ? m[1] : null;
+              if (groupId) {
+                if (!groups[groupId]) groups[groupId] = [];
+                groups[groupId].push(e.name);
+              }
+            });
 
-      if (tab === 'roles') {
-        // 新形式: data.assignments、旧形式: settings
-        if (dataToRender.assignments) {
-          // assignments形式をrole_assignments形式に変換
-          renderRoles({ role_assignments: dataToRender.assignments });
-        } else if (dataToRender.settings) {
-          renderRoles(dataToRender.settings);
-        } else {
-          // dataToRender自体がrole_assignmentsを持っている場合
-          renderRoles(dataToRender);
+            if (Object.keys(groups).length > 0) {
+              renderGroups({ groups: groups });
+            }
+          }
+          // タブを切り替え
+          switchTab('groups');
         }
-        // タブを切り替え
-        switchTab('roles');
+        else if (tab === 'order') {
+          // 新形式: data.result、旧形式: order
+          const orderArray = dataToRender.result || dataToRender.order || dataToRender;
+          if (orderArray && Array.isArray(orderArray)) {
+            renderOrder(orderArray);
+          }
+          // タブを切り替え
+          switchTab('order');
+        }
+        else if (tab === 'roles') {
+          // 新形式: data.assignments、旧形式: settings
+          if (dataToRender.assignments) {
+            // assignments形式をrole_assignments形式に変換
+            renderRoles({ role_assignments: dataToRender.assignments });
+          } else if (dataToRender.settings) {
+            renderRoles(dataToRender.settings);
+          } else {
+            // dataToRender自体がrole_assignmentsを持っている場合
+            renderRoles(dataToRender);
+          }
+          // タブを切り替え
+          switchTab('roles');
+        }
+      } finally {
+        // 確実に回次表示とボタン状態を更新
+        updateHistoryIndex(tab);
       }
-
-      updateHistoryIndex(tab);
     }
   }
 
@@ -702,20 +701,20 @@
     const groupsData = latestGroups.type === 'groups' ? latestGroups.data : latestGroups;
 
     // assignments形式の場合
-    if (latestGroups.assignments && Array.isArray(latestGroups.assignments)) {
+    if (groupsData.assignments && Array.isArray(groupsData.assignments)) {
       const groups = {};
-      latestGroups.assignments.forEach(assignment => {
+      groupsData.assignments.forEach(assignment => {
         const groupId = assignment.group_id || assignment.group_name;
         groups[groupId] = assignment.members.map(m => m.name);
       });
       renderGroups({ groups: groups });
     }
     // groups形式の場合
-    else if (groupsData && groupsData.groups && typeof groupsData.groups === 'object') {
+    else if (groupsData.groups && typeof groupsData.groups === 'object') {
       renderGroups(groupsData);
     }
     // membersRaw形式の場合
-    else if (groupsData && groupsData.membersRaw) {
+    else if (groupsData.membersRaw) {
       // membersRaw形式の場合はグループを再構築
       const raw = groupsData.membersRaw;
       const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
