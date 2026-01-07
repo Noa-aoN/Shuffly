@@ -20,11 +20,19 @@ Rails.application.routes.draw do
   # マイページ
   get "mypage", to: "users#mypage", as: :mypage
 
+  # 非ログイン時のイベント紐付け
+  get "events/link_pending", to: "events_linking#show", as: :link_pending_event
+  post "events/link_pending", to: "events_linking#create"
+
   # メンバーリスト管理
   resources :member_lists
 
   # ---- 以下、システム関連 ----
+  get "privacy", to: "pages#privacy", as: :privacy
+  get "terms", to: "pages#terms", as: :terms
   get "up" => "rails/health#show", as: :rails_health_check
-  get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+
+  # PWA対応
+  get "service_worker.js", to: "pwa#service_worker", as: :pwa_service_worker
+  get "manifest.json", to: "pwa#manifest", as: :pwa_manifest
 end

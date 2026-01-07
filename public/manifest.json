@@ -1,0 +1,24 @@
+{
+  "name": "Shuffly - グループ・順番・役割決めツール",
+  "short_name": "Shuffly",
+  "description": "ランダムなグループ分け・順番決め・役割決めが簡単にできるツール",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

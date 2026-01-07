@@ -16,6 +16,10 @@
 
   <%= favicon_link_tag 'favicon.ico' %>
   <link rel="apple-touch-icon" href="<%= asset_path 'apple-touch-icon-180x180.png' %>">
+
+  <%# PWA Manifest %>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563eb">
 </head>
 
 <body class="antialiased text-gray-800 bg-gray-50 min-h-screen flex flex-col">
@@ -106,5 +110,23 @@
       }catch(e){}
     })();
   </script>
+
+  <%# Service Worker Registration %>
+  <%# 一時的に無効化（PWA対応はオプション機能） %>
+  <%#= javascript_include_tag "pwa_service_worker", defer: true %>
+  <%#
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service_worker.js')
+          .then((registration) => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          }, (err) => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+      });
+    }
+  </script>
+  %>
 </body>
 </html>
