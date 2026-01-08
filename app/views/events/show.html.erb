@@ -100,8 +100,11 @@
     <div id="pres-groups" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[480px] max-h-[480px] overflow-y-auto"></div>
 
     <%# 履歴インデックス %>
-    <div class="text-base text-yellow-800 mt-1 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+    <div class="text-base text-yellow-800 mt-1 mb-2 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
       現在のグループ分け表示：<span id="history-index-groups" class="font-bold">未実施</span>
+    </div>
+    <div class="text-base text-yellow-800 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+      実行日時：<span id="history-timestamp-groups" class="font-bold"></span>
     </div>
 
     <%# 結果操作ボタン（tertiary） %>
@@ -153,8 +156,11 @@
     <div id="pres-order" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[480px] max-h-[480px] overflow-y-auto"></div>
 
     <%# 履歴インデックス %>
-    <div class="text-base text-yellow-800 mt-1 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+    <div class="text-base text-yellow-800 mt-1 mb-2 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
       現在の順番決め表示：<span id="history-index-order" class="font-bold">未実施</span>
+    </div>
+    <div class="text-base text-yellow-800 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+      実行日時：<span id="history-timestamp-order" class="font-bold"></span>
     </div>
 
     <%# 結果操作ボタン（tertiary） %>
@@ -206,8 +212,11 @@
     <div id="pres-roles" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[480px] max-h-[480px] overflow-y-auto"></div>
 
     <%# 履歴インデックス %>
-    <div class="text-base text-yellow-800 mt-1 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+    <div class="text-base text-yellow-800 mt-1 mb-2 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
       現在の役割分担表示：<span id="history-index-roles" class="font-bold">未実施</span>
+    </div>
+    <div class="text-base text-yellow-800 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+      実行日時：<span id="history-timestamp-roles" class="font-bold"></span>
     </div>
 
     <%# 結果操作ボタン（tertiary） %>
@@ -432,7 +441,7 @@
     const groups = results.groups;
     const groupNames = results.group_names || results.groupNames || {};
     let out = '';
-    Object.keys(groups).forEach(k=>{
+    Object.keys(groups).sort().forEach(k=>{
       const members = groups[k] || [];
       const label = groupNames[k] || k;
       out += label + ' (' + members.length + '名):\n';
@@ -521,6 +530,7 @@
   function updateHistoryIndex(tab) {
     const state = historyState[tab];
     const idxEl = document.getElementById('history-index-' + tab);
+    const timestampEl = document.getElementById('history-timestamp-' + tab);
     const prevBtn = document.getElementById('btn-prev-' + tab);
     const nextBtn = document.getElementById('btn-next-' + tab);
 
@@ -529,6 +539,7 @@
 
     if (totalCount === 0) {
       idxEl.textContent = '未実施';
+      if (timestampEl) timestampEl.textContent = '';
       prevBtn.disabled = true;
       nextBtn.disabled = true;
     } else {
@@ -537,6 +548,27 @@
       idxEl.textContent = `${currentRound}/${totalCount}回目`;
       prevBtn.disabled = (state.index <= 0);
       nextBtn.disabled = (state.index >= totalCount - 1);
+
+      // 日時表示を更新
+      if (timestampEl && state.index >= 0 && state.history[state.index]) {
+        const entry = state.history[state.index];
+        // timestampはDate.now()（ミリ秒）で保存されている
+        if (entry.timestamp) {
+          const date = new Date(entry.timestamp);
+          const formatted = date.toLocaleString('ja-JP', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          timestampEl.textContent = formatted;
+        } else {
+          timestampEl.textContent = '';
+        }
+      } else if (timestampEl) {
+        timestampEl.textContent = '';
+      }
     }
   }
 
@@ -985,7 +1017,7 @@
             });
 
             if (Object.keys(groups).length > 0) {
-              Object.keys(groups).forEach(k => {
+              Object.keys(groups).sort().forEach(k => {
                 const members = groups[k] || [];
                 combinedContent += `グループ${k} (${members.length}名):\n`;
                 members.forEach(m => {
@@ -998,7 +1030,7 @@
             // groupsデータが直接ある場合
             const groups = dataToExport.groups;
             const groupNames = dataToExport.group_names || dataToExport.groupNames || {};
-            Object.keys(groups).forEach(k => {
+            Object.keys(groups).sort().forEach(k => {
               const members = groups[k] || [];
               const label = groupNames[k] || k;
               combinedContent += `${label} (${members.length}名):\n`;
