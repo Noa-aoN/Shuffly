@@ -36,6 +36,7 @@ class User < ApplicationRecord
   ].freeze
 
   validates :timezone, presence: true, inclusion: { in: AVAILABLE_TIMEZONES.map(&:first) }
+  validates :theme_preference, presence: true, inclusion: { in: THEME_OPTIONS }
 
   before_validation :ensure_valid_timezone, on: :update
 

@@ -23,9 +23,39 @@ class UsersController < ApplicationController
     end
   end
 
+  def timezone_settings
+    @user = current_user
+  end
+
+  def update_timezone
+    @user = current_user
+    if @user.update(user_preferences_params)
+      redirect_to timezone_settings_path, notice: 'タイムゾーンを保存しました'
+    else
+      render :timezone_settings
+    end
+  end
+
+  def style_settings
+    @user = current_user
+  end
+
+  def update_style
+    @user = current_user
+    if @user.update(style_preferences_params)
+      redirect_to style_settings_path, notice: 'スタイルを保存しました'
+    else
+      render :style_settings
+    end
+  end
+
   private
 
   def user_preferences_params
     params.require(:user).permit(:timezone)
+  end
+
+  def style_preferences_params
+    params.require(:user).permit(:theme_preference)
   end
 end

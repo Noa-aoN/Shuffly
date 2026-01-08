@@ -74,12 +74,21 @@
     <% end %>
     <%= content_tag(:button, inner, button_opts) %>
   <% elsif f %>
-    <% opts = { class: classes, id: id, disabled: disabled } %>
+    <% opts = { class: classes, id: id, disabled: disabled, type: 'submit' } %>
     <% if data_action.present? %>
       <% opts[:data] = { action: data_action } %>
     <% end %>
     <% opts.delete_if { |_, v| v.nil? } %>
-    <%= f.submit button_text, opts %>
+    <% separator = icon_html.present? ? "　" : '' %>
+    <% if icon_html.present? && icon_right %>
+      <%= f.button opts do %>
+        <%= (content_tag(:span, button_text, class: 'font-semibold') + separator + icon_html.to_s).html_safe %>
+      <% end %>
+    <% else %>
+      <%= f.button opts do %>
+        <%= (icon_html.to_s + separator + content_tag(:span, button_text, class: 'font-semibold')).html_safe %>
+      <% end %>
+    <% end %>
   <% elsif button_to_method.present? %>
     <%# button_to for non-GET requests (delete, post, etc.) %>
     <% button_opts = { class: classes, method: button_to_method, id: id } %>
@@ -92,9 +101,9 @@
     <%= button_to path, button_opts do %>
       <% separator = icon_html.present? ? "　" : '' %>
       <% if icon_html.present? && icon_right %>
-        <%= raw(content_tag(:span, button_text, class: 'font-semibold') + separator + icon_html.to_s) %>
+        <%= (content_tag(:span, button_text, class: 'font-semibold') + separator + icon_html.to_s).html_safe %>
       <% else %>
-        <%= raw(icon_html.to_s + separator + content_tag(:span, button_text, class: 'font-semibold')) %>
+        <%= (icon_html.to_s + separator + content_tag(:span, button_text, class: 'font-semibold')).html_safe %>
       <% end %>
     <% end %>
   <% else %>
@@ -110,6 +119,6 @@
     <% else %>
       <% inner = (icon_html.to_s + separator + content_tag(:span, button_text, class: 'font-semibold')).html_safe %>
     <% end %>
-    <%= link_to raw(inner), path, link_opts %>
+    <%= link_to inner, path, link_opts %>
   <% end %>
 </div>
