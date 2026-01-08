@@ -39,15 +39,15 @@
   </div>
 
   <%# タブコンテンツ %>
-  <% case params[:tab]
-     when 'member_lists' %>
+  <% case params[:tab] %>
+  <% when 'member_lists' %>
     <div class="space-y-4">
       <% if @member_lists && @member_lists.any? %>
         <%# メンバーリストカード一覧 %>
         <% @member_lists.each do |member_list| %>
-          <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md transition">
-            <div class="flex flex-col sm:flex-row sm:items-start gap-4">
-              <div class="grow">
+          <%= link_to edit_member_list_path(member_list), class: "block bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md hover:border-blue-300 border border-transparent transition cursor-pointer group" do %>
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex-1">
                 <h3 class="font-semibold text-lg text-gray-900 mb-2">
                   <%= member_list.name %>
                 </h3>
@@ -62,19 +62,11 @@
                   </span>
                 </div>
               </div>
+              <svg class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center mt-4 w-full">
-              <%= render 'shared/button',
-                    button_text: '編集する',
-                    path: edit_member_list_path(member_list),
-                    variant: 'primary',
-                    size: 'md',
-                    full_mobile: true,
-                    extra_class: 'w-full',
-                    icon: 'icons/edit_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-                    icon_class: 'inline-block' %>
-            </div>
-          </div>
+          <% end %>
         <% end %>
 
         <%# 新規作成ボタン（中央配置） %>
@@ -116,156 +108,99 @@
     </div>
 
   <% when 'account' %>
-    <div class="space-y-6">
-      <%# アカウント情報セクション %>
-      <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
-        <h2 class="text-xl font-bold mb-6"><%= t("mypage.account.title") %></h2>
-
-        <div class="space-y-4">
-          <div class="flex items-center justify-between py-3 border-b border-gray-100">
-            <div>
-              <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.email") %></p>
-              <p class="text-sm text-gray-600"><%= @user.email %></p>
-            </div>
-            <%= link_to t("mypage.account.edit_account"), edit_user_registration_path, class: "text-blue-600 hover:underline text-sm" %>
-          </div>
-
-          <% if @user.name.present? %>
-            <div class="flex items-center justify-between py-3 border-b border-gray-100">
-              <div>
-                <p class="font-medium text-gray-900"><%= t("activerecord.attributes.user.name") %></p>
-                <p class="text-sm text-gray-600"><%= @user.name %></p>
+    <div class="space-y-4">
+      <%# アカウント情報カード %>
+      <%= link_to edit_user_registration_path, class: "block bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md hover:border-blue-300 border border-transparent transition cursor-pointer group" do %>
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <%= image_tag 'icons/person_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                              width: 24,
+                              height: 24,
+                              class: 'text-blue-600',
+                              alt: 'アカウントアイコン' %>
               </div>
-              <%= link_to t("mypage.account.edit_account"), edit_user_registration_path, class: "text-blue-600 hover:underline text-sm" %>
+              <div>
+                <h3 class="text-xl font-bold text-gray-900"><%= t("mypage.account.title") %></h3>
+              </div>
             </div>
-          <% end %>
-        </div>
-      </div>
-
-      <%# タイムゾーン設定セクション %>
-      <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-            <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-                          width: 24,
-                          height: 24,
-                          class: 'text-indigo-600',
-                          alt: 'タイムゾーン設定アイコン' %>
-          </div>
-          <div>
-            <h2 class="text-xl font-bold text-gray-900">タイムゾーン設定</h2>
-            <p class="text-sm text-gray-600">時刻表示をあなたの地域に合わせます</p>
-          </div>
-        </div>
-
-        <%= form_with(model: @user, url: update_preferences_users_path, method: :patch, local: true, data: { turbo: false }) do |f| %>
-          <div class="space-y-4">
-            <%# タイムゾーン選択 %>
-            <div>
-              <%= f.label :timezone, class: "block text-sm font-medium text-gray-700 mb-2" do %>
-                タイムゾーン
+            <div class="space-y-2 text-sm text-gray-600 pl-13">
+              <p><%= @user.email %></p>
+              <% if @user.name.present? %>
+                <p><%= @user.name %></p>
               <% end %>
-              <%= f.select(:timezone,
-                           User::AVAILABLE_TIMEZONES,
-                           { selected: @user.timezone, prompt: false },
-                           class: "w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition") %>
-              <p class="mt-1.5 text-xs text-gray-500">
-                現在設定：<%= User::AVAILABLE_TIMEZONES.find { |id, label| id == @user.timezone }&.second || @user.timezone %>
-              </p>
-            </div>
-
-            <%# 保存ボタン（既存のボタンパターンに統合） %>
-            <div class="pt-2">
-              <%= f.submit '設定を保存',
-                          class: "inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-base font-medium transition-colors duration-200 shadow-sm w-full sm:w-auto" %>
             </div>
           </div>
-        <% end %>
-      </div>
-
-      <%# スタイル設定セクション %>
-      <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-            <%= image_tag 'icons/palette_24dp_1F1F1F.svg',
-                          width: 24,
-                          height: 24,
-                          class: 'text-purple-600',
-                          alt: 'スタイル設定アイコン' %>
-          </div>
-          <div>
-            <h2 class="text-xl font-bold text-gray-900">スタイル設定</h2>
-            <p class="text-sm text-gray-600">テーマや表示設定を変更できます</p>
-          </div>
+          <svg class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
         </div>
+      <% end %>
 
-        <%# プレースホルダーコンテンツ %>
-        <div class="bg-gray-50 border border-gray-200 rounded-xl px-6 py-8 text-center">
-          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">準備中</h3>
-          <p class="text-gray-600 mb-6 max-w-md mx-auto">
-            テーマ切り替え機能は現在開発中です。<br>
-            各シーンに合わせたスタイルをまもなく利用可能になります。
-          </p>
-          <%# テーマプレビュー %>
-          <div class="flex flex-wrap justify-center gap-3 text-xs text-gray-600">
-            <span class="inline-flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-200">
-              <span class="w-4 h-4 rounded-full bg-blue-500 border-2 border-blue-600"></span>
-              シンプル
-            </span>
-            <span class="inline-flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-lg border border-amber-200">
-              <span class="w-4 h-4 rounded-full bg-amber-500 border-2 border-amber-600"></span>
-              スクール
-            </span>
-            <span class="inline-flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-300">
-              <span class="w-4 h-4 rounded-full bg-slate-600 border-2 border-slate-700"></span>
-              ワーク
-            </span>
-            <span class="inline-flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
-              <span class="w-4 h-4 rounded-full bg-green-500 border-2 border-green-600"></span>
-              スポーツ
-            </span>
-            <span class="inline-flex items-center gap-2 px-3 py-2 bg-pink-50 rounded-lg border border-pink-200">
-              <span class="w-4 h-4 rounded-full bg-pink-500 border-2 border-pink-600"></span>
-              パーティ
-            </span>
-            <span class="inline-flex items-center gap-2 px-3 py-2 bg-red-50 rounded-lg border border-red-200">
-              <span class="w-4 h-4 rounded-full bg-red-600 border-2 border-red-700"></span>
-              カジノ
-            </span>
-          </div>
-        </div>
-
-        <%# 現在のテーマ表示 %>
-        <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-blue-900">現在のテーマ</p>
-              <p class="text-xs text-blue-700 mt-1">デフォルトテーマを使用中</p>
+      <%# タイムゾーン設定カード %>
+      <%= link_to timezone_settings_path, class: "block bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md hover:border-blue-300 border border-transparent transition cursor-pointer group" do %>
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                              width: 24,
+                              height: 24,
+                              class: 'text-indigo-600',
+                              alt: 'タイムゾーン設定アイコン' %>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-900">タイムゾーン設定</h3>
+              </div>
             </div>
-            <span class="inline-flex items-center px-3 py-1 bg-white text-blue-800 rounded-full text-sm font-medium border border-blue-200">
-              シンプル
-            </span>
+            <div class="space-y-2 text-sm text-gray-600 pl-13">
+              <p>現在の設定：<%= User::AVAILABLE_TIMEZONES.find { |id, label| id == @user.timezone }&.second || @user.timezone %></p>
+            </div>
           </div>
+          <svg class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
         </div>
-      </div>
+      <% end %>
 
-      <%# ログアウトセクション %>
-      <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
-        <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center w-full">
-          <%= render 'shared/button',
-                button_text: t("mypage.account.logout"),
-                path: destroy_user_session_path,
-                variant: 'tertiary',
-                size: 'md',
-                button_to_method: :delete,
-                full_mobile: true,
-                extra_class: 'w-full bg-gray-600 hover:bg-gray-700' %>
+      <%# スタイル設定カード %>
+      <%= link_to style_settings_path, class: "block bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md hover:border-blue-300 border border-transparent transition cursor-pointer group" do %>
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                <%= image_tag 'icons/palette_24dp_1F1F1F.svg',
+                              width: 24,
+                              height: 24,
+                              class: 'text-purple-600',
+                              alt: 'スタイル設定アイコン' %>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-900">スタイル設定</h3>
+              </div>
+            </div>
+            <div class="space-y-2 text-sm text-gray-600 pl-13">
+              <p>現在のテーマ：<%= User::THEME_LABELS[@user.theme_preference] || 'シンプル' %></p>
+            </div>
+          </div>
+          <svg class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
         </div>
+      <% end %>
+
+      <%# ログアウトボタン %>
+      <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center mt-4 w-full">
+        <%= render 'shared/button',
+              button_text: t("mypage.account.logout"),
+              path: destroy_user_session_path,
+              variant: 'tertiary',
+              size: 'md',
+              button_to_method: :delete,
+              full_mobile: true,
+              extra_class: 'w-full bg-gray-600 hover:bg-gray-700',
+              icon: 'icons/logout_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg' %>
       </div>
     </div>
 
@@ -274,9 +209,9 @@
     <div class="space-y-4">
       <% if @events.any? %>
         <% @events.each do |event| %>
-          <div class="event-card bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md transition">
-            <div class="flex flex-col sm:flex-row sm:items-start gap-4">
-              <div class="grow">
+          <%= link_to event_path(event), class: "block bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md hover:border-blue-300 border border-transparent transition cursor-pointer group" do %>
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex-1">
                 <h3 class="font-semibold text-lg text-gray-900 mb-2">
                   <%= event.title.presence || "イベント #{event.id}" %>
                 </h3>
@@ -310,19 +245,11 @@
                   <% end %>
                 </div>
               </div>
+              <svg class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center mt-4 w-full">
-              <%= render 'shared/button',
-                    button_text: t("mypage.events.view_details"),
-                    path: event_path(event),
-                    variant: 'primary',
-                    size: 'md',
-                    full_mobile: true,
-                    extra_class: 'w-full',
-                    icon: 'icons/event_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-                    icon_class: 'inline-block' %>
-            </div>
-          </div>
+          <% end %>
         <% end %>
 
         <%# 新規作成ボタン（中央配置） %>

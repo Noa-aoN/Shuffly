@@ -73,33 +73,37 @@
       </div>
     </div>
 
-    <div class="flex justify-center mt-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:place-items-center mt-6">
+      <%= render 'shared/button',
+            button_text: "マイページへ戻る",
+            path: mypage_path(tab: 'account'),
+            variant: 'secondary',
+            size: 'md',
+            full_mobile: true,
+            extra_class: 'w-full',
+            icon: 'icons/keyboard_return_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg' %>
+
       <%= render 'shared/button',
             f: f,
-            button_text: t("devise.registrations.edit.submit"),
+            button_text: "情報を更新する",
             variant: 'primary',
-            size: 'lg' %>
-    </div>
-  <% end %>
+            size: 'md',
+            full_mobile: true,
+            extra_class: 'w-full',
+            icon: 'icons/save_24dp_1F1F1F.svg' %>
 
-  <div class="mt-10 pt-6 border-t border-gray-200">
-    <h2 class="text-xl font-bold mb-4"><%= t("devise.registrations.edit.cancel_account_title") %></h2>
-    <p class="text-sm text-gray-600 mb-4"><%= t("devise.registrations.edit.cancel_account_message") %></p>
-    <div class="flex justify-center">
       <%= render 'shared/button',
-            button_text: t("devise.registrations.edit.cancel_account_button"),
+            button_text: "アカウントを削除する",
             path: registration_path(resource_name),
             variant: 'danger',
             size: 'md',
+            full_mobile: true,
+            extra_class: 'w-full',
+            icon: 'icons/account_circle_off_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
             button_to_method: :delete,
             confirm_message: t("devise.registrations.edit.cancel_account_confirm") %>
     </div>
-  </div>
-
-  <div class="mt-6 flex justify-center">
-    <%= link_to t("devise.registrations.edit.back"), :back, class: "text-blue-600 hover:underline" %>
-  </div>
-<% end %>
+  <% end %>
 
 <script>
 function togglePasswordVisibility(fieldId) {
@@ -115,3 +119,4 @@ function togglePasswordVisibility(fieldId) {
   }
 }
 </script>
+<% end %>

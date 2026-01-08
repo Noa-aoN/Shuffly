@@ -1,0 +1,123 @@
+<%# スタイル設定ページ %>
+
+<div class="max-w-6xl mx-auto px-6 py-6 md:py-8">
+  <%# ヘッダー %>
+  <div class="mb-6">
+    <%= link_to mypage_path(tab: 'account'), class: "inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 mb-4" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      マイページに戻る
+    <% end %>
+    <h1 class="text-2xl md:text-3xl font-bold text-gray-900">スタイル設定</h1>
+    <p class="text-gray-600 mt-2">テーマや表示設定を変更できます</p>
+  </div>
+
+  <%# スタイル設定フォーム %>
+  <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
+    <%= form_with(model: @user, url: settings_style_path, method: :patch, local: true, data: { turbo: false }) do |f| %>
+      <div class="space-y-6">
+        <%# テーマ選択 %>
+        <div>
+          <%= f.label :theme_preference, class: "block text-sm font-medium text-gray-700 mb-3" do %>
+            テーマを選択
+          <% end %>
+
+          <%# テーマ選択肢 %>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <% User::THEME_OPTIONS.each do |theme| %>
+              <label class="relative flex cursor-pointer">
+                <%= f.radio_button(:theme_preference, theme, class: "peer sr-only") %>
+                <div class="w-full p-4 border-2 rounded-lg transition-all peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-gray-300 <%=
+                  if @user.theme_preference == theme
+                    'border-blue-500 bg-blue-50'
+                  else
+                    'border-gray-200'
+                  end
+                %>">
+                  <div class="flex items-center gap-3">
+                    <%# テーマプレビューアイコン %>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center <%=
+                      case theme
+                      when 'simple' then 'bg-blue-100'
+                      when 'school' then 'bg-amber-50'
+                      when 'work' then 'bg-slate-100'
+                      when 'sports' then 'bg-green-50'
+                      when 'party' then 'bg-pink-50'
+                      when 'casino' then 'bg-red-50'
+                      end
+                    %>">
+                      <span class="text-xl">
+                        <%=
+                          case theme
+                          when 'simple' then '✨'
+                          when 'school' then '📚'
+                          when 'work' then '💼'
+                          when 'sports' then '⚽'
+                          when 'party' then '🎉'
+                          when 'casino' then '🎰'
+                          end
+                        %>
+                      </span>
+                    </div>
+                    <div class="flex-1">
+                      <div class="font-medium text-gray-900"><%= User::THEME_LABELS[theme] %></div>
+                      <div class="text-xs text-gray-500 mt-0.5">現在の設定</div>
+                    </div>
+                  </div>
+                </div>
+              </label>
+            <% end %>
+          </div>
+
+          <p class="mt-1.5 text-xs text-gray-500">
+            現在のテーマ：<%= User::THEME_LABELS[@user.theme_preference] || 'シンプル' %>
+          </p>
+        </div>
+
+        <%# 保存ボタン %>
+        <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center">
+          <%= render 'shared/button',
+                f: f,
+                button_text: '設定を保存',
+                variant: 'primary',
+                size: 'md',
+                full_mobile: true,
+                extra_class: 'w-full',
+                icon: 'icons/palette_24dp_1F1F1F.svg' %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# テーマ説明 %>
+  <div class="mt-6 bg-gray-50 border border-gray-200 rounded-xl px-6 py-6">
+    <h3 class="font-semibold text-gray-900 mb-3">テーマについて</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-blue-500 border-2 border-blue-600"></span>
+        <span class="text-gray-700"><span class="font-medium">シンプル</span> - シンプルで使いやすいデザイン</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-amber-500 border-2 border-amber-600"></span>
+        <span class="text-gray-700"><span class="font-medium">スクール</span> - 学校向けの明るいデザイン</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-slate-600 border-2 border-slate-700"></span>
+        <span class="text-gray-700"><span class="font-medium">ワーク</span> - ビジネス向けの落ち着いたデザイン</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-green-500 border-2 border-green-600"></span>
+        <span class="text-gray-700"><span class="font-medium">スポーツ</span> - スポーツチーム向けの活気あるデザイン</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-pink-500 border-2 border-pink-600"></span>
+        <span class="text-gray-700"><span class="font-medium">パーティ</span> - パーティー向けの楽しいデザイン</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-red-600 border-2 border-red-700"></span>
+        <span class="text-gray-700"><span class="font-medium">カジノ</span> - カジノナイト向けのエレガントなデザイン</span>
+      </div>
+    </div>
+  </div>
+</div>
