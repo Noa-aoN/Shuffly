@@ -441,7 +441,7 @@
     const groups = results.groups;
     const groupNames = results.group_names || results.groupNames || {};
     let out = '';
-    Object.keys(groups).forEach(k=>{
+    Object.keys(groups).sort().forEach(k=>{
       const members = groups[k] || [];
       const label = groupNames[k] || k;
       out += label + ' (' + members.length + '名):\n';
@@ -1017,7 +1017,7 @@
             });
 
             if (Object.keys(groups).length > 0) {
-              Object.keys(groups).forEach(k => {
+              Object.keys(groups).sort().forEach(k => {
                 const members = groups[k] || [];
                 combinedContent += `グループ${k} (${members.length}名):\n`;
                 members.forEach(m => {
@@ -1030,7 +1030,7 @@
             // groupsデータが直接ある場合
             const groups = dataToExport.groups;
             const groupNames = dataToExport.group_names || dataToExport.groupNames || {};
-            Object.keys(groups).forEach(k => {
+            Object.keys(groups).sort().forEach(k => {
               const members = groups[k] || [];
               const label = groupNames[k] || k;
               combinedContent += `${label} (${members.length}名):\n`;
