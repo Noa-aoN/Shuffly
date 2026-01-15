@@ -1,0 +1,53 @@
+<%# アイコンのみの円形ボタン %>
+<%#
+Parameters:
+  icon: アイコンファイルパス
+  path: リンク先
+  method: HTTPメソッド（delete等）
+  variant: カラーバリアント（default, danger）
+  title: ツールチップ（必須）
+  id: HTML ID
+  data: データ属性
+  confirm_message: 確認メッセージ（method指定時）
+%>
+
+<% icon = local_assigns.fetch(:icon, nil) %>
+<% path = local_assigns.fetch(:path, '#') %>
+<% method = local_assigns.fetch(:method, nil) %>
+<% variant = local_assigns.fetch(:variant, 'default') %>
+<% title = local_assigns.fetch(:title, '') %>
+<% id = local_assigns.fetch(:id, nil) %>
+<% data = local_assigns.fetch(:data, {}) %>
+<% confirm_message = local_assigns.fetch(:confirm_message, nil) %>
+
+<% variant_classes = {
+  'default' => 'bg-white text-gray-600 hover:bg-gray-100 border border-slate-200',
+  'danger' => 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+} %>
+
+<% var_class = variant_classes[variant] || variant_classes['default'] %>
+<% base_class = "w-10 h-10 rounded-full flex items-center justify-center shadow-sm transition #{var_class}" %>
+
+<% if method %>
+  <%# button_to for non-GET requests %>
+  <% button_opts = { class: base_class, method: method, id: id, title: title } %>
+  <% button_opts[:data] = { turbo: false } %>
+  <% if confirm_message %>
+    <% button_opts[:data][:confirm] = confirm_message %>
+  <% end %>
+  <% button_opts[:data].merge!(data) unless data.empty? %>
+  <% button_opts.delete_if { |_, v| v.nil? || v == {} } %>
+
+  <%= button_to path, button_opts do %>
+    <%= image_tag icon, width: 20, height: 20, alt: title, class: 'pointer-events-none' %>
+  <% end %>
+<% else %>
+  <%# 通常リンク %>
+  <% link_opts = { class: base_class, id: id, title: title, 'aria-label': title } %>
+  <% link_opts[:data] = data unless data.empty? %>
+  <% link_opts.delete_if { |_, v| v.nil? } %>
+
+  <%= link_to path, link_opts do %>
+    <%= image_tag icon, width: 20, height: 20, alt: title, class: 'pointer-events-none' %>
+  <% end %>
+<% end %>

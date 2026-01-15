@@ -10,6 +10,13 @@
       <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
       <h2 class="text-xl md:text-2xl font-semibold">シャッフル結果をみる</h2>
     </div>
+    <%# 履歴クリアボタン（右上に配置） %>
+    <%= render 'shared/icon_button',
+          icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+          path: '#',
+          variant: 'default',
+          title: '履歴をクリア',
+          id: 'btn-clear-history' %>
   </div>
 
   <!-- ========================================== -->
@@ -63,8 +70,8 @@
         <div class="flex flex-col gap-3">
           <!-- オプション: 表示内容 -->
           <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
-            <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-fit">表示内容：</label>
-            <select id="displayFormatSelect" class="border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-auto min-w-[240px]">
+            <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-[120px] sm:min-w-[140px]">表示内容：</label>
+            <select id="displayFormatSelect" class="bg-white border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-auto min-w-[240px]">
               <option value="name">グループ名</option>
               <option value="name_break">グループ名 ※改行あり</option>
               <option value="name_count">グループ名＋人数</option>
@@ -75,8 +82,8 @@
 
           <!-- オプション: メンバーの区切り方 -->
           <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
-            <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-fit">メンバーの区切り方：</label>
-            <select id="separatorSelect" class="border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-auto min-w-[240px]">
+            <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-[120px] sm:min-w-[140px]">メンバーの区切り方：</label>
+            <select id="separatorSelect" class="bg-white border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-auto min-w-[240px]">
               <option value="," selected>カンマ</option>
               <option value=" ">スペース</option>
               <option value="  ">ダブルスペース</option>
@@ -87,8 +94,8 @@
 
           <!-- オプション: グループの区切り方 -->
           <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
-            <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-fit">グループの区切り方：</label>
-            <select id="groupSeparatorSelect" class="border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-auto min-w-[240px]">
+            <label class="text-sm mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-[120px] sm:min-w-[140px]">グループの区切り方：</label>
+            <select id="groupSeparatorSelect" class="bg-white border border-slate-300 rounded-xl px-3 py-2 w-full sm:w-auto min-w-[240px]">
               <option value="none" selected>なし</option>
               <option value="space">空行</option>
               <option value="line">線</option>

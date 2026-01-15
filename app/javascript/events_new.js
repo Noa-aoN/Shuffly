@@ -1266,8 +1266,63 @@ const ShufflyApp = (function() {
       }
     }
 
+    // 履歴データ（新形式）をクリア
+    historyData.groups = [];
+    historyData.order = [];
+    historyData.roles = [];
+
     updateParticipantCount();
     showToast("全ての履歴をクリアしました");
+  }
+
+  function clearMembers(){
+    const confirmed = window.confirm("メンバーリストをクリアします。よろしいですか？");
+    if(!confirmed) return;
+
+    // メンバーリストを完全にクリア
+    setRawAndRefreshDisplay("");
+
+    // メンバーデータ入力欄もクリア
+    try{
+      const mj = document.getElementById('membersDataInput');
+      if(mj) mj.value = "[]";
+    }catch(e){}
+
+    // 履歴配列を完全にクリア
+    shufflyHistory = [];
+    currentHistoryIndex = -1;
+
+    const histField = document.getElementById('historyJsonInput');
+    if(histField) histField.value = "";
+
+    // グループ表示をクリア
+    const gOut = document.getElementById('groupOutput');
+    const sOut = document.getElementById('statsOutput');
+    const gr = document.getElementById('groupRoundHint');
+    if(gOut) gOut.value = "";
+    if(sOut) sOut.value = "";
+    if(gr) gr.innerHTML = '現在のグループ分け表示：<span class="font-bold">未実施</span>';
+
+    // 順番表示をクリア
+    const oOut = document.getElementById('orderOutput');
+    const or = document.getElementById('orderRoundHint');
+    const oJson = document.getElementById('orderJsonInput');
+    if(oOut) oOut.value = "";
+    if(or) or.innerHTML = '現在の順番決め表示：<span class="font-bold">未実施</span>';
+    if(oJson) oJson.value = "[]";
+
+    // 役割表示をクリア
+    const rOut = document.getElementById('rolesOutput');
+    const rr = document.getElementById('rolesRoundHint');
+    const sJson = document.getElementById('settingsJsonInput');
+    if(rOut) rOut.value = "";
+    if(rr) rr.innerHTML = '現在の役割分担表示：<span class="font-bold">未実施</span>';
+    if(sJson) sJson.value = "{}";
+
+    // メンバー数表示を更新
+    updateParticipantCount();
+
+    showToast("メンバーリストをクリアしました");
   }
 
   function togglePresentationMode(){
@@ -1639,6 +1694,7 @@ const ShufflyApp = (function() {
     bindIf('btn-trigger-import', 'click', (e)=>{ e.preventDefault(); triggerImport(); });
     bindIf('importFile', 'change', handleImportFile);
     bindIf('btn-insert-sample', 'click', (e)=>{ e.preventDefault(); insertSampleData(); });
+    bindIf('btn-clear-members', 'click', (e)=>{ e.preventDefault(); clearMembers(); });
     bindIf('btn-clear-history', 'click', (e)=>{ e.preventDefault(); clearMemberHistories(); });
 
     // タブ操作
