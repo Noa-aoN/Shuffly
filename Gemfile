@@ -79,7 +79,7 @@ group :test do
   gem "simplecov", require: false
 
   # One-liner matchers
-  gem "shoulda-matchers", "~> 5.3"
+  gem "shoulda-matchers", "~> 7.0"
 
   # Controller testing helpers for Rails 5+
   gem "rails-controller-testing"
