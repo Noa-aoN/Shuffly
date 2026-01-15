@@ -3,46 +3,58 @@
 <div class="max-w-6xl mx-auto px-6 py-6 md:py-8">
   <%# ヘッダー: タイトルとメタデータ %>
   <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-    <div class="flex-1">
-      <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-        <span class="event-title cursor-pointer hover:bg-gray-100 rounded px-2 py-1 -mx-2 transition-colors"
-              data-event-id="<%= @event.id %>"
-              data-event-title="<%= @event.title.presence || t("mypage.events.title") %>">
-          <%= @event.title.presence || t("mypage.events.title") %>
-        </span>
-        <span class="text-sm text-gray-400 ml-2">
-          <%= image_tag 'icons/edit_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-                         width: 16,
-                         height: 16,
-                         class: 'inline-block align-middle opacity-50',
-                         alt: '編集' %>
-        </span>
-      </h1>
-      <div class="flex flex-wrap gap-4 text-base text-gray-600">
-        <span class="flex items-center gap-1">
-          <%= image_tag 'icons/today_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "作成日アイコン" %>
-          <%= t("mypage.event_detail.created_at") %>: <%= format_datetime_short(@event.created_at) %>
-        </span>
-        <span class="flex items-center gap-1">
-          <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "更新日アイコン" %>
-          <%= t("mypage.event_detail.updated_at") %>: <%= format_datetime_short(@event.updated_at) %>
-        </span>
-        <span class="flex items-center gap-1">
-          <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "人数アイコン" %>
-          <%= t("mypage.event_detail.members_count", count: @members.count) %>
-        </span>
+    <div class="flex items-start justify-between">
+      <div class="flex-1">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+          <span class="event-title cursor-pointer hover:bg-gray-100 rounded px-2 py-1 -mx-2 transition-colors"
+                data-event-id="<%= @event.id %>"
+                data-event-title="<%= @event.title.presence || t("mypage.events.title") %>">
+            <%= @event.title.presence || t("mypage.events.title") %>
+          </span>
+          <span class="text-sm text-gray-400 ml-2">
+            <%= image_tag 'icons/edit_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+                           width: 16,
+                           height: 16,
+                           class: 'inline-block align-middle opacity-50',
+                           alt: '編集' %>
+          </span>
+        </h1>
+        <div class="flex flex-wrap gap-4 text-base text-gray-600">
+          <span class="flex items-center gap-1">
+            <%= image_tag 'icons/today_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "作成日アイコン" %>
+            <%= t("mypage.event_detail.created_at") %>: <%= format_datetime_short(@event.created_at) %>
+          </span>
+          <span class="flex items-center gap-1">
+            <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "更新日アイコン" %>
+            <%= t("mypage.event_detail.updated_at") %>: <%= format_datetime_short(@event.updated_at) %>
+          </span>
+          <span class="flex items-center gap-1">
+            <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "人数アイコン" %>
+            <%= t("mypage.event_detail.members_count", count: @members.count) %>
+          </span>
+        </div>
+        <%# 実行回数表示 %>
+        <div class="flex flex-wrap gap-4 text-sm text-gray-500 mt-2" id="execution-counts">
+          <span>グループ分け回数: <strong id="groups-count">0回</strong></span>
+          <span>順番決め回数: <strong id="order-count">0回</strong></span>
+          <span>役割分担回数: <strong id="roles-count">0回</strong></span>
+        </div>
       </div>
-      <%# 実行回数表示 %>
-      <div class="flex flex-wrap gap-4 text-sm text-gray-500 mt-2" id="execution-counts">
-        <span>グループ分け回数: <strong id="groups-count">0回</strong></span>
-        <span>順番決め回数: <strong id="order-count">0回</strong></span>
-        <span>役割分担回数: <strong id="roles-count">0回</strong></span>
-      </div>
+
+      <%# 削除ボタン（右上の丸ボタン） %>
+      <%= render 'shared/icon_button',
+            icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            path: event_path(@event),
+            method: :delete,
+            variant: 'default',
+            title: 'イベントを削除',
+            id: 'btn-delete-event',
+            confirm_message: t("mypage.event_detail.delete_confirm_event") %>
     </div>
 
     <%# アクションボタン %>
     <div class="mt-4 pt-4 border-t border-gray-100">
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2 w-full sm:place-items-center">
         <%= render 'shared/button',
               button_text: t("mypage.event_detail.back"),
               path: mypage_path(tab: 'events'),
@@ -60,17 +72,6 @@
               full_mobile: true,
               extra_class: 'w-full',
               icon: 'icons/start_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-              icon_class: 'inline-block' %>
-        <%= render 'shared/button',
-              button_text: 'イベント履歴を削除',
-              path: event_path(@event),
-              variant: 'tertiary',
-              size: 'sm',
-              full_mobile: true,
-              button_to_method: :delete,
-              id: 'btn-delete-event',
-              extra_class: 'w-full bg-red-50 text-red-600 hover:bg-red-100',
-              icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
               icon_class: 'inline-block' %>
       </div>
     </div>

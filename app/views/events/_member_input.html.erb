@@ -11,17 +11,13 @@
       <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">1</div>
       <h2 class="text-xl md:text-2xl font-semibold">メンバーを入力する</h2>
     </div>
-    <%# 履歴クリアボタン（カード右上に配置） %>
-    <%= render 'shared/button',
-          f: nil,
-          button_text: '履歴をクリア',
-          id: 'btn-clear-history',
-          path: '#',
-          variant: 'tertiary',
-          size: 'sm',
-          extra_class: 'text-sm',
+    <%# メンバークリアボタン（カード右上に配置） %>
+    <%= render 'shared/icon_button',
           icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-          icon_class: 'inline-block' %>
+          path: '#',
+          variant: 'default',
+          title: 'メンバーをクリア',
+          id: 'btn-clear-members' %>
   </div>
 
   <label class="block mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> メンバーリスト</label>
