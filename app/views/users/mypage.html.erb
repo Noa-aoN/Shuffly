@@ -252,7 +252,7 @@
           <% end %>
         <% end %>
 
-        <%# 新規作成ボタン（中央配置） %>
+        <%# 新規作成ボタン %>
         <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center mt-4 w-full">
           <%= render 'shared/button',
                 button_text: t("mypage.events.create_new"),
@@ -272,7 +272,7 @@
           </div>
         <% end %>
       <% else %>
-        <%# 空の状態 - 魅力的な表示 %>
+        <%# 空の状態 %>
         <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-16 text-center">
           <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <%= image_tag 'icons/event_note_24dp_1F1F1F.svg', width: 48, height: 48, class: "text-blue-400", alt: "イベントアイコン" %>

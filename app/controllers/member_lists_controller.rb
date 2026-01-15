@@ -1,6 +1,6 @@
 class MemberListsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_member_list, only: [:edit, :update, :destroy, :show]
+  before_action :set_member_list, only: [ :edit, :update, :destroy, :show ]
 
   def index
     @member_lists = current_user.member_lists.order(created_at: :desc)
@@ -14,7 +14,7 @@ class MemberListsController < ApplicationController
             name: ml.name,
             members: ml.members,
             members_count: ml.members.count,
-            created_at: ml.created_at.strftime('%Y年%m月%d日')
+            created_at: ml.created_at.strftime("%Y年%m月%d日")
           }
         }
       end

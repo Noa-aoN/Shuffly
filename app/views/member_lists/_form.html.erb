@@ -63,14 +63,13 @@
       <input id="import-file-input" type="file" accept=".txt,.csv" class="hidden">
 
       <%# 人数表示インジケーター %>
-      <div id="members-count" class="text-base text-yellow-800 mt-3 mb-2 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+      <div id="members-count" class="text-base text-yellow-800 mt-8 mb-2 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
         現在のメンバー数：<span class="font-bold">未入力</span>
       </div>
     </div>
 
     <%# アクションボタン %>
     <% if member_list.persisted? %>
-      <%# 編集時: マイページに戻る・更新・削除をgridで並べる %>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <%= render 'shared/button',
               button_text: 'マイページに戻る',

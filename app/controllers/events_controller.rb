@@ -1,5 +1,5 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: [:show, :edit, :update, :destroy]
+  before_action :set_event, only: [ :show, :edit, :update, :destroy ]
 
   def index
     @events = current_user ? current_user.events : Event.none
@@ -135,7 +135,7 @@ class EventsController < ApplicationController
 
     # JSON文字列をパースしてHashまたはArrayに変換
     # パラメータが存在する場合のみ正規化を行う
-    ['members_data', 'group_rounds', 'order_rounds', 'role_rounds', 'co_occurrence_cache'].each do |key|
+    [ "members_data", "group_rounds", "order_rounds", "role_rounds", "co_occurrence_cache" ].each do |key|
       # キーが存在しない場合はスキップ（既存値を保持）
       next unless params_hash.key?(key)
 
@@ -145,11 +145,11 @@ class EventsController < ApplicationController
         rescue JSON::ParserError => e
           Rails.logger.error "Failed to parse #{key}: #{e.message}"
           # パースに失敗した場合はデフォルト値を設定
-          params_hash[key] = (key == 'members_data' || key == 'co_occurrence_cache') ? {} : []
+          params_hash[key] = (key == "members_data" || key == "co_occurrence_cache") ? {} : []
         end
       elsif params_hash[key].blank?
         # 空文字列が明示的に送信された場合のみデフォルト値を設定
-        params_hash[key] = (key == 'members_data' || key == 'co_occurrence_cache') ? {} : []
+        params_hash[key] = (key == "members_data" || key == "co_occurrence_cache") ? {} : []
       end
     end
 

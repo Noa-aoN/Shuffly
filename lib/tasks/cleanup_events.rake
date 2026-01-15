@@ -13,13 +13,13 @@ namespace :events do
       puts "削除しますか？ (yes/no)"
 
       # 自動実行の場合はENV変数で制御
-      if ENV['AUTO_CONFIRM'] == 'true'
-        answer = 'yes'
+      if ENV["AUTO_CONFIRM"] == "true"
+        answer = "yes"
       else
         answer = STDIN.gets.chomp
       end
 
-      if answer.downcase == 'yes'
+      if answer.downcase == "yes"
         invalid_events.each do |event|
           puts "イベント ID #{event.id} を削除中..."
           event.destroy
@@ -44,13 +44,13 @@ namespace :events do
       # order_roundsの移行
       if event.order_rounds.present?
         event.order_rounds.each_with_index do |round, idx|
-          if round['order'].present? && round['order'].is_a?(Array)
+          if round["order"].present? && round["order"].is_a?(Array)
             # 数字の配列の場合、名前も追加
-            if round['order'].first.is_a?(Integer)
+            if round["order"].first.is_a?(Integer)
               members = event.members_list
-              round['order'] = round['order'].map do |member_id|
-                member = members.find { |m| m['id'] == member_id }
-                member ? { 'member_id' => member_id, 'name' => member['name'] } : nil
+              round["order"] = round["order"].map do |member_id|
+                member = members.find { |m| m["id"] == member_id }
+                member ? { "member_id" => member_id, "name" => member["name"] } : nil
               end.compact
               updated = true
             end
@@ -61,13 +61,13 @@ namespace :events do
       # role_roundsの移行
       if event.role_rounds.present?
         event.role_rounds.each_with_index do |round, idx|
-          if round['assignments'].present? && round['assignments'].is_a?(Array)
-            round['assignments'].each do |assignment|
+          if round["assignments"].present? && round["assignments"].is_a?(Array)
+            round["assignments"].each do |assignment|
               # nameがない場合、member_idから名前を追加
-              if assignment['member_id'].present? && assignment['name'].blank?
+              if assignment["member_id"].present? && assignment["name"].blank?
                 members = event.members_list
-                member = members.find { |m| m['id'] == assignment['member_id'] }
-                assignment['name'] = member ? member['name'] : "不明"
+                member = members.find { |m| m["id"] == assignment["member_id"] }
+                assignment["name"] = member ? member["name"] : "不明"
                 updated = true
               end
             end

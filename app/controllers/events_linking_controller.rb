@@ -57,7 +57,7 @@ class EventsLinkingController < ApplicationController
 
     if timestamps.any?
       # 最も古いタイムスタンプを created_at に設定（日本時間）
-      event.created_at = Time.at(timestamps.min / 1000).in_time_zone('Tokyo')
+      event.created_at = Time.at(timestamps.min / 1000).in_time_zone("Tokyo")
     end
   end
 
@@ -67,21 +67,21 @@ class EventsLinkingController < ApplicationController
     # group_rounds からタイムスタンプを収集
     if event.group_rounds.is_a?(Array)
       event.group_rounds.each do |round|
-        timestamps << round['timestamp'] if round['timestamp'].is_a?(Numeric)
+        timestamps << round["timestamp"] if round["timestamp"].is_a?(Numeric)
       end
     end
 
     # order_rounds からタイムスタンプを収集
     if event.order_rounds.is_a?(Array)
       event.order_rounds.each do |round|
-        timestamps << round['timestamp'] if round['timestamp'].is_a?(Numeric)
+        timestamps << round["timestamp"] if round["timestamp"].is_a?(Numeric)
       end
     end
 
     # role_rounds からタイムスタンプを収集
     if event.role_rounds.is_a?(Array)
       event.role_rounds.each do |round|
-        timestamps << round['timestamp'] if round['timestamp'].is_a?(Numeric)
+        timestamps << round["timestamp"] if round["timestamp"].is_a?(Numeric)
       end
     end
 
@@ -99,7 +99,7 @@ class EventsLinkingController < ApplicationController
     params_hash = event_params.to_h
 
     # JSON文字列をパースしてHashまたはArrayに変換
-    ['members_data', 'group_rounds', 'order_rounds', 'role_rounds', 'co_occurrence_cache'].each do |key|
+    [ "members_data", "group_rounds", "order_rounds", "role_rounds", "co_occurrence_cache" ].each do |key|
       next unless params_hash.key?(key)
 
       if params_hash[key].is_a?(String) && params_hash[key].present?
@@ -107,10 +107,10 @@ class EventsLinkingController < ApplicationController
           params_hash[key] = JSON.parse(params_hash[key])
         rescue JSON::ParserError => e
           Rails.logger.error "Failed to parse #{key}: #{e.message}"
-          params_hash[key] = (key == 'members_data' || key == 'co_occurrence_cache') ? {} : []
+          params_hash[key] = (key == "members_data" || key == "co_occurrence_cache") ? {} : []
         end
       elsif params_hash[key].blank?
-        params_hash[key] = (key == 'members_data' || key == 'co_occurrence_cache') ? {} : []
+        params_hash[key] = (key == "members_data" || key == "co_occurrence_cache") ? {} : []
       end
     end
 

@@ -15,7 +15,7 @@ class Event < ApplicationRecord
   # メンバーデータを取得
   def members_list
     data = parse_jsonb_field(members_data)
-    data.is_a?(Hash) ? (data['members'] || []) : []
+    data.is_a?(Hash) ? (data["members"] || []) : []
   end
 
   # グループ履歴を取得
