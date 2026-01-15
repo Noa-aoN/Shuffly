@@ -54,6 +54,15 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  # RSpec testing framework
+  gem "rspec-rails", "~> 6.0"
+
+  # Test fixtures
+  gem "factory_bot_rails", "~> 6.2"
+
+  # Fake data generation
+  gem "faker", "~> 3.2"
 end
 
 group :development do
@@ -62,7 +71,16 @@ group :development do
 end
 
 group :test do
-  # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
-  gem "capybara"
-  gem "selenium-webdriver"
+  # Use system testing \[[https://guides.rubyonrails.org/testing.html#system-testing](https://guides.rubyonrails.org/testing.html#system-testing)\]
+  gem "capybara", "~> 3.40"
+  gem "selenium-webdriver", "4.3.0"
+
+  # Code coverage
+  gem "simplecov", require: false
+
+  # One-liner matchers
+  gem "shoulda-matchers", "~> 5.3"
+
+  # Controller testing helpers for Rails 5+
+  gem "rails-controller-testing"
 end

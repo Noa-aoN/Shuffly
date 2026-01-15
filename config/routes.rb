@@ -30,10 +30,10 @@ Rails.application.routes.draw do
   end
 
   # 設定ページ
-  get 'settings/timezone', to: 'users#timezone_settings', as: :timezone_settings
-  patch 'settings/timezone', to: 'users#update_timezone'
-  get 'settings/style', to: 'users#style_settings', as: :style_settings
-  patch 'settings/style', to: 'users#update_style'
+  get "settings/timezone", to: "users#timezone_settings", as: :timezone_settings
+  patch "settings/timezone", to: "users#update_timezone"
+  get "settings/style", to: "users#style_settings", as: :style_settings
+  patch "settings/style", to: "users#update_style"
 
   # メンバーリスト管理
   resources :member_lists

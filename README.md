@@ -1,5 +1,7 @@
 [![Ruby](https://img.shields.io/badge/Ruby-3.2.3-ruby.svg)](https://ruby-lang.org)
 [![Rails](https://img.shields.io/badge/Rails-7.2.3-red.svg)](https://rubyonrails.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org)
+[![Docker](https://img.shields.io/badge/Docker-2496ED.svg)](https://www.docker.com)
 
 ## 概要
 Shuffly は、参加者をシャッフルしてグループ分けや役割分担を行うためのWebアプリです。
@@ -31,12 +33,14 @@ Shuffly は、参加者をシャッフルしてグループ分けや役割分担
 - PostgreSQL
 
 ## プロジェクト構造
-app/<br>
-├── controllers/     # コントローラ（ApplicationController, EventsController, etc.）<br>
-├── models/          # モデル（Event, MemberList, User）<br>
-├── views/           # ビュー<br>
-├── javascript/      # JavaScript（Turbo/Stimulus）<br>
-└── helpers/         # ビューヘルパー<br>
+```
+app/
+├── controllers/     # コントローラ（ApplicationController, EventsController, etc.）
+├── models/          # モデル（Event, MemberList, User）
+├── views/           # ビュー
+├── javascript/      # JavaScript（Turbo/Stimulus）
+└── helpers/         # ビューヘルパー
+```
 
 ## データベース構造
 
@@ -101,9 +105,9 @@ docker compose up
 ## 今後の改善ポイント
 - ✅ ログイン/サインアップ機能
 - ✅ マイページ（イベント履歴一覧・メンバーリスト登録）
+- ✅ メンバーリスト機能
 - トップページ（カードクリックのモーダル表示）
 - 新規シャッフルイベントページ（順番/役割履歴のUI改善・オプション追加・使い方/説明）
-- メンバーリスト機能
 - 画面共有ページ
 
 ## デプロイ
