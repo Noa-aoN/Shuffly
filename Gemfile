@@ -37,7 +37,7 @@ gem "bootsnap", require: false
 gem "devise"
 
 # ページネーション
-gem "pagy", "~> 6.0"
+gem "pagy", "~> 43.2"
 
 # メタタグ・OGP設定
 gem "meta-tags"
