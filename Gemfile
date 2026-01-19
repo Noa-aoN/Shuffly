@@ -73,7 +73,7 @@ end
 group :test do
   # Use system testing \[[https://guides.rubyonrails.org/testing.html#system-testing](https://guides.rubyonrails.org/testing.html#system-testing)\]
   gem "capybara", "~> 3.40"
-  gem "selenium-webdriver", "4.3.0"
+  gem "selenium-webdriver", "4.40.0"
 
   # Code coverage
   gem "simplecov", require: false
