@@ -62,7 +62,7 @@ group :development, :test do
   gem "factory_bot_rails", "~> 6.2"
 
   # Fake data generation
-  gem "faker", "~> 3.2"
+  gem "faker", "~> 3.6"
 end
 
 group :development do
