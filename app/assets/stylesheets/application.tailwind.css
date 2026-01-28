@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@plugin "daisyui" {
+  themes: winter --default;
+}
 
 /* ========================================
    フォーカス状態の視覚化（アクセシビリティ向上）
