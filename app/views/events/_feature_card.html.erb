@@ -8,8 +8,8 @@
   # パラメータ設定
   # ========================================
   # - icon: アイコンパス（オプション）
-  # - icon_bg: アイコン背景色（デフォルト: 'bg-white'）
-  # - card_bg: カード背景色（デフォルト: 'bg-gray-50'）
+  # - icon_bg: アイコン背景色（任意の追加クラス）
+  # - card_bg: カード背景色（任意の追加クラス）
   # - title: タイトル
   # - description: 説明（HTMLセーフ）
   # - number: 番号（オプション、使い方カードの場合）
@@ -17,8 +17,8 @@
   # - text_center: テキスト中央揃え（デフォルト: true）
 
   icon ||= nil
-  icon_bg ||= 'bg-white'
-  card_bg ||= 'bg-blue-50'
+  icon_bg ||= ''
+  card_bg ||= ''
   number ||= nil
   wrapper ||= false
   text_center ||= true
@@ -34,23 +34,23 @@
     <!-- ========================================== -->
     <!-- カード本体                                 -->
     <!-- ========================================== -->
-    <div class="index-feature-card p-6 <%= card_bg %> rounded-xl shadow-sm flex flex-col items-center <%= 'text-center' if text_center %>">
+    <div class="index-feature-card shuffly-feature-card <%= card_bg %> flex flex-col items-center <%= 'text-center' if text_center %>">
       <!-- 番号またはアイコン表示 -->
       <% if number %>
         <!-- 番号表示（使い方カード用） -->
-        <div class="w-15 h-15 bg-blue-500 text-white rounded-full flex items-center justify-center mb-4 font-bold text-xl"><%= number %></div>
+        <div class="shuffly-feature-step <%= icon_bg %>"><%= number %></div>
       <% elsif icon %>
         <!-- アイコン表示 -->
-        <div class="w-16 h-16 <%= icon_bg %> rounded-full flex items-center justify-center mb-4">
+        <div class="shuffly-feature-icon <%= icon_bg %>">
           <%= image_tag icon, width: 24, height: 24, alt: "#{title}アイコン" %>
         </div>
       <% end %>
 
       <!-- タイトル -->
-      <h4 class="font-semibold mb-2"><%= title %></h4>
+      <h4 class="mb-2 text-base font-semibold text-[var(--shuffly-text)]"><%= title %></h4>
 
       <!-- 説明文 -->
-      <p class="text-sm text-gray-600"><%= raw description %></p>
+      <p class="text-sm text-[var(--shuffly-text-secondary)]"><%= raw description %></p>
     </div>
 
 <!-- ========================================== -->

@@ -78,9 +78,9 @@
     <div class="hero-content text-center">
       <div class="max-w-5xl">
         <!-- サービスタイトル -->
-        <p class="text-xl font-semibold tracking-wide mb-1">シャッフリー</p>
-        <h2 class="text-6xl font-extrabold mb-4 tracking-wide">Shuffly</h2>
-        <p class="text-lg mb-8"><span class="bg-yellow-100 px-1"><b>グループ・順番・役割決め</b></span>が、簡単かつスピーディに。</p>
+        <p class="mb-1 text-xl font-semibold tracking-wide text-[var(--shuffly-text-secondary)]">シャッフリー</p>
+        <h2 class="mb-4 text-6xl font-extrabold tracking-wide text-[var(--shuffly-text)]">Shuffly</h2>
+        <p class="text-lg mb-8 text-[var(--shuffly-text-secondary)]"><span class="rounded-md bg-[rgba(139,92,246,0.18)] px-2 py-1 text-[var(--shuffly-text)] shadow-[inset_0_0_0_1px_rgba(139,92,246,0.16)]"><b>グループ・順番・役割決め</b></span>が、簡単かつスピーディに。</p>
 
         <!-- CTAボタングループ -->
         <div class="max-w-[650px] mx-auto">
@@ -121,11 +121,11 @@
   <!-- ========================================== -->
   <!-- できることセクション                       -->
   <!-- ========================================== -->
-  <section class="py-20 bg-base-100 w-screen relative left-1/2 -translate-x-1/2">
+  <section class="shuffly-section-surface py-20 w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 py-1">
       <!-- セクションタイトル -->
-      <h3 class="text-2xl md:text-3xl text-center text-primary mb-3 font-bold">できること</h3>
-      <p class="text-base-content/70 mb-8 text-center">Shufflyで、あらゆる「分ける」「決める」を瞬時に解決。</p>
+      <h3 class="shuffly-section-title text-2xl md:text-3xl text-center mb-3 font-bold">できること</h3>
+      <p class="shuffly-section-copy mb-8 text-center">Shufflyで、あらゆる「分ける」「決める」を瞬時に解決。</p>
 
       <!-- 機能カード3枚 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -133,19 +133,22 @@
         <%= render 'events/feature_card',
               icon: 'icons/diversity_3_24dp_1F1F1F.svg',
               title: 'グループ分け',
-              description: 'メンバーリストから指定した数のグループを<br>複数回・被りづらく自動で作成します。' %>
+              description: 'メンバーリストから指定した数のグループを<br>複数回・被りづらく自動で作成します。',
+              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong' %>
 
         <!-- 順番決め -->
         <%= render 'events/feature_card',
               icon: 'icons/format_list_numbered_24dp_1F1F1F.svg',
               title: '順番決め',
-              description: '発表や作業の順番を<br>ワンクリックでランダムに決定します。' %>
+              description: '発表や作業の順番を<br>ワンクリックでランダムに決定します。',
+              card_bg: 'shuffly-feature-card--info shuffly-feature-card--info-strong' %>
 
         <!-- 役割分担 -->
         <%= render 'events/feature_card',
               icon: 'icons/badge_24dp_1F1F1F.svg',
               title: '役割分担',
-              description: '司会や書記等の役割を公平に振り分けます。' %>
+              description: '司会や書記等の役割を公平に振り分けます。',
+              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong' %>
       </div>
     </div>
   </section>
@@ -156,43 +159,31 @@
   <section class="py-20 w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 py-1">
       <!-- セクションタイトル -->
-      <h3 class="text-2xl md:text-3xl text-center text-primary mb-3 font-bold">ログインするとできること</h3>
-      <p class="text-base-content/70 mb-8 text-center">アカウントを作成して、さらに便利な機能を活用しましょう。</p>
+      <h3 class="shuffly-section-title text-2xl md:text-3xl text-center mb-3 font-bold">ログインするとできること</h3>
+      <p class="shuffly-section-copy mb-8 text-center">アカウントを作成して、さらに便利な機能を活用しましょう。</p>
 
       <!-- 機能カード3枚 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- メンバーリストの保存 -->
-        <div class="index-feature-card card bg-base-100 shadow-sm">
-          <div class="card-body items-center text-center">
-            <div class="w-16 h-16 bg-base-200 rounded-full flex items-center justify-center mb-2">
-              <%= image_tag "icons/save_24dp_1F1F1F.svg", width: 24, height: 24, alt: "保存アイコン" %>
-            </div>
-            <h4 class="card-title text-base">メンバーリストの保存</h4>
-            <p class="text-sm text-base-content/70">よく使うメンバーリストを保存して<br>いつでも呼び出せます。</p>
-          </div>
-        </div>
+        <%= render 'events/feature_card',
+              icon: 'icons/save_24dp_1F1F1F.svg',
+              title: 'メンバーリストの保存',
+              description: 'よく使うメンバーリストを保存して<br>いつでも呼び出せます。',
+              card_bg: 'shuffly-feature-card--accent' %>
 
         <!-- シャッフル履歴の確認 -->
-        <div class="index-feature-card card bg-base-100 shadow-sm">
-          <div class="card-body items-center text-center">
-            <div class="w-16 h-16 bg-base-200 rounded-full flex items-center justify-center mb-2">
-              <%= image_tag "icons/content_paste_search_24dp_1F1F1F.svg", width: 24, height: 24, alt: "履歴確認アイコン" %>
-            </div>
-            <h4 class="card-title text-base">シャッフル履歴の確認</h4>
-            <p class="text-sm text-base-content/70">過去のグループ分けや順番決めの結果を<br>保存・確認できます。</p>
-          </div>
-        </div>
+        <%= render 'events/feature_card',
+              icon: 'icons/content_paste_search_24dp_1F1F1F.svg',
+              title: 'シャッフル履歴の確認',
+              description: '過去のグループ分けや順番決めの結果を<br>保存・確認できます。',
+              card_bg: 'shuffly-feature-card--info' %>
 
         <!-- 画面スタイルの変更 -->
-        <div class="index-feature-card card bg-base-100 shadow-sm">
-          <div class="card-body items-center text-center">
-            <div class="w-16 h-16 bg-base-200 rounded-full flex items-center justify-center mb-2">
-              <%= image_tag "icons/palette_24dp_1F1F1F.svg", width: 24, height: 24, alt: "スタイル変更アイコン" %>
-            </div>
-            <h4 class="card-title text-base">画面スタイルの変更</h4>
-            <p class="text-sm text-base-content/70">テーマや表示スタイルを切り替えられます。</p>
-          </div>
-        </div>
+        <%= render 'events/feature_card',
+              icon: 'icons/palette_24dp_1F1F1F.svg',
+              title: '画面スタイルの変更',
+              description: 'テーマや表示スタイルを切り替えられます。',
+              card_bg: 'shuffly-feature-card--accent' %>
       </div>
     </div>
   </section>
@@ -200,40 +191,34 @@
   <!-- ========================================== -->
   <!-- 使い方セクション                           -->
   <!-- ========================================== -->
-  <section class="py-20 bg-base-100 w-screen relative left-1/2 -translate-x-1/2">
+  <section class="shuffly-section-surface py-20 w-screen relative left-1/2 -translate-x-1/2">
     <div class="max-w-6xl mx-auto px-6 text-center py-1">
       <!-- セクションタイトル -->
-      <h3 class="text-2xl md:text-3xl text-center text-primary mb-3 font-bold">使い方</h3>
-      <p class="text-base-content/70 mb-8 text-center">たった3ステップで、面倒な作業はすべて完了。</p>
+      <h3 class="shuffly-section-title text-2xl md:text-3xl text-center mb-3 font-bold">使い方</h3>
+      <p class="shuffly-section-copy mb-8 text-center">たった3ステップで、面倒な作業はすべて完了。</p>
 
       <!-- ステップカード3枚 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- ステップ1: メンバーを入力 -->
-        <div class="index-feature-card card bg-base-200 shadow-sm">
-          <div class="card-body items-center text-center">
-            <div class="w-15 h-15 bg-primary text-primary-content rounded-full flex items-center justify-center mb-2 font-bold text-xl">1</div>
-            <h4 class="card-title text-base">メンバーを入力</h4>
-            <p class="text-sm text-base-content/70">名前を一人ずつ入力するか<br>リストを貼り付けます。</p>
-          </div>
-        </div>
+        <%= render 'events/feature_card',
+              number: 1,
+              title: 'メンバーを入力',
+              description: '名前を一人ずつ入力するか<br>リストを貼り付けます。',
+              card_bg: 'shuffly-feature-card--accent' %>
 
         <!-- ステップ2: 条件を設定 -->
-        <div class="index-feature-card card bg-base-200 shadow-sm">
-          <div class="card-body items-center text-center">
-            <div class="w-15 h-15 bg-primary text-primary-content rounded-full flex items-center justify-center mb-2 font-bold text-xl">2</div>
-            <h4 class="card-title text-base">条件を設定</h4>
-            <p class="text-sm text-base-content/70">グループ数やグループ名<br>順番や役割設定を選びます。</p>
-          </div>
-        </div>
+        <%= render 'events/feature_card',
+              number: 2,
+              title: '条件を設定',
+              description: 'グループ数やグループ名<br>順番や役割設定を選びます。',
+              card_bg: 'shuffly-feature-card--info' %>
 
         <!-- ステップ3: シャッフル！ -->
-        <div class="index-feature-card card bg-base-200 shadow-sm">
-          <div class="card-body items-center text-center">
-            <div class="w-15 h-15 bg-primary text-primary-content rounded-full flex items-center justify-center mb-2 font-bold text-xl">3</div>
-            <h4 class="card-title text-base">シャッフル！</h4>
-            <p class="text-sm text-base-content/70">ボタンを押すだけで結果がすぐに表示されます。</p>
-          </div>
-        </div>
+        <%= render 'events/feature_card',
+              number: 3,
+              title: 'シャッフル！',
+              description: 'ボタンを押すだけで結果がすぐに表示されます。',
+              card_bg: 'shuffly-feature-card--accent' %>
       </div>
     </div>
   </section>

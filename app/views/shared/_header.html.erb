@@ -1,22 +1,22 @@
-<header class="bg-gray-800 text-white p-4 sticky top-0 z-50">
-  <div class="flex items-center justify-between w-full px-4">
+<header class="shuffly-topbar sticky top-0 z-50">
+  <div class="shuffly-shell mx-auto flex items-center justify-between w-full px-4 py-4">
     <!-- 左側：ロゴ -->
     <div class="flex-shrink-0">
-      <%= link_to "Shuffly", root_path, class: "text-white font-bold tracking-wide text-xl no-underline" %>
+      <%= link_to "Shuffly", root_path, class: "text-[var(--shuffly-text)] font-semibold tracking-[0.02em] text-xl no-underline" %>
     </div>
 
     <!-- 右側：ナビゲーション -->
     <nav class="flex items-center space-x-4">
       <% if user_signed_in? %>
-        <%= link_to "マイページ", mypage_path, class: "text-white hover:underline" %>
+        <%= link_to "マイページ", mypage_path, class: "text-[var(--shuffly-text-secondary)] hover:text-[var(--shuffly-text)] transition" %>
         <%= button_to "ログアウト", destroy_user_session_path,
             method: :delete,
             data: { turbo: false, confirm: "ログアウトしますか？" },
             form: { class: "inline-block" },
-            class: "text-white hover:underline bg-transparent border-0 cursor-pointer p-0 font-inherit" %>
+            class: "text-[var(--shuffly-text-secondary)] hover:text-[var(--shuffly-text)] bg-transparent border-0 cursor-pointer p-0 font-inherit transition" %>
       <% else %>
-        <%= link_to "ログイン", new_user_session_path, class: "text-white hover:underline" %>
-        <%= link_to "サインアップ", new_user_registration_path, class: "text-white hover:underline" %>
+        <%= link_to "ログイン", new_user_session_path, class: "text-[var(--shuffly-text-secondary)] hover:text-[var(--shuffly-text)] transition" %>
+        <%= link_to "サインアップ", new_user_registration_path, class: "text-[var(--shuffly-text-secondary)] hover:text-[var(--shuffly-text)] transition" %>
       <% end %>
     </nav>
   </div>

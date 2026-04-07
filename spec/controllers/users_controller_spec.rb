@@ -15,13 +15,37 @@ RSpec.describe UsersController, type: :controller do
         expect(response).to have_http_status(:ok)
       end
 
-      it 'イベントとメンバーリストをページネーション' do
+      it 'eventsタブではイベントのみをページネーション' do
         create_list(:event, 15, user: user)
         create_list(:member_list, 15, user: user)
 
-        get :mypage
+        get :mypage, params: { tab: 'events' }
         expect(assigns(:events).count).to eq(10)
+        expect(assigns(:member_lists)).to eq([])
+        expect(assigns(:events_count)).to eq(15)
+        expect(assigns(:member_lists_count)).to eq(15)
+      end
+
+      it 'member_listsタブではメンバーリストのみをページネーション' do
+        create_list(:event, 15, user: user)
+        create_list(:member_list, 15, user: user)
+
+        get :mypage, params: { tab: 'member_lists' }
+        expect(assigns(:events)).to eq([])
         expect(assigns(:member_lists).count).to eq(10)
+        expect(assigns(:events_count)).to eq(15)
+        expect(assigns(:member_lists_count)).to eq(15)
+      end
+
+      it 'accountタブでは一覧データを読み込まない' do
+        create_list(:event, 2, user: user)
+        create_list(:member_list, 3, user: user)
+
+        get :mypage, params: { tab: 'account' }
+        expect(assigns(:events)).to eq([])
+        expect(assigns(:member_lists)).to eq([])
+        expect(assigns(:events_count)).to eq(2)
+        expect(assigns(:member_lists_count)).to eq(3)
       end
     end
 

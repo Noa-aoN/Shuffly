@@ -3,30 +3,30 @@
 <div class="max-w-6xl mx-auto px-6 py-6 md:py-8">
   <%# ヘッダー %>
   <div class="mb-6">
-    <%= link_to mypage_path(tab: 'account'), class: "inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 mb-4" do %>
+    <%= link_to mypage_path(tab: 'account'), class: "inline-flex items-center gap-1 text-sm text-[var(--shuffly-text-secondary)] hover:text-[var(--shuffly-text)] mb-4" do %>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
       </svg>
       マイページに戻る
     <% end %>
-    <h1 class="text-2xl md:text-3xl font-bold text-gray-900">タイムゾーン設定</h1>
-    <p class="text-gray-600 mt-2">時刻表示をあなたの地域に合わせます</p>
+    <h1 class="text-2xl md:text-3xl font-bold text-[var(--shuffly-text)]">タイムゾーン設定</h1>
+    <p class="mt-2 text-[var(--shuffly-text-secondary)]">時刻表示をあなたの地域に合わせます</p>
   </div>
 
   <%# タイムゾーン設定フォーム %>
-  <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8">
+  <div class="shuffly-card px-6 md:px-10 py-8">
     <%= form_with(model: @user, url: settings_timezone_path, method: :patch, local: true, data: { turbo: false }) do |f| %>
       <div class="space-y-6">
         <%# タイムゾーン選択 %>
         <div>
-          <%= f.label :timezone, class: "block text-sm font-medium text-gray-700 mb-2" do %>
+          <%= f.label :timezone, class: "shuffly-label block mb-2" do %>
             タイムゾーン
           <% end %>
           <%= f.select(:timezone,
                        User::AVAILABLE_TIMEZONES,
                        { prompt: false },
-                       class: "w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition") %>
-          <p class="mt-1.5 text-xs text-gray-500">
+                       class: "shuffly-select px-4 py-2.5 text-base") %>
+          <p class="mt-1.5 text-xs text-[var(--shuffly-text-muted)]">
             現在の設定：<%= User::AVAILABLE_TIMEZONES.find { |id, label| id == @user.timezone }&.second || @user.timezone %>
           </p>
         </div>

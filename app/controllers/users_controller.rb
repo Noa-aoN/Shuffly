@@ -4,9 +4,28 @@ class UsersController < ApplicationController
 
   def mypage
     @user = current_user
-    # イベントとメンバーリストで異なるページパラメータを使用
-    @pagy_events, @events = pagy(@user.events.order(created_at: :desc), items: 10, page_param: "events_page")
-    @pagy_member_lists, @member_lists = pagy(@user.member_lists.order(created_at: :desc), items: 10, page_param: "member_lists_page")
+    @active_tab = params[:tab].presence || "events"
+    @events_count = @user.events.count
+    @member_lists_count = @user.member_lists.count
+    @events = []
+    @member_lists = []
+
+    case @active_tab
+    when "member_lists"
+      @pagy_member_lists, @member_lists = pagy(
+        @user.member_lists.order(created_at: :desc),
+        items: 10,
+        page_param: "member_lists_page"
+      )
+    when "account"
+      # 一覧の読み込みは行わない
+    else
+      @pagy_events, @events = pagy(
+        @user.events.order(created_at: :desc),
+        items: 10,
+        page_param: "events_page"
+      )
+    end
   end
 
   def update_preferences
@@ -16,8 +35,11 @@ class UsersController < ApplicationController
       redirect_to mypage_path(tab: "account"), notice: "設定を保存しました"
     else
       # エラー時もmypageをレンダリング（accountタブを表示）
-      @pagy_events, @events = pagy(@user.events.order(created_at: :desc), items: 10, page_param: "events_page")
-      @pagy_member_lists, @member_lists = pagy(@user.member_lists.order(created_at: :desc), items: 10, page_param: "member_lists_page")
+      @active_tab = "account"
+      @events_count = @user.events.count
+      @member_lists_count = @user.member_lists.count
+      @events = []
+      @member_lists = []
       flash.now[:alert] = "設定の保存に失敗しました"
       render :mypage
     end

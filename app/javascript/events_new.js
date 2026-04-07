@@ -36,6 +36,15 @@ const ShufflyApp = (function() {
   let ICON_EXPAND = '';
   let ICON_COLLAPSE = '';
 
+  function toggleMemberActionsFab(forceState = null){
+    const fab = document.getElementById('member-actions-fab');
+    const trigger = document.getElementById('btn-member-actions-fab');
+    if(!fab || !trigger) return;
+    memberActionsFabOpen = forceState === null ? !memberActionsFabOpen : forceState;
+    fab.classList.toggle('open', memberActionsFabOpen);
+    trigger.setAttribute('aria-expanded', memberActionsFabOpen ? 'true' : 'false');
+  }
+
   // --- 定数 ---
   const MAX_GROUPS = 26;
   const MIN_GROUPS = 1;
@@ -1696,6 +1705,11 @@ const ShufflyApp = (function() {
     bindIf('btn-insert-sample', 'click', (e)=>{ e.preventDefault(); insertSampleData(); });
     bindIf('btn-clear-members', 'click', (e)=>{ e.preventDefault(); clearMembers(); });
     bindIf('btn-clear-history', 'click', (e)=>{ e.preventDefault(); clearMemberHistories(); });
+    bindIf('btn-member-actions-fab', 'click', (e)=>{ if(e) e.preventDefault(); toggleMemberActionsFab(); });
+    bindIf('btn-fab-sample', 'click', (e)=>{ if(e) e.preventDefault(); toggleMemberActionsFab(false); insertSampleData(); });
+    bindIf('btn-fab-import-file', 'click', (e)=>{ if(e) e.preventDefault(); toggleMemberActionsFab(false); triggerImport(); });
+    bindIf('btn-fab-import-list', 'click', (e)=>{ if(e) e.preventDefault(); toggleMemberActionsFab(false); const btn = document.getElementById('btn-import-member-list'); if(btn) btn.click(); });
+    bindIf('btn-fab-clear-members', 'click', (e)=>{ if(e) e.preventDefault(); toggleMemberActionsFab(false); clearMembers(); });
 
     // タブ操作
     bindIf('tab-settings-groups', 'click', ()=>switchSettingsTab('groups'));
@@ -1795,6 +1809,11 @@ const ShufflyApp = (function() {
     bindIf('btn-toggle-presentation', 'click', (e)=>{ if(e) e.preventDefault(); togglePresentationMode(); });
     bindIf('btn-export-results', 'click', (e)=>{ if(e) e.preventDefault(); exportResults(); });
     bindIf('btn-save-results', 'click', (e)=>{ if(e) e.preventDefault(); saveResults(); });
+    document.addEventListener('click', (e) => {
+      if(!memberActionsFabOpen) return;
+      const fab = document.getElementById('member-actions-fab');
+      if(fab && !fab.contains(e.target)) toggleMemberActionsFab(false);
+    });
 
     // 設定パネル内の実行ボタンに処理を紐付け
     const gAct = document.getElementById('settings-action-groups');

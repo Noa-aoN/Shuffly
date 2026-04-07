@@ -21,12 +21,12 @@ Parameters:
 <% confirm_message = local_assigns.fetch(:confirm_message, nil) %>
 
 <% variant_classes = {
-  'default' => 'bg-white text-gray-600 hover:bg-gray-100 border border-slate-200',
-  'danger' => 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+  'default' => 'bg-[rgba(255,255,255,0.98)] text-[var(--shuffly-text-secondary)] hover:bg-[var(--shuffly-bg-subtle)] border border-[var(--shuffly-border)]',
+  'danger' => 'bg-[rgba(239,68,68,0.10)] text-[var(--shuffly-danger)] hover:bg-[rgba(239,68,68,0.16)] border border-[rgba(239,68,68,0.28)]'
 } %>
 
 <% var_class = variant_classes[variant] || variant_classes['default'] %>
-<% base_class = "w-10 h-10 rounded-full flex items-center justify-center shadow-sm transition #{var_class}" %>
+<% base_class = "w-10 h-10 rounded-full flex items-center justify-center transition #{var_class}" %>
 
 <% if method %>
   <%# button_to for non-GET requests %>
