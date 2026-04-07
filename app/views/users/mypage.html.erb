@@ -165,7 +165,7 @@
       <% end %>
 
       <%# スタイル設定カード %>
-      <%= link_to style_settings_path, class: "shuffly-card-link relative block px-6 md:px-10 py-8 cursor-pointer group overflow-visible" do %>
+      <div class="shuffly-card-link shuffly-card-link-disabled relative block px-6 md:px-10 py-8 group overflow-visible" aria-disabled="true">
         <span class="shuffly-ribbon">準備中</span>
         <div class="flex items-center justify-between gap-4">
           <div class="flex-1">
@@ -189,7 +189,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
-      <% end %>
+      </div>
 
       <%# ログアウトボタン %>
       <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center mt-4 w-full">
@@ -280,8 +280,9 @@
           </div>
           <h3 class="text-xl font-semibold text-[var(--shuffly-text)] mb-2">イベントがありません</h3>
           <p class="mb-6 max-w-md mx-auto text-[var(--shuffly-text-secondary)]">
-            最初のイベントを作成して、メンバーをシャッフルしましょう。<br>
-            グループ分け、順番決め、役割分担などができます。
+            最初のイベントを作成して、<br class="hidden sm:block">
+            メンバーをシャッフルしましょう。<br>
+            グループ分け、順番決め、役割分担ができます。
           </p>
           <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center w-full">
             <%= render 'shared/button',
