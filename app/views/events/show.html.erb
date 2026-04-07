@@ -340,7 +340,7 @@
 
 <%# タブ切替用データ属性 %>
 <% content_for :javascript do %>
-<script>
+<script nonce="<%= content_security_policy_nonce %>">
 (function(){
   // Server-provided data (正規化形式のみ)
   const serverData = {

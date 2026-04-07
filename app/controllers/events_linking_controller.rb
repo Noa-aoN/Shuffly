@@ -1,5 +1,6 @@
 class EventsLinkingController < ApplicationController
   before_action :authenticate_user!
+  before_action :ensure_valid_pending_token!, only: :create
 
   def show
     # ログイン後にLocalStorageのデータをサーバーに保存する確認画面を表示
@@ -41,6 +42,20 @@ class EventsLinkingController < ApplicationController
   end
 
   private
+
+  def ensure_valid_pending_token!
+    request_token = params[:token].to_s
+    session_token = session[:pending_event_token].to_s
+
+    return if request_token.present? && session_token.present? && ActiveSupport::SecurityUtils.secure_compare(request_token, session_token)
+
+    session[:pending_event_token] = nil if session_token.present?
+
+    respond_to do |format|
+      format.html { redirect_to root_path, alert: "保存リンクが無効です。もう一度やり直してください" }
+      format.json { render json: { success: false, errors: [ "保存リンクが無効です。もう一度やり直してください" ] }, status: :unprocessable_entity }
+    end
+  end
 
   def set_created_at_from_history(event)
     timestamps = collect_timestamps_from_rounds(event)

@@ -12,3 +12,6 @@ application.register("toast", ToastController)
 
 import MemberListImportController from "./member_list_import_controller"
 application.register("member-list-import", MemberListImportController)
+
+import PasswordToggleController from "./password_toggle_controller"
+application.register("password-toggle", PasswordToggleController)

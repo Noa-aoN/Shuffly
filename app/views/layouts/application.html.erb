@@ -28,7 +28,7 @@
   <% if Rails.env.production? %>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-NC5DZY06L6"></script>
-    <script>
+    <script nonce="<%= content_security_policy_nonce %>">
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
@@ -75,7 +75,7 @@
   <%= render 'shared/footer' %>
 
   <%# メンテナンスオーバーレイの簡易制御をここに入れる（全ページ共通） %>
-  <script>
+  <script nonce="<%= content_security_policy_nonce %>">
     (function(){
       // 要素取得（partial 側で id を揃える）
       const overlay = document.getElementById('maintenance-overlay');
@@ -133,7 +133,7 @@
 
   <%# Service Worker Registration（Capacitor対応） %>
   <%# 開発環境では ?pwa=1 で有効化、本番環境では常に有効 %>
-  <script>
+  <script nonce="<%= content_security_policy_nonce %>">
     (function() {
       // 開発環境ではURLパラメータで制御
       const isDev = <%= Rails.env.development? ? 'true' : 'false' %>;

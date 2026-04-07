@@ -88,17 +88,63 @@ const ShufflyApp = (function() {
   }
 
   function getCoOccurrenceMap(entries, ignoreLast=true){
-    const map={}, histories={};
-    for(const e of entries) histories[e.name]=ignoreLast?e.history.slice(0,-1):e.history;
-    for(const e of entries) map[e.name]={};
+    const map = {};
+    const historySets = {};
+    for(const e of entries) {
+      historySets[e.name] = new Set(ignoreLast ? e.history.slice(0, -1) : e.history);
+      map[e.name] = {};
+    }
     for(const a of entries){
       for(const b of entries){
         if(a.name===b.name) continue;
-        const overlap=histories[a.name].filter(h=>histories[b.name].includes(h));
-        map[a.name][b.name]=overlap.length;
+        let overlapCount = 0;
+        historySets[a.name].forEach((historyToken) => {
+          if(historySets[b.name].has(historyToken)) overlapCount += 1;
+        });
+        map[a.name][b.name] = overlapCount;
       }
     }
     return map;
+  }
+
+  function buildNormalizedMembers(rawText = getRawValue()){
+    return rawText.trim().split(/[\r\n,]+/).map((line, index) => {
+      const parsed = parseEntry(line.trim());
+      return {
+        id: index + 1,
+        name: parsed.name,
+        history: parsed.history
+      };
+    }).filter(entry => entry.name);
+  }
+
+  function collectGroupSettings(groupCount, displayNames, fixedMembers){
+    return {
+      group_count: groupCount,
+      group_names: displayNames,
+      fixed_members: fixedMembers
+    };
+  }
+
+  function buildCoOccurrenceCacheFromRounds(groupRounds){
+    const cache = {};
+
+    groupRounds.forEach((round) => {
+      (round.assignments || []).forEach((assignment) => {
+        const memberIds = (assignment.members || [])
+          .map((member) => member.member_id)
+          .filter((memberId) => memberId !== undefined && memberId !== null);
+
+        for(let i = 0; i < memberIds.length; i += 1) {
+          for(let j = i + 1; j < memberIds.length; j += 1) {
+            const pairKey = [memberIds[i], memberIds[j]].sort((a, b) => a - b).join("-");
+            cache[pairKey] = (cache[pairKey] || 0) + 1;
+          }
+        }
+      });
+    });
+
+    return cache;
   }
 
   // 新規: 履歴内で「1回目のグループ割当」が最初に発生したインデックスを返す
@@ -231,10 +277,10 @@ const ShufflyApp = (function() {
       return;
     }
 
-    let entries = rawList.map(parseEntry);
+    let entries = rawList.map(parseEntry).map((entry, index) => ({ ...entry, memberId: index + 1 }));
     const round=getCurrentRound(entries);
 
-    const { ids: groupIds, idToName, groupCount } = buildGroupIdsAndNames();
+    const { ids: groupIds, displayNames, idToName, groupCount } = buildGroupIdsAndNames();
     const groups=Object.fromEntries(groupIds.map(g=>[g,[]]));
     const coMap=getCoOccurrenceMap(entries);
 
@@ -342,7 +388,22 @@ const ShufflyApp = (function() {
 
     // 正規化形式では履歴から構築するため、ここでの保存は不要
 
-    updateParticipantCount(); showGroups(); showStats(); pushToHistory();
+    const updatedRaw = updated.join("\n");
+    const groupAssignments = groupIds.map((groupId) => ({
+      group_id: groupId,
+      group_name: idToName[groupId] || groupId,
+      members: groups[groupId].map((member) => ({
+        member_id: member.memberId,
+        name: member.name
+      }))
+    }));
+    const groupSettings = collectGroupSettings(groupCount, displayNames, fixedRaw);
+
+    updateParticipantCount(); showGroups(); showStats(); pushToHistory('groups', {
+      membersRaw: updatedRaw,
+      assignments: groupAssignments,
+      settings: groupSettings
+    });
     // 回次表示を更新（履歴を追加した後に確実に更新）
     updateGroupRoundDisplay();
     // 追加: 実行成功時にトースト表示
@@ -919,19 +980,21 @@ const ShufflyApp = (function() {
       const text = getRawValue();
       // 履歴が空で現在の raw が空文字列の場合は履歴に追加しない
       if (shufflyHistory.length === 0 && text.trim() === "") return;
-      // グループ分けが実行されているかチェック（履歴情報 #1A などが含まれているか）
-      // これによりメンバー入力時の「未実施」状態が履歴に保存されるのを防ぐ
-      const hasGroupHistory = /#\d+[A-Z]/.test(text);
-      if (!hasGroupHistory) {
-        // グループ分けが実行されていない場合は履歴に追加しない
-        return;
+      if (!entryData) {
+        // グループ分けが実行されているかチェック（履歴情報 #1A などが含まれているか）
+        // これによりメンバー入力時の「未実施」状態が履歴に保存されるのを防ぐ
+        const hasGroupHistory = /#\d+[A-Z]/.test(text);
+        if (!hasGroupHistory) {
+          // グループ分けが実行されていない場合は履歴に追加しない
+          return;
+        }
+        entryData = { membersRaw: text };
       }
       // 最後の履歴と同じ場合は追加しない
       if(currentHistoryIndex>=0) {
         const lastEntry = shufflyHistory[currentHistoryIndex];
-        if(lastEntry && lastEntry.type === 'groups' && lastEntry.data && lastEntry.data.membersRaw === text) return;
+        if(lastEntry && lastEntry.type === 'groups' && lastEntry.data && lastEntry.data.membersRaw === entryData.membersRaw) return;
       }
-      entryData = { membersRaw: text };
     }
 
     // 履歴エントリの作成
@@ -957,7 +1020,7 @@ const ShufflyApp = (function() {
     // これにより「他の項目の履歴がクリアされる」問題を解決
     const newRound = historyData[type].length + 1;  // 提案2の実装: round番号を自動採番
     const newEntry = {
-      round: newRound,
+      round: historyEntry.round || newRound,
       timestamp: historyEntry.timestamp,
       data: entryData
     };
@@ -1394,72 +1457,54 @@ const ShufflyApp = (function() {
   function saveResults(){
     try{
       // 正規化形式でデータを準備
-      const membersRaw = getRawValue().trim().split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-      const members = membersRaw.map((name, idx) => ({ id: idx + 1, name: name.split('#')[0].trim() }));
+      const members = buildNormalizedMembers().map(({ id, name }) => ({ id, name }));
+      const membersById = new Map(members.map((member) => [member.id, member]));
+      const membersByName = new Map(members.map((member) => [member.name, member]));
 
       // members_dataを設定
       document.getElementById('membersDataInput').value = JSON.stringify({ members: members });
 
-      // group_roundsを設定（履歴から構築）
-      document.getElementById('groupRoundsInput').value = JSON.stringify(shufflyHistory.filter(h => h.type === 'groups').map(h => {
-        // membersRawからグループ情報を抽出
-        const membersRaw = h.data?.membersRaw || '';
-        const groups = {};
-
-        if (membersRaw) {
-          const lines = membersRaw.split(/[\r\n,]+/).map(s => s.trim()).filter(Boolean);
-          lines.forEach(line => {
-            const name = line.split('#')[0].trim();
-            const historyMatch = line.match(/#\d+([A-Z])$/);
-            if (historyMatch && name) {
-              const groupId = historyMatch[1];
-              if (!groups[groupId]) {
-                groups[groupId] = [];
-              }
-              const member = members.find(m => m.name === name);
-              if (member) {
-                groups[groupId].push({
-                  member_id: member.id,
-                  name: member.name
-                });
-              }
-            }
-          });
-        }
-
-        // groups形式をassignments形式に変換
-        const assignments = Object.keys(groups).map(groupId => ({
-          group_id: groupId,
-          group_name: `グループ${groupId}`,
-          members: groups[groupId]
+      const groupRounds = historyData.groups.map((entry, idx) => {
+        const assignments = (entry.data?.assignments || []).map((assignment) => ({
+          group_id: assignment.group_id,
+          group_name: assignment.group_name,
+          members: (assignment.members || []).map((memberRef) => {
+            const member = membersById.get(memberRef.member_id) || membersByName.get(memberRef.name);
+            return member ? { member_id: member.id, name: member.name } : null;
+          }).filter(Boolean)
         }));
+        const groups = Object.fromEntries(assignments.map((assignment) => [
+          assignment.group_id,
+          assignment.members
+        ]));
 
         return {
-          round: h.round,
-          timestamp: h.timestamp,
+          round: entry.round || (idx + 1),
+          timestamp: entry.timestamp,
           assignments: assignments,
-          groups: groups,  // 互換性のため
-          settings: h.data?.settings || {}
+          groups: groups,
+          settings: entry.data?.settings || {}
         };
-      }));
+      });
+      document.getElementById('groupRoundsInput').value = JSON.stringify(groupRounds);
 
       // order_roundsを設定
-      document.getElementById('orderRoundsInput').value = JSON.stringify(shufflyHistory.filter(h => h.type === 'order').map((h, idx) => ({
-        round: h.round || (idx + 1),
-        timestamp: h.timestamp,
-        result: h.data?.result || [],  // 名前の配列をそのまま保存
-        order: h.data?.result?.map(name => {
-          const member = members.find(m => m.name === name);
+      document.getElementById('orderRoundsInput').value = JSON.stringify(historyData.order.map((entry, idx) => ({
+        round: entry.round || (idx + 1),
+        timestamp: entry.timestamp,
+        result: entry.data?.result || [],
+        order: entry.data?.result?.map(name => {
+          const member = membersByName.get(name);
           return member ? { member_id: member.id, name: member.name } : null;
         }).filter(Boolean) || []
       })));
 
       // role_roundsを設定
-      document.getElementById('roleRoundsInput').value = JSON.stringify(shufflyHistory.filter(h => h.type === 'roles').map((h, idx) => ({
-        round: h.round || (idx + 1),
-        timestamp: h.timestamp,
-        assignments: (h.data?.assignments || []).map(a => {
-          const member = members.find(m => m.name === a.name);
+      document.getElementById('roleRoundsInput').value = JSON.stringify(historyData.roles.map((entry, idx) => ({
+        round: entry.round || (idx + 1),
+        timestamp: entry.timestamp,
+        assignments: (entry.data?.assignments || []).map(a => {
+          const member = membersByName.get(a.name);
           return member ? {
             member_id: member.id,
             name: member.name,
@@ -1468,13 +1513,7 @@ const ShufflyApp = (function() {
         }).filter(Boolean)
       })));
 
-      // co_occurrence_cacheを設定（簡易版）
-      const cache = {};
-      shufflyHistory.filter(h => h.type === 'groups').forEach(() => {
-        // 履歴から被り回数を計算（簡易実装）
-        // TODO: 将来的に実装
-      });
-      document.getElementById('coOccurrenceCacheInput').value = JSON.stringify(cache);
+      document.getElementById('coOccurrenceCacheInput').value = JSON.stringify(buildCoOccurrenceCacheFromRounds(groupRounds));
 
     }catch(e){
       console.warn('JSON シリアライズ失敗:', e);
@@ -2252,6 +2291,14 @@ document.addEventListener('DOMContentLoaded', () => {
                       timestamp: round.timestamp || Date.now(),
                       data: {
                         membersRaw: membersRaw,
+                        assignments: (round.assignments || []).map((assignment) => ({
+                          group_id: assignment.group_id,
+                          group_name: assignment.group_name || assignment.group_id,
+                          members: (assignment.members || []).map((member) => ({
+                            member_id: member.member_id,
+                            name: member.name || `メンバー${member.member_id}`
+                          }))
+                        })),
                         settings: round.settings || {}
                       }
                     });

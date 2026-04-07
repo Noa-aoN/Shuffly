@@ -54,6 +54,7 @@ RSpec.describe EventsLinkingController, type: :controller do
       context '有効なパラメータの場合' do
         let(:valid_params) do
           {
+            token: 'test_token',
             event: {
               title: 'Linked Event',
               members_data: { 'members' => [ 'Alice', 'Bob' ] }.to_json,
@@ -99,6 +100,7 @@ RSpec.describe EventsLinkingController, type: :controller do
         it 'members_dataをHashに変換' do
           session[:pending_event_token] = 'test_token'
           post :create, params: {
+            token: 'test_token',
             event: { title: 'Test', members_data: '{"members": ["A"]}' }
           }
           expect(Event.last.members_data).to be_a(Hash)
@@ -107,6 +109,7 @@ RSpec.describe EventsLinkingController, type: :controller do
         it 'group_roundsをArrayに変換' do
           session[:pending_event_token] = 'test_token'
           post :create, params: {
+            token: 'test_token',
             event: { title: 'Test', group_rounds: '[{"round": 1}]' }
           }
           expect(Event.last.group_rounds).to be_an(Array)
@@ -116,7 +119,7 @@ RSpec.describe EventsLinkingController, type: :controller do
       context '無効なパラメータの場合' do
         it '保存に失敗' do
           session[:pending_event_token] = 'test_token'
-          post :create, params: { event: { title: 'a' * 256 } }
+          post :create, params: { token: 'test_token', event: { title: 'a' * 256 } }
           expect(response).to render_template(:show)
           expect(response).to have_http_status(:unprocessable_entity)
           expect(flash.now[:alert]).to eq('イベントの保存に失敗しました')
@@ -124,7 +127,7 @@ RSpec.describe EventsLinkingController, type: :controller do
 
         it 'JSON形式で失敗時エラーを返却' do
           session[:pending_event_token] = 'test_token'
-          post :create, format: :json, params: { event: { title: 'a' * 256 } }
+          post :create, format: :json, params: { token: 'test_token', event: { title: 'a' * 256 } }
           json = JSON.parse(response.body)
           expect(json['success']).to be false
           expect(json['errors']).to be_an(Array)
@@ -135,10 +138,51 @@ RSpec.describe EventsLinkingController, type: :controller do
         it 'デフォルト値にフォールバックして保存成功' do
           session[:pending_event_token] = 'test_token'
           post :create, params: {
+            token: 'test_token',
             event: { title: 'Test Event', members_data: 'invalid json' }
           }
           expect(response).to redirect_to(event_path(Event.last))
           expect(Event.last.members_data).to eq({})
+        end
+      end
+
+      context 'tokenが不正な場合' do
+        it 'HTML形式で保存を拒否する' do
+          session[:pending_event_token] = 'test_token'
+
+          post :create, params: {
+            token: 'wrong_token',
+            event: { title: 'Linked Event' }
+          }
+
+          expect(response).to redirect_to(root_path)
+          expect(flash[:alert]).to eq('保存リンクが無効です。もう一度やり直してください')
+        end
+
+        it 'JSON形式で保存を拒否する' do
+          session[:pending_event_token] = 'test_token'
+
+          post :create, format: :json, params: {
+            token: 'wrong_token',
+            event: { title: 'Linked Event' }
+          }
+
+          json = JSON.parse(response.body)
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(json['success']).to be false
+          expect(json['errors']).to include('保存リンクが無効です。もう一度やり直してください')
+        end
+      end
+
+      context 'tokenが欠けている場合' do
+        it '保存を拒否する' do
+          session[:pending_event_token] = 'test_token'
+
+          expect {
+            post :create, params: { event: { title: 'Linked Event' } }
+          }.not_to change(Event, :count)
+
+          expect(response).to redirect_to(root_path)
         end
       end
     end
