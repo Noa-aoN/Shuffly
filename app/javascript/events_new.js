@@ -28,6 +28,7 @@ const ShufflyApp = (function() {
 
   let statsCollapsed = true; // 統計は初期折りたたみ
   let optionsCollapsed = true; // グループ表示オプションは初期折りたたみ（デフォルト閉じる）
+  let memberActionsFabOpen = false; // メンバー入力カード右上のFAB開閉状態
   let groupsAssigned = false; // グループ分け実行が行われたかどうかのフラグ
   let IS_SIGNED_IN = false; // 初期化時に設定される
   let new_user_session_path = '/users/sign_in'; // ログインページのパス
@@ -35,6 +36,15 @@ const ShufflyApp = (function() {
   // アイコンパス（assets pipeline 経由）
   let ICON_EXPAND = '';
   let ICON_COLLAPSE = '';
+
+  function toggleMemberActionsFab(forceState = null){
+    const fab = document.getElementById('member-actions-fab');
+    const trigger = document.getElementById('btn-member-actions-fab');
+    if(!fab || !trigger) return;
+    memberActionsFabOpen = forceState === null ? !memberActionsFabOpen : forceState;
+    fab.classList.toggle('open', memberActionsFabOpen);
+    trigger.setAttribute('aria-expanded', memberActionsFabOpen ? 'true' : 'false');
+  }
 
   // --- 定数 ---
   const MAX_GROUPS = 26;
@@ -959,9 +969,9 @@ const ShufflyApp = (function() {
 
   function undoHistory(){
     // 現在表示中のタブによって、対象となる履歴を判定
-    const activeTab = document.querySelector('#tab-groups:not(.border-transparent)') ? 'groups' :
-                      document.querySelector('#tab-order:not(.border-transparent)') ? 'order' :
-                      document.querySelector('#tab-roles:not(.border-transparent)') ? 'roles' : 'groups';
+    const activeTab = document.querySelector('#tab-groups.shuffly-tab-active') ? 'groups' :
+                      document.querySelector('#tab-order.shuffly-tab-active') ? 'order' :
+                      document.querySelector('#tab-roles.shuffly-tab-active') ? 'roles' : 'groups';
 
     // 【新】タイプ別履歴から前の履歴を取得（提案1の実装）
     const currentIdx = currentRoundIndex[activeTab];
@@ -1006,9 +1016,9 @@ const ShufflyApp = (function() {
 
   function redoHistory(){
     // 現在表示中のタブによって、対象となる履歴を判定
-    const activeTab = document.querySelector('#tab-groups:not(.border-transparent)') ? 'groups' :
-                      document.querySelector('#tab-order:not(.border-transparent)') ? 'order' :
-                      document.querySelector('#tab-roles:not(.border-transparent)') ? 'roles' : 'groups';
+    const activeTab = document.querySelector('#tab-groups.shuffly-tab-active') ? 'groups' :
+                      document.querySelector('#tab-order.shuffly-tab-active') ? 'order' :
+                      document.querySelector('#tab-roles.shuffly-tab-active') ? 'roles' : 'groups';
 
     // 【新】タイプ別履歴から次の履歴を取得（提案1の実装）
     const currentIdx = currentRoundIndex[activeTab];
@@ -1056,18 +1066,16 @@ const ShufflyApp = (function() {
     // hide all panels
     document.querySelectorAll('.result-panel').forEach(el=>el.classList.add('hidden'));
 
-    // normalize tab styles: remove active styles (including pill background/ring/shadow)
+    // normalize tab styles
     document.querySelectorAll('#tab-groups, #tab-order, #tab-roles').forEach(b=>{
-      b.classList.remove('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
-      b.classList.add('border-transparent','text-gray-600');
+      b.classList.remove('shuffly-tab-active');
     });
 
     if(name==='groups'){
       const panel = document.getElementById('panel-groups'); if(panel) panel.classList.remove('hidden');
       const el=document.getElementById('tab-groups');
       if(el){
-        el.classList.remove('border-transparent','text-gray-600');
-        el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
+        el.classList.add('shuffly-tab-active');
       }
       // Update navigation buttons
       updateNavigationButtons('groups');
@@ -1076,8 +1084,7 @@ const ShufflyApp = (function() {
       const panel = document.getElementById('panel-order'); if(panel) panel.classList.remove('hidden');
       const el=document.getElementById('tab-order');
       if(el){
-        el.classList.remove('border-transparent','text-gray-600');
-        el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
+        el.classList.add('shuffly-tab-active');
       }
       // Update navigation buttons
       updateNavigationButtons('order');
@@ -1086,8 +1093,7 @@ const ShufflyApp = (function() {
       const panel = document.getElementById('panel-roles'); if(panel) panel.classList.remove('hidden');
       const el=document.getElementById('tab-roles');
       if(el){
-        el.classList.remove('border-transparent','text-gray-600');
-        el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
+        el.classList.add('shuffly-tab-active');
       }
       // Update navigation buttons
       updateNavigationButtons('roles');
@@ -1097,34 +1103,30 @@ const ShufflyApp = (function() {
   function switchSettingsTab(name){
     document.querySelectorAll('.settings-panel').forEach(el=>el.classList.add('hidden'));
 
-    // normalize settings tab styles and remove pill active styles
+    // normalize settings tab styles
     document.querySelectorAll('#tab-settings-groups, #tab-settings-order, #tab-settings-roles').forEach(b=>{
-      b.classList.remove('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
-      b.classList.add('border-transparent','text-gray-600');
+      b.classList.remove('shuffly-tab-active');
     });
 
     if(name==='groups'){
       document.getElementById('panel-settings-groups').classList.remove('hidden');
       const el=document.getElementById('tab-settings-groups');
       if(el){
-        el.classList.remove('border-transparent','text-gray-600');
-        el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
+        el.classList.add('shuffly-tab-active');
       }
     }
     if(name==='order'){
       document.getElementById('panel-settings-order').classList.remove('hidden');
       const el=document.getElementById('tab-settings-order');
       if(el){
-        el.classList.remove('border-transparent','text-gray-600');
-        el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
+        el.classList.add('shuffly-tab-active');
       }
     }
     if(name==='roles'){
       document.getElementById('panel-settings-roles').classList.remove('hidden');
       const el=document.getElementById('tab-settings-roles');
       if(el){
-        el.classList.remove('border-transparent','text-gray-600');
-        el.classList.add('border-blue-500','text-blue-600','font-semibold','bg-blue-50','ring-1','ring-blue-100','shadow-sm');
+        el.classList.add('shuffly-tab-active');
       }
     }
 
@@ -1696,6 +1698,11 @@ const ShufflyApp = (function() {
     bindIf('btn-insert-sample', 'click', (e)=>{ e.preventDefault(); insertSampleData(); });
     bindIf('btn-clear-members', 'click', (e)=>{ e.preventDefault(); clearMembers(); });
     bindIf('btn-clear-history', 'click', (e)=>{ e.preventDefault(); clearMemberHistories(); });
+    bindIf('btn-member-actions-fab', 'click', (e)=>{ if(e) e.preventDefault(); toggleMemberActionsFab(); });
+    bindIf('btn-fab-sample', 'click', (e)=>{ if(e) e.preventDefault(); toggleMemberActionsFab(false); insertSampleData(); });
+    bindIf('btn-fab-import-file', 'click', (e)=>{ if(e) e.preventDefault(); toggleMemberActionsFab(false); triggerImport(); });
+    bindIf('btn-fab-import-list', 'click', (e)=>{ if(e) e.preventDefault(); toggleMemberActionsFab(false); const btn = document.getElementById('btn-import-member-list'); if(btn) btn.click(); });
+    bindIf('btn-fab-clear-members', 'click', (e)=>{ if(e) e.preventDefault(); toggleMemberActionsFab(false); clearMembers(); });
 
     // タブ操作
     bindIf('tab-settings-groups', 'click', ()=>switchSettingsTab('groups'));
@@ -1795,6 +1802,11 @@ const ShufflyApp = (function() {
     bindIf('btn-toggle-presentation', 'click', (e)=>{ if(e) e.preventDefault(); togglePresentationMode(); });
     bindIf('btn-export-results', 'click', (e)=>{ if(e) e.preventDefault(); exportResults(); });
     bindIf('btn-save-results', 'click', (e)=>{ if(e) e.preventDefault(); saveResults(); });
+    document.addEventListener('click', (e) => {
+      if(!memberActionsFabOpen) return;
+      const fab = document.getElementById('member-actions-fab');
+      if(fab && !fab.contains(e.target)) toggleMemberActionsFab(false);
+    });
 
     // 設定パネル内の実行ボタンに処理を紐付け
     const gAct = document.getElementById('settings-action-groups');

@@ -60,9 +60,9 @@ export default class extends Controller {
 
       if (data.length === 0) {
         container.innerHTML = `
-          <div class="text-center text-gray-500 py-8">
+          <div class="text-center text-[var(--shuffly-text-muted)] py-8">
             <p>メンバーリストがありません</p>
-            <a href="/member_lists/new" class="text-blue-600 hover:underline mt-2 inline-block">
+            <a href="/member_lists/new" class="text-[var(--shuffly-accent)] hover:underline mt-2 inline-block">
               新規作成 →
             </a>
           </div>
@@ -72,22 +72,22 @@ export default class extends Controller {
 
       // メンバーリストアイテムを生成
       container.innerHTML = data.map(list => `
-        <div class="member-list-item border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50 transition cursor-pointer"
+        <div class="member-list-item rounded-xl border border-[var(--shuffly-border)] bg-[rgba(255,255,255,0.96)] p-4 hover:border-[rgba(139,92,246,0.20)] hover:bg-[rgba(139,92,246,0.05)] transition cursor-pointer"
              data-action="click->member-list-import#selectList"
              data-member-list-id="${list.id}">
           <div class="flex items-center justify-between">
             <div class="flex-1">
-              <h4 class="font-semibold text-gray-900">${this.escapeHtml(list.name)}</h4>
-              <p class="text-sm text-gray-600 mt-1">
+              <h4 class="font-semibold text-[var(--shuffly-text)]">${this.escapeHtml(list.name)}</h4>
+              <p class="text-sm text-[var(--shuffly-text-secondary)] mt-1">
                 ${list.members_count}人 • ${list.created_at}
               </p>
             </div>
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-[var(--shuffly-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
           </div>
           ${list.members && list.members.length > 0 ? `
-            <div class="mt-2 text-xs text-gray-500">
+            <div class="mt-2 text-xs text-[var(--shuffly-text-muted)]">
               ${this.escapeHtml(list.members.slice(0, 3).join('、'))}
               ${list.members.length > 3 ? '...' : ''}
             </div>
@@ -98,7 +98,7 @@ export default class extends Controller {
     } catch (error) {
       console.error('Error loading member lists:', error)
       container.innerHTML = `
-        <div class="text-center text-red-500 py-8">
+        <div class="text-center text-[var(--shuffly-danger)] py-8">
           読み込みに失敗しました
         </div>
       `
@@ -175,7 +175,7 @@ export default class extends Controller {
     if (!toast) {
       const newToast = document.createElement('div')
       newToast.id = 'toast'
-      newToast.className = 'fixed top-9 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 z-50'
+      newToast.className = 'shuffly-toast shuffly-toast-surface fixed top-9 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg opacity-0 transition-opacity duration-300 z-50'
       newToast.style.top = '35px'
       document.body.appendChild(newToast)
     }

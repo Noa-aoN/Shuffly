@@ -4,6 +4,7 @@
 <% variant = local_assigns.fetch(:variant, 'primary') %>
 <% size = local_assigns.fetch(:size, 'md') %>
 <% full_mobile = local_assigns.fetch(:full_mobile, true) %>
+<% full_width = local_assigns.fetch(:full_width, false) %>
 <% disabled = local_assigns.fetch(:disabled, false) %>
 <% extra_class = local_assigns.fetch(:extra_class, '') %>
 <% id = local_assigns.key?(:id) ? local_assigns[:id] : nil %>
@@ -12,6 +13,7 @@
 <% confirm_message = local_assigns.key?(:confirm_message) ? local_assigns[:confirm_message] : nil %>
 <% is_button = local_assigns.key?(:is_button) ? local_assigns[:is_button] : nil %>
 <% data = local_assigns.fetch(:data, {}) %>
+<% wrapper_class = local_assigns.fetch(:wrapper_class, 'mt-2') %>
 
 <%# 新規オプション: icon (asset パス or URL), icon_class, icon_alt, 既に構築済みの icon_html があれば優先する %>
 <% icon_html = local_assigns.fetch(:icon_html, nil) %>
@@ -20,7 +22,8 @@
 <% icon_class = local_assigns.fetch(:icon_class, 'inline-block align-middle') %>
 <% icon_alt = local_assigns.fetch(:icon_alt, '') %>
 
-<% base = "inline-flex items-center justify-center rounded-xl font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 transition shadow-sm sm:min-w-[230px] lg:min-w-[310px] px-6 py-3" %>
+<% min_width_class = full_width ? '' : 'sm:min-w-[230px] lg:min-w-[310px]' %>
+<% base = ["inline-flex items-center justify-center rounded-[12px] font-semibold tracking-[0.01em] focus:outline-none focus:ring-2 focus:ring-offset-2 transition px-6 py-3 border", min_width_class].join(' ').squeeze(' ').strip %>
 
 <% size_classes = {
   'sm' => 'px-3 py-1 text-sm min-h-[44px]',
@@ -29,16 +32,23 @@
 } %>
 
 <% variant_classes = {
-  'primary' => 'bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500 border border-slate-200',
-  'secondary' => 'bg-white text-blue-700 hover:bg-blue-50 focus:ring-blue-200 border border-slate-200',
-  'tertiary' => 'bg-white text-gray-800 hover:bg-gray-200 focus:ring-gray-400 border border-slate-200',
-  'danger' => 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500 border border-slate-200'
+  'primary' => 'bg-[var(--shuffly-accent)] border-[rgba(124,92,255,0.18)] text-white hover:bg-[var(--shuffly-accent-hover)] focus:ring-[var(--shuffly-accent)] shadow-[0_8px_18px_rgba(124,92,255,0.14)]',
+  'secondary' => 'bg-[rgba(255,255,255,0.82)] border-[var(--shuffly-border)] text-[var(--shuffly-text)] hover:bg-[rgba(255,255,255,0.90)] hover:border-[var(--shuffly-border-strong)] focus:ring-[var(--shuffly-accent)] shadow-[0_2px_8px_rgba(15,23,42,0.03)]',
+  'tertiary' => 'bg-[rgba(248,250,252,0.68)] border-[rgba(217,224,234,0.82)] text-[var(--shuffly-text-secondary)] hover:bg-[var(--shuffly-bg-subtle)] hover:text-[var(--shuffly-text)] hover:border-[var(--shuffly-border-strong)] focus:ring-[var(--shuffly-accent)]',
+  'danger' => 'bg-[var(--shuffly-danger)] border-[rgba(239,68,68,0.20)] text-white hover:bg-[#dc2626] focus:ring-[var(--shuffly-danger)] shadow-[0_8px_18px_rgba(239,68,68,0.14)]'
 } %>
 
 <% size_class = size_classes[size] || size_classes['md'] %>
 <% var_class = variant_classes[variant] || variant_classes['primary'] %>
-<% responsive_class = full_mobile ? 'w-full sm:w-auto' : 'inline-block' %>
-<% web_text_adjust = 'md:text-[16px]' %>
+<% responsive_class =
+  if full_width
+    'w-full'
+  elsif full_mobile
+    'w-full sm:w-auto'
+  else
+    'inline-block'
+  end %>
+<% web_text_adjust = 'md:text-[15px]' %>
 <% classes = [base, size_class, var_class, responsive_class, web_text_adjust, extra_class].join(' ').squeeze(' ').strip %>
 
 <%# icon_html が未指定かつ icon が渡されている場合に生成する。
@@ -54,7 +64,7 @@
 <%# 新規: icon_class に 'icon_right' が含まれる場合はアイコンを右側に配置する %>
 <% icon_right = icon_class.to_s.split(/\s+/).include?('icon_right') %>
 
-<div class="mt-2">
+<div class="<%= wrapper_class %>">
   <% if is_button %>
     <%# JavaScript用のボタン: type="button" %>
     <% button_opts = {

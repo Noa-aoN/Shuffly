@@ -7,7 +7,7 @@
 <!-- メインコンテナ                             -->
 <!-- ========================================== -->
 <!-- JavaScriptで使用するデータ属性を持つ -->
-<main class="max-w-6xl mx-auto px-6 py-6 md:py-8"
+<main class="max-w-6xl mx-auto px-2 py-4 md:px-4 md:py-8"
       data-is-signed-in="<%= user_signed_in? ? 'true' : 'false' %>"
       data-icon-expand="<%= asset_path('icons/expand_more_24dp_1F1F1F.svg') %>"
       data-icon-collapse="<%= asset_path('icons/keyboard_arrow_up_24dp_1F1F1F.svg') %>"
@@ -19,12 +19,12 @@
 
   <%# 更新モードの場合は通知メッセージを表示 %>
   <% if @update_mode %>
-  <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-6">
+  <div class="mb-6 rounded-2xl border px-4 py-3" style="background: rgba(96, 165, 250, 0.10); border-color: rgba(96, 165, 250, 0.22);">
     <div class="flex items-start gap-3">
-      <%= image_tag 'icons/info_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, class: "text-blue-600 mt-0.5", alt: "info" %>
+      <%= image_tag 'icons/info_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, class: "mt-0.5 opacity-80", alt: "info" %>
       <div class="flex-1">
-        <p class="text-blue-900 font-medium mb-1">続きから編集中</p>
-        <p class="text-blue-700 text-sm">
+        <p class="mb-1 font-semibold text-[var(--shuffly-text)]">続きから編集中</p>
+        <p class="text-sm text-[var(--shuffly-text-secondary)]">
           保存すると既存のイベントが更新され、履歴も引き継がれます。
           設定は初期状態に戻ります。
         </p>
@@ -36,7 +36,7 @@
   <!-- ========================================== -->
   <!-- ページヘッダー                             -->
   <!-- ========================================== -->
-  <h1 class="text-2xl md:text-3xl font-bold mb-8 flex items-center gap-2">
+  <h1 class="mb-8 flex items-center gap-3 text-2xl md:text-3xl font-semibold text-[var(--shuffly-text)]">
     <%= image_tag "icons/shuffle_24dp_1F1F1F.svg",
           width: 35,
           height: 35,
@@ -46,7 +46,7 @@
       <%= @event.title.presence || (@update_mode ? @event.title : "新規シャッフルイベント") %>
     </span>
     <% if @update_mode && @load_event_data && @load_event_data[:created_at] %>
-      <span class="text-sm text-gray-500 font-normal mt-1 sm:mt-0 ml-0 sm:ml-2">
+      <span class="ml-0 mt-1 text-sm font-normal text-[var(--shuffly-text-muted)] sm:ml-2 sm:mt-0">
         (<%= @load_event_data[:created_at] %>作成)
       </span>
     <% end %>

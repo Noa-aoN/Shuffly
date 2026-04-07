@@ -2,26 +2,26 @@
 
 <div class="max-w-6xl mx-auto px-6 py-6 md:py-8">
   <%# ユーザー情報ヘッダー %>
-  <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 mb-6">
+  <div class="shuffly-card px-6 md:px-10 py-8 mb-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex items-center gap-4">
-        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center shrink-0 bg-[rgba(139,92,246,0.10)] border border-[rgba(139,92,246,0.14)]">
           <%= image_tag 'icons/person_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 32, height: 32, class: "text-blue-600", alt: "ユーザーアイコン" %>
         </div>
         <div>
-          <h1 class="text-2xl md:text-3xl font-bold text-gray-900"><%= @user.name.presence || @user.email.split('@').first %></h1>
-          <p class="text-gray-600 text-sm"><%= @user.email %></p>
+          <h1 class="text-2xl md:text-3xl font-bold text-[var(--shuffly-text)]"><%= @user.name.presence || @user.email.split('@').first %></h1>
+          <p class="text-sm text-[var(--shuffly-text-secondary)]"><%= @user.email %></p>
         </div>
       </div>
       <%# 統計情報 %>
       <div class="flex flex-col sm:items-end gap-2 text-sm">
-        <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full">
+        <span class="shuffly-badge shuffly-badge-accent">
           <%= image_tag 'icons/event_note_24dp_1F1F1F.svg', width: 16, height: 16, class: "text-blue-600", alt: "" %>
-          <%= @events.count %>件のイベント
+          <%= @events_count %>件のイベント
         </span>
-        <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-50 text-green-700 rounded-full">
+        <span class="shuffly-badge shuffly-badge-success">
           <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, class: "text-green-600", alt: "" %>
-          <%= @member_lists.count %>件のメンバーリスト
+          <%= @member_lists_count %>件のメンバーリスト
         </span>
       </div>
     </div>
@@ -31,27 +31,27 @@
   <div class="mb-6">
     <%= render 'shared/tabs',
           tabs: [
-            { id: 'events', text: t("mypage.tabs.events"), icon: 'icons/event_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'events') },
-            { id: 'member_lists', text: t("mypage.tabs.member_lists"), icon: 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'member_lists') },
-            { id: 'account', text: t("mypage.tabs.account"), icon: 'icons/settings_account_box_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'account') }
+            { id: 'events', text: t("mypage.tabs.events"), icon: 'icons/event_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'events'), data: { turbo: true } },
+            { id: 'member_lists', text: t("mypage.tabs.member_lists"), icon: 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'member_lists'), data: { turbo: true } },
+            { id: 'account', text: t("mypage.tabs.account"), icon: 'icons/settings_account_box_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'account'), data: { turbo: true } }
           ],
-          active_tab: (params[:tab] || 'events') %>
+          active_tab: @active_tab %>
   </div>
 
   <%# タブコンテンツ %>
-  <% case params[:tab] %>
+  <% case @active_tab %>
   <% when 'member_lists' %>
     <div class="space-y-4">
       <% if @member_lists && @member_lists.any? %>
         <%# メンバーリストカード一覧 %>
         <% @member_lists.each do |member_list| %>
-          <%= link_to edit_member_list_path(member_list), class: "block bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md hover:border-blue-300 border border-transparent transition cursor-pointer group" do %>
+          <%= link_to edit_member_list_path(member_list), class: "shuffly-card-link block px-6 md:px-10 py-8 cursor-pointer group" do %>
             <div class="flex items-center justify-between gap-4">
               <div class="flex-1">
-                <h3 class="font-semibold text-lg text-gray-900 mb-2">
+                <h3 class="font-semibold text-lg text-[var(--shuffly-text)] mb-2">
                   <%= member_list.name %>
                 </h3>
-                <div class="flex items-center gap-4 text-sm text-gray-600">
+                <div class="flex items-center gap-4 text-sm text-[var(--shuffly-text-secondary)]">
                   <span class="flex items-center gap-1">
                     <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "メンバー数アイコン" %>
                     <%= member_list.members.count %>人
@@ -62,7 +62,7 @@
                   </span>
                 </div>
               </div>
-              <svg class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-[var(--shuffly-text-muted)] group-hover:text-[var(--shuffly-text-secondary)] transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
               </svg>
             </div>
@@ -89,9 +89,9 @@
           </div>
         <% end %>
       <% else %>
-        <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-12 text-center">
+        <div class="shuffly-card px-6 md:px-10 py-12 text-center">
           <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 64, height: 64, class: "mx-auto text-gray-300 mb-4", alt: "空のメンバーリストアイコン" %>
-          <p class="text-gray-600 mb-6"><%= t("mypage.member_lists.empty") %></p>
+          <p class="mb-6 text-[var(--shuffly-text-secondary)]"><%= t("mypage.member_lists.empty") %></p>
           <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center w-full">
             <%= render 'shared/button',
                   button_text: t("mypage.member_lists.create_new"),
@@ -110,11 +110,11 @@
   <% when 'account' %>
     <div class="space-y-4">
       <%# アカウント情報カード %>
-      <%= link_to edit_user_registration_path, class: "block bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md hover:border-blue-300 border border-transparent transition cursor-pointer group" do %>
+      <%= link_to edit_user_registration_path, class: "shuffly-card-link block px-6 md:px-10 py-8 cursor-pointer group" do %>
         <div class="flex items-center justify-between gap-4">
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center bg-[rgba(139,92,246,0.10)] border border-[rgba(139,92,246,0.14)]">
                 <%= image_tag 'icons/person_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                               width: 24,
                               height: 24,
@@ -122,28 +122,28 @@
                               alt: 'アカウントアイコン' %>
               </div>
               <div>
-                <h3 class="text-xl font-bold text-gray-900"><%= t("mypage.account.title") %></h3>
+                <h3 class="text-xl font-bold text-[var(--shuffly-text)]"><%= t("mypage.account.title") %></h3>
               </div>
             </div>
-            <div class="space-y-2 text-sm text-gray-600 pl-13">
+            <div class="space-y-2 text-sm text-[var(--shuffly-text-secondary)] pl-13">
               <p><%= @user.email %></p>
               <% if @user.name.present? %>
                 <p><%= @user.name %></p>
               <% end %>
             </div>
           </div>
-          <svg class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-[var(--shuffly-text-muted)] group-hover:text-[var(--shuffly-text-secondary)] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
       <% end %>
 
       <%# タイムゾーン設定カード %>
-      <%= link_to timezone_settings_path, class: "block bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md hover:border-blue-300 border border-transparent transition cursor-pointer group" do %>
+      <%= link_to timezone_settings_path, class: "shuffly-card-link block px-6 md:px-10 py-8 cursor-pointer group" do %>
         <div class="flex items-center justify-between gap-4">
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center bg-[rgba(96,165,250,0.10)] border border-[rgba(96,165,250,0.18)]">
                 <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                               width: 24,
                               height: 24,
@@ -151,25 +151,26 @@
                               alt: 'タイムゾーン設定アイコン' %>
               </div>
               <div>
-                <h3 class="text-xl font-bold text-gray-900">タイムゾーン設定</h3>
+                <h3 class="text-xl font-bold text-[var(--shuffly-text)]">タイムゾーン設定</h3>
               </div>
             </div>
-            <div class="space-y-2 text-sm text-gray-600 pl-13">
+            <div class="space-y-2 text-sm text-[var(--shuffly-text-secondary)] pl-13">
               <p>現在の設定：<%= User::AVAILABLE_TIMEZONES.find { |id, label| id == @user.timezone }&.second || @user.timezone %></p>
             </div>
           </div>
-          <svg class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-[var(--shuffly-text-muted)] group-hover:text-[var(--shuffly-text-secondary)] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
       <% end %>
 
       <%# スタイル設定カード %>
-      <%= link_to style_settings_path, class: "block bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md hover:border-blue-300 border border-transparent transition cursor-pointer group" do %>
+      <div class="shuffly-card-link shuffly-card-link-disabled relative block px-6 md:px-10 py-8 group overflow-visible" aria-disabled="true">
+        <span class="shuffly-ribbon">準備中</span>
         <div class="flex items-center justify-between gap-4">
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center bg-[rgba(139,92,246,0.10)] border border-[rgba(139,92,246,0.14)]">
                 <%= image_tag 'icons/palette_24dp_1F1F1F.svg',
                               width: 24,
                               height: 24,
@@ -177,29 +178,29 @@
                               alt: 'スタイル設定アイコン' %>
               </div>
               <div>
-                <h3 class="text-xl font-bold text-gray-900">スタイル設定</h3>
+                <h3 class="text-xl font-bold text-[var(--shuffly-text)]">スタイル設定</h3>
               </div>
             </div>
-            <div class="space-y-2 text-sm text-gray-600 pl-13">
+            <div class="space-y-2 text-sm text-[var(--shuffly-text-secondary)] pl-13">
               <p>現在のテーマ：<%= User::THEME_LABELS[@user.theme_preference] || 'シンプル' %></p>
             </div>
           </div>
-          <svg class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-[var(--shuffly-text-muted)] group-hover:text-[var(--shuffly-text-secondary)] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
-      <% end %>
+      </div>
 
       <%# ログアウトボタン %>
       <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center mt-4 w-full">
         <%= render 'shared/button',
               button_text: t("mypage.account.logout"),
               path: destroy_user_session_path,
-              variant: 'tertiary',
+              variant: 'danger',
               size: 'md',
               button_to_method: :delete,
               full_mobile: true,
-              extra_class: 'w-full bg-gray-600 hover:bg-gray-700',
+              extra_class: 'w-full shadow-sm',
               icon: 'icons/logout_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg' %>
       </div>
     </div>
@@ -209,13 +210,13 @@
     <div class="space-y-4">
       <% if @events.any? %>
         <% @events.each do |event| %>
-          <%= link_to event_path(event), class: "block bg-white rounded-xl shadow-sm px-6 md:px-10 py-8 hover:shadow-md hover:border-blue-300 border border-transparent transition cursor-pointer group" do %>
+          <%= link_to event_path(event), class: "shuffly-card-link block px-6 md:px-10 py-8 cursor-pointer group" do %>
             <div class="flex items-center justify-between gap-4">
               <div class="flex-1">
-                <h3 class="font-semibold text-lg text-gray-900 mb-2">
+                <h3 class="font-semibold text-lg text-[var(--shuffly-text)] mb-2">
                   <%= event.title.presence || "イベント #{event.id}" %>
                 </h3>
-                <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                <div class="flex flex-wrap items-center gap-3 text-sm text-[var(--shuffly-text-secondary)]">
                   <span class="flex items-center gap-1">
                     <%= image_tag 'icons/today_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "作成日アイコン" %>
                     作成: <%= format_datetime(event.created_at) %>
@@ -233,19 +234,19 @@
                   <% order_count = event.order_history.count %>
                   <% role_count = event.role_history.count %>
                   <% if group_count > 0 || order_count > 0 || role_count > 0 %>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">
+                    <span class="shuffly-badge shuffly-badge-accent !px-2 !py-0.5 text-xs">
                       グループ: <strong><%= group_count %></strong>回
                     </span>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs">
+                    <span class="shuffly-badge shuffly-badge-success !px-2 !py-0.5 text-xs">
                       順番: <strong><%= order_count %></strong>回
                     </span>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-xs">
+                    <span class="shuffly-badge shuffly-badge-neutral !px-2 !py-0.5 text-xs">
                       役割: <strong><%= role_count %></strong>回
                     </span>
                   <% end %>
                 </div>
               </div>
-              <svg class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-[var(--shuffly-text-muted)] group-hover:text-[var(--shuffly-text-secondary)] transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
               </svg>
             </div>
@@ -273,14 +274,15 @@
         <% end %>
       <% else %>
         <%# 空の状態 %>
-        <div class="bg-white rounded-xl shadow-sm px-6 md:px-10 py-16 text-center">
-          <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div class="shuffly-card px-6 md:px-10 py-16 text-center">
+          <div class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 bg-[rgba(139,92,246,0.10)] border border-[rgba(139,92,246,0.14)]">
             <%= image_tag 'icons/event_note_24dp_1F1F1F.svg', width: 48, height: 48, class: "text-blue-400", alt: "イベントアイコン" %>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">イベントがありません</h3>
-          <p class="text-gray-600 mb-6 max-w-md mx-auto">
-            最初のイベントを作成して、メンバーをシャッフルしましょう。<br>
-            グループ分け、順番決め、役割分担などができます。
+          <h3 class="text-xl font-semibold text-[var(--shuffly-text)] mb-2">イベントがありません</h3>
+          <p class="mb-5 max-w-md mx-auto text-[var(--shuffly-text-secondary)]">
+            最初のイベントを作成して、<br class="hidden sm:block">
+            メンバーをシャッフルしましょう。<br>
+            グループ分け、順番決め、役割分担ができます。
           </p>
           <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center w-full">
             <%= render 'shared/button',
