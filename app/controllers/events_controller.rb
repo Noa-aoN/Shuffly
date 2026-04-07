@@ -1,5 +1,6 @@
 class EventsController < ApplicationController
   before_action :set_event, only: [ :show, :edit, :update, :destroy ]
+  before_action :authorize_event_owner!, only: [ :edit, :update, :destroy ]
 
   def index
     @events = current_user ? current_user.events : Event.none
@@ -35,18 +36,14 @@ class EventsController < ApplicationController
   end
 
   def create
-    # 更新モードの場合はupdateアクションに処理を委譲
-    if params[:update_mode] == "true"
-      update
-      return
-    end
+    return handle_update_mode if params[:update_mode] == "true"
 
     @event = current_user ? current_user.events.build(normalized_event_params) : Event.new(normalized_event_params)
 
     if @event.save
       redirect_to @event, notice: "イベントを保存しました"
     else
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 
@@ -79,8 +76,10 @@ class EventsController < ApplicationController
         format.json { render json: { success: true, message: "イベントを更新しました" }, status: :ok }
       end
     else
+      prepare_update_mode_view_state
+
       respond_to do |format|
-        format.html { render :edit }
+        format.html { render :new, status: :unprocessable_entity }
         format.json { render json: { success: false, errors: @event.errors.full_messages }, status: :unprocessable_entity }
       end
     end
@@ -114,6 +113,45 @@ class EventsController < ApplicationController
     unless @event
       redirect_to root_path, alert: "指定のイベントが見つかりません" and return
     end
+  end
+
+  def authorize_event_owner!
+    return if user_signed_in? && @event.user_id == current_user.id
+
+    redirect_to root_path, alert: "このイベントを操作する権限がありません"
+  end
+
+  def handle_update_mode
+    id = params[:id].presence || params[:original_id].presence
+    unless id.to_s.match?(/\A\d+\z/)
+      redirect_to new_event_path, alert: "更新対象のイベントIDが不正です" and return
+    end
+
+    @event = Event.find_by(id: id)
+    unless @event
+      redirect_to new_event_path, alert: "更新対象のイベントが見つかりません" and return
+    end
+
+    authorize_event_owner!
+    return if performed?
+
+    update
+  end
+
+  def prepare_update_mode_view_state
+    @update_mode = true
+    @load_event_data = {
+      title: @event.title,
+      memo: @event.memo,
+      original_id: @event.id,
+      created_at: @event.created_at.strftime("%Y/%m/%d %H:%M"),
+      data_version: @event.data_version,
+      members_data: @event.members_data,
+      group_rounds: @event.group_rounds,
+      order_rounds: @event.order_rounds,
+      role_rounds: @event.role_rounds,
+      co_occurrence_cache: @event.co_occurrence_cache
+    }
   end
 
   def event_params

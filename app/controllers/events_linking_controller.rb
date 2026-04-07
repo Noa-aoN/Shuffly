@@ -18,16 +18,7 @@ class EventsLinkingController < ApplicationController
     # 履歴データから created_at を設定（未ログインユーザーの問題対策）
     set_created_at_from_history(@event)
 
-    Rails.logger.debug "=== EventsLinkingController#create ==="
-    Rails.logger.debug "current_user: #{current_user.id}"
-    Rails.logger.debug "event params: #{normalized_event_params.inspect}"
-    Rails.logger.debug "@event valid?: #{@event.valid?}"
-    Rails.logger.debug "@event errors: #{@event.errors.full_messages.inspect}" if @event.invalid?
-
     if @event.save
-      Rails.logger.debug "Event saved successfully: #{@event.id}"
-      Rails.logger.debug "Redirect URL: #{event_path(@event)}"
-      Rails.logger.debug "Event attributes: #{@event.attributes.except('members_data', 'group_rounds', 'order_rounds', 'role_rounds', 'co_occurrence_cache').inspect}"
       # トークンをクリア
       session[:pending_event_token] = nil
 
@@ -35,16 +26,15 @@ class EventsLinkingController < ApplicationController
         format.html { redirect_to @event, notice: "ログインしたのでイベントを保存しました" }
         format.json do
           redirect_url = "/events/#{@event.id}"
-          Rails.logger.debug "Generated redirect_url: #{redirect_url}"
           render json: { success: true, redirect_url: redirect_url, message: "イベントを保存しました" }, status: :ok
         end
       end
     else
-      Rails.logger.debug "Event save FAILED!"
-      Rails.logger.debug "@event errors: #{@event.errors.full_messages.inspect}"
-
       respond_to do |format|
-        format.html { render :show, alert: "イベントの保存に失敗しました" }
+        format.html do
+          flash.now[:alert] = "イベントの保存に失敗しました"
+          render :show, status: :unprocessable_entity
+        end
         format.json { render json: { success: false, errors: @event.errors.full_messages }, status: :unprocessable_entity }
       end
     end
@@ -57,7 +47,7 @@ class EventsLinkingController < ApplicationController
 
     if timestamps.any?
       # 最も古いタイムスタンプを created_at に設定（日本時間）
-      event.created_at = Time.at(timestamps.min / 1000).in_time_zone("Tokyo")
+      event.created_at = Time.at(timestamps.min / 1000).in_time_zone("Asia/Tokyo")
     end
   end
 
