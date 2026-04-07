@@ -3,113 +3,135 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org)
 [![Docker](https://img.shields.io/badge/Docker-2496ED.svg)](https://www.docker.com)
 
-## 概要
-Shuffly は、参加者をシャッフルしてグループ分けや役割分担を行うためのWebアプリです。
-懇親会・LT会・ミーティングなど、人数や目的に応じて柔軟に活用できます。
+# Shuffly
 
-## アプリを作った理由
-懇親会などで複数回のグループ分けを行う際、低被りでシャッフルできるツールが欲しいと考え開発しました。
-また、LTの登壇順決めや会議での役割分担など、イベント運営全般で使える汎用ツールを目指しています。
-未使用技術の実践と、期限付きで完成させる開発題材としても適していると判断しました。
+Shuffly は、参加者のグループ分け、順番決め、役割決めを行うための
+Rails アプリケーションです。懇親会、勉強会、ワークショップ、社内イベントなどで、
+繰り返し使っても偏りが出にくいランダム化体験を目指しています。
 
-## できること（機能一覧）
-- 基本機能
-  - メンバーの手軽な入力 / インポート
-  - グループの自動振り分け（履歴を保持）
-  - 順番の自動割り当て（履歴を保持）
-  - 役割の自動割り当て（履歴を保持）
-  - 結果のコピー・エクスポート
-- 会員機能
-  - ログイン/サインアップ機能
-  - マイページ
-    - イベント履歴一覧/詳細確認
-    - メンバーリスト作成/確認/編集機能
-    - アカウント設定機能（アカウント情報・スタイル設定）
+## 主な機能
+
+- メンバーの直接入力
+- メンバーリストの保存と再利用
+- グループ分け履歴の保持
+- 順番決め履歴の保持
+- 役割決め履歴の保持
+- 結果のコピーとテキスト出力
+- ユーザー登録、イベント履歴、設定機能
 
 ## 技術スタック
-- Ruby（3.2.3）
-- Ruby on Rails（7.2.3）
-- Docker / docker-compose
+
+- Ruby 3.2.3
+- Rails 7.2.3
 - PostgreSQL
+- Docker Compose
+- Turbo / Stimulus
+- esbuild
+- Tailwind CSS
 
-## プロジェクト構造
-```
-app/
-├── controllers/     # コントローラ（ApplicationController, EventsController, etc.）
-├── models/          # モデル（Event, MemberList, User）
-├── views/           # ビュー
-├── javascript/      # JavaScript（Turbo/Stimulus）
-└── helpers/         # ビューヘルパー
-```
+## ドメインモデル
 
-## データベース構造
+### Event
 
-### Event（シャッフルイベント）
+イベントの作業状態と結果履歴を保持します。
+
 | カラム | 型 | 用途 |
-|--------|-----|------|
-| id | bigint | 主キー |
-| user_id | bigint | 外部キー（users） |
-| title | string | イベント名 |
-| memo | text | メモ |
-| data_version | integer | データフォーマット版数（1=旧JSON, 2=正規化, 3=ハイブリッド） |
-| members_data | jsonb | メンバーデータ [{id: 1, name: "John"}, ...] |
-| group_rounds | jsonb | グループシャッフル履歴 [{round: 1, assignments: [...], settings: {...}}, ...] |
-| order_rounds | jsonb | 順番シャッフル履歴 [{round: 1, order: [member_ids], ...}, ...] |
-| role_rounds | jsonb | 役割割り当て履歴 [{round: 1, assignments: [...], ...}, ...] |
-| co_occurrence_cache | jsonb | 共起回数キャッシュ {"1_2": 3, ...} |
+| --- | --- | --- |
+| `user_id` | bigint | 所有ユーザー |
+| `title` | string | イベント名 |
+| `memo` | text | メモ |
+| `data_version` | integer | データ形式バージョン |
+| `members_data` | jsonb | メンバー情報 |
+| `group_rounds` | jsonb | グループ分け履歴 |
+| `order_rounds` | jsonb | 順番決め履歴 |
+| `role_rounds` | jsonb | 役割決め履歴 |
+| `co_occurrence_cache` | jsonb | 組み合わせキャッシュ |
 
-### MemberList（メンバーリスト）
+### MemberList
+
+ログインユーザーが再利用するメンバーリストです。
+
 | カラム | 型 | 用途 |
-|--------|-----|------|
-| id | bigint | 主キー |
-| user_id | bigint | 外部キー（users） |
-| name | string | リスト名 |
-| members_json | jsonb | メンバーJSON配列 |
+| --- | --- | --- |
+| `user_id` | bigint | 所有ユーザー |
+| `name` | string | リスト名 |
+| `members_json` | jsonb | メンバー配列 |
 
-### User（ユーザー）
+### User
+
+Devise で管理する認証ユーザーです。
+
 | カラム | 型 | 用途 |
-|--------|-----|------|
-| id | bigint | 主キー |
-| email | string | メールアドレス（ユニーク） |
-| encrypted_password | string | 暗号化パスワード（Devise） |
-| name | string | 表示名 |
-| reset_password_token | string | パスワードリセットトークン |
-| remember_created_at | datetime | ログイン状態保持 |
+| --- | --- | --- |
+| `email` | string | ログイン用メールアドレス |
+| `encrypted_password` | string | パスワードハッシュ |
+| `name` | string | 表示名 |
+| `timezone` | string | IANA タイムゾーン |
+| `theme_preference` | string | UI テーマ |
 
-## 開発環境セットアップ
+## ローカルセットアップ
+
+### Docker で起動
 
 ```bash
 docker compose build
 docker compose up
 ```
 
-ブラウザで http://localhost:3000 にアクセス
+起動後、`http://localhost:3000` を開きます。
 
-## 主要なGem
-| Gem | 用途 |
-|-----|------|
-| devise | 認証機能 |
-| turbo-rails | ホットワイヤ（SPA風ページ遷移） |
-| stimulus-rails | JavaScriptフレームワーク |
-| meta-tags | メタタグ・OGP設定 |
-| pg | PostgreSQLアダプタ |
-| puma | Webサーバー |
-| rubocop-rails-omakase | コードスタイルチェック |
-| brakeman | セキュリティチェック |
+### よく使うコマンド
 
-## コーディング規約
-- Rubocopを使用
-- Brakemanでセキュリティチェック
-- 日本語コメントを推奨
+```bash
+docker compose exec web bundle exec rspec
+docker compose exec web bundle exec rubocop
+docker compose exec web bundle exec brakeman
+```
 
-## 今後の改善ポイント
-- ✅ ログイン/サインアップ機能
-- ✅ マイページ（イベント履歴一覧・メンバーリスト登録）
-- ✅ メンバーリスト機能
-- トップページ（カードクリックのモーダル表示）
-- 新規シャッフルイベントページ（順番/役割履歴のUI改善・オプション追加・使い方/説明）
-- 画面共有ページ
+## ディレクトリ構成
+
+```text
+app/
+  controllers/   リクエスト処理
+  models/        ドメインルールと永続化
+  views/         サーバー描画UI
+  javascript/    クライアント側の挙動
+config/
+db/
+spec/
+```
+
+## 現在の技術的な重点
+
+- デプロイとローカル起動の安定化
+- イベント所有権まわりの認可強化
+- イベント保存・更新処理の責務整理
+- フロントエンドの大きなロジック分割
+
+## 改善アイデア
+
+### 機能
+
+- イベント履歴の要約表示強化
+- メンバーリストの検索、複製、整理
+- 既存イベントの続きから編集導線の改善
+- 発表画面、共有画面の強化
+
+### UX / UI
+
+- 保存成功 / 失敗フィードバックの改善
+- モバイルでの編集体験の改善
+- 更新モードの視覚的な明確化
+- 出力 / 共有 / 保存エリアの情報整理
+
+### 実装改善
+
+- イベントパラメータ正規化処理の共通化
+- `events_new.js` の責務分割
+- リクエスト spec と model spec の拡充
+- 開発者向け運用ドキュメントの整備
 
 ## デプロイ
-- Render で公開
-- URL: https://shuffly.onrender.com/
+
+- 本番環境: Render
+- URL: `https://shuffly.onrender.com/`
