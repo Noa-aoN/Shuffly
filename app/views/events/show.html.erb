@@ -1,17 +1,18 @@
 <%# イベント詳細ページ %>
 
-<div class="max-w-6xl mx-auto px-6 py-6 md:py-8">
+<div class="shuffly-event-detail-page max-w-6xl mx-auto px-4 py-4 md:px-4 md:py-8">
   <%# ヘッダー: タイトルとメタデータ %>
-  <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-    <div class="flex items-start justify-between">
+  <div class="shuffly-card px-6 py-6 md:px-8 md:py-8 mb-6">
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
       <div class="flex-1">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-          <span class="event-title cursor-pointer hover:bg-gray-100 rounded px-2 py-1 -mx-2 transition-colors"
+        <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shuffly-text-muted)]">Saved Event</p>
+        <h1 class="mb-3 text-2xl md:text-3xl font-semibold text-[var(--shuffly-text)]">
+          <span class="event-title cursor-pointer rounded-lg px-2 py-1 -mx-2 transition-colors hover:bg-[rgba(124,92,255,0.08)]"
                 data-event-id="<%= @event.id %>"
                 data-event-title="<%= @event.title.presence || t("mypage.events.title") %>">
             <%= @event.title.presence || t("mypage.events.title") %>
           </span>
-          <span class="text-sm text-gray-400 ml-2">
+          <span class="ml-2 text-sm text-[var(--shuffly-text-muted)]">
             <%= image_tag 'icons/edit_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                            width: 16,
                            height: 16,
@@ -19,41 +20,47 @@
                            alt: '編集' %>
           </span>
         </h1>
-        <div class="flex flex-wrap gap-4 text-base text-gray-600">
-          <span class="flex items-center gap-1">
+        <div class="mb-4 max-w-3xl space-y-1 text-sm leading-6 text-[var(--shuffly-text-secondary)] md:text-base">
+          <p>保存済みの履歴を確認しながら、続きから編集できます。</p>
+          <p>作成日時、更新日時、人数、実行回数をまとめて追える詳細ページです。</p>
+        </div>
+        <div class="flex flex-wrap gap-2 text-sm text-[var(--shuffly-text-secondary)] md:text-base">
+          <span class="shuffly-badge shuffly-badge-neutral">
             <%= image_tag 'icons/today_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "作成日アイコン" %>
             <%= t("mypage.event_detail.created_at") %>: <%= format_datetime_short(@event.created_at) %>
           </span>
-          <span class="flex items-center gap-1">
+          <span class="shuffly-badge shuffly-badge-neutral">
             <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "更新日アイコン" %>
             <%= t("mypage.event_detail.updated_at") %>: <%= format_datetime_short(@event.updated_at) %>
           </span>
-          <span class="flex items-center gap-1">
+          <span class="shuffly-badge shuffly-badge-neutral">
             <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "人数アイコン" %>
             <%= t("mypage.event_detail.members_count", count: @members.count) %>
           </span>
         </div>
         <%# 実行回数表示 %>
-        <div class="flex flex-wrap gap-4 text-sm text-gray-500 mt-2" id="execution-counts">
-          <span>グループ分け回数: <strong id="groups-count">0回</strong></span>
-          <span>順番決め回数: <strong id="order-count">0回</strong></span>
-          <span>役割分担回数: <strong id="roles-count">0回</strong></span>
+        <div class="mt-4 flex flex-wrap gap-2" id="execution-counts">
+          <span class="shuffly-badge shuffly-badge-accent">グループ <strong id="groups-count">0回</strong></span>
+          <span class="shuffly-badge shuffly-badge-success">順番 <strong id="order-count">0回</strong></span>
+          <span class="shuffly-badge shuffly-badge-neutral">役割 <strong id="roles-count">0回</strong></span>
         </div>
       </div>
 
       <%# 削除ボタン（右上の丸ボタン） %>
-      <%= render 'shared/icon_button',
-            icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-            path: event_path(@event),
-            method: :delete,
-            variant: 'default',
-            title: 'イベントを削除',
-            id: 'btn-delete-event',
-            confirm_message: t("mypage.event_detail.delete_confirm_event") %>
+      <div class="flex items-start justify-end">
+        <%= render 'shared/icon_button',
+              icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              path: event_path(@event),
+              method: :delete,
+              variant: 'default',
+              title: 'イベントを削除',
+              id: 'btn-delete-event',
+              confirm_message: t("mypage.event_detail.delete_confirm_event") %>
+      </div>
     </div>
 
     <%# アクションボタン %>
-    <div class="mt-4 pt-4 border-t border-gray-100">
+    <div class="mt-6 border-t border-[var(--shuffly-border)] pt-6">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2 w-full sm:place-items-center">
         <%= render 'shared/button',
               button_text: t("mypage.event_detail.back"),
@@ -79,16 +86,16 @@
 
   <%# タブナビゲーション（results_panelと同じスタイル） %>
   <div class="mb-6">
-    <div class="inline-flex w-full items-center gap-2 bg-white rounded-xl p-1 border border-slate-200 shadow-sm">
-      <button id="tab-groups" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg font-semibold text-blue-600 bg-blue-50 ring-1 ring-blue-100 shadow-sm">
+    <div class="shuffly-tabbar flex w-full items-center gap-2 rounded-2xl p-1.5">
+      <button id="tab-groups" class="shuffly-tab shuffly-results-tab shuffly-results-tab-active flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm md:text-base font-semibold">
         <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "グループアイコン" %>
         <span class="hidden sm:inline leading-none">グループ</span>
       </button>
-      <button id="tab-order" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg font-semibold text-gray-600 hover:text-blue-500">
+      <button id="tab-order" class="shuffly-tab shuffly-results-tab flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm md:text-base font-semibold">
         <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "順番アイコン" %>
         <span class="hidden sm:inline leading-none">順番</span>
       </button>
-      <button id="tab-roles" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm md:text-lg font-semibold text-gray-600 hover:text-blue-500">
+      <button id="tab-roles" class="shuffly-tab shuffly-results-tab flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm md:text-base font-semibold">
         <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "役割アイコン" %>
         <span class="hidden sm:inline leading-none">役割</span>
       </button>
@@ -96,15 +103,18 @@
   </div>
 
   <%# グループパネル %>
-  <div id="panel-groups" class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 py-8">
-    <h3 class="mb-2 font-semibold text-gray-600"><span class="text-sm text-blue-500">●</span> グループ表示</h3>
-    <div id="pres-groups" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[480px] max-h-[480px] overflow-y-auto"></div>
+  <div id="panel-groups" class="shuffly-panel px-6 md:px-10 py-8">
+    <div class="mb-4">
+      <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shuffly-text-muted)]">Saved Results</p>
+      <h3 class="font-semibold text-[var(--shuffly-text)]">グループ表示</h3>
+    </div>
+    <div id="pres-groups" class="shuffly-detail-output whitespace-pre-wrap text-base md:text-lg"></div>
 
     <%# 履歴インデックス %>
-    <div class="text-base text-yellow-800 mt-1 mb-2 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+    <div class="shuffly-detail-meta mt-4 mb-2">
       現在のグループ分け表示：<span id="history-index-groups" class="font-bold">未実施</span>
     </div>
-    <div class="text-base text-yellow-800 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+    <div class="shuffly-detail-meta mb-4">
       実行日時：<span id="history-timestamp-groups" class="font-bold"></span>
     </div>
 
@@ -152,15 +162,18 @@
   </div>
 
   <%# 順番パネル %>
-  <div id="panel-order" class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 py-8 hidden">
-    <h3 class="font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> 順番表示</h3>
-    <div id="pres-order" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[480px] max-h-[480px] overflow-y-auto"></div>
+  <div id="panel-order" class="shuffly-panel px-6 md:px-10 py-8 hidden">
+    <div class="mb-4">
+      <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shuffly-text-muted)]">Saved Results</p>
+      <h3 class="font-semibold text-[var(--shuffly-text)]">順番表示</h3>
+    </div>
+    <div id="pres-order" class="shuffly-detail-output whitespace-pre-wrap text-base md:text-lg"></div>
 
     <%# 履歴インデックス %>
-    <div class="text-base text-yellow-800 mt-1 mb-2 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+    <div class="shuffly-detail-meta mt-4 mb-2">
       現在の順番決め表示：<span id="history-index-order" class="font-bold">未実施</span>
     </div>
-    <div class="text-base text-yellow-800 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+    <div class="shuffly-detail-meta mb-4">
       実行日時：<span id="history-timestamp-order" class="font-bold"></span>
     </div>
 
@@ -208,15 +221,18 @@
   </div>
 
   <%# 役割パネル %>
-  <div id="panel-roles" class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 py-8 hidden">
-    <h3 class="font-semibold mb-2 text-gray-600"><span class="text-sm text-blue-500">●</span> 役割表示</h3>
-    <div id="pres-roles" class="whitespace-pre-wrap text-lg text-gray-800 bg-yellow-100 border border-slate-300 rounded-xl px-3 py-2 w-full mb-4 min-h-[480px] max-h-[480px] overflow-y-auto"></div>
+  <div id="panel-roles" class="shuffly-panel px-6 md:px-10 py-8 hidden">
+    <div class="mb-4">
+      <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shuffly-text-muted)]">Saved Results</p>
+      <h3 class="font-semibold text-[var(--shuffly-text)]">役割表示</h3>
+    </div>
+    <div id="pres-roles" class="shuffly-detail-output whitespace-pre-wrap text-base md:text-lg"></div>
 
     <%# 履歴インデックス %>
-    <div class="text-base text-yellow-800 mt-1 mb-2 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+    <div class="shuffly-detail-meta mt-4 mb-2">
       現在の役割分担表示：<span id="history-index-roles" class="font-bold">未実施</span>
     </div>
-    <div class="text-base text-yellow-800 mb-4 bg-yellow-100 border-2 border-dashed border-yellow-200 rounded-xl px-4 py-2">
+    <div class="shuffly-detail-meta mb-4">
       実行日時：<span id="history-timestamp-roles" class="font-bold"></span>
     </div>
 
@@ -264,12 +280,13 @@
   </div>
 
   <%# メモカード %>
-  <div class="bg-gray-100 rounded-xl shadow-sm px-6 md:px-10 py-8 mt-6">
-    <h2 class="text-xl font-bold mb-4"><%= t("mypage.event_detail.memo") %></h2>
+  <div class="shuffly-panel px-6 md:px-10 py-8 mt-6">
+    <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shuffly-text-muted)]">Notes</p>
+    <h2 class="text-xl font-semibold text-[var(--shuffly-text)] mb-4"><%= t("mypage.event_detail.memo") %></h2>
     <%= form_with model: @event, url: event_path(@event), method: :patch, id: 'memo-form', local: true, data: { turbo: false } do |f| %>
       <%= f.text_area :memo,
             rows: 3,
-            class: "w-full border border-slate-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white",
+            class: "shuffly-textarea px-4 py-3 text-base focus:outline-none",
             placeholder: t("mypage.event_detail.memo_placeholder") %>
       <div class="mt-3">
         <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 mb-2 w-full sm:place-items-center">
@@ -287,18 +304,23 @@
   </div>
 
   <%# エクスポートセクション %>
-  <div class="bg-white rounded-xl shadow-sm p-6 mt-6">
-    <h2 class="text-xl font-bold mb-4"><%= t("mypage.event_detail.export") %></h2>
+  <div class="shuffly-card px-6 py-6 mt-6">
+    <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shuffly-text-muted)]">Export</p>
+    <h2 class="text-xl font-semibold text-[var(--shuffly-text)] mb-4"><%= t("mypage.event_detail.export") %></h2>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2 w-full sm:place-items-center">
-      <%= render 'shared/button',
-            button_text: 'プレゼン表示',
-            path: '#',
-            id: 'btn-presentation',
-            variant: 'tertiary',
-            full_mobile: true,
-            extra_class: 'w-full',
-            icon: 'icons/share_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-            icon_class: 'inline-block' %>
+      <div class="relative w-full overflow-visible">
+        <span class="shuffly-ribbon shuffly-ribbon-button">準備中</span>
+        <%= render 'shared/button',
+              button_text: 'プレゼン表示',
+              id: 'btn-presentation',
+              variant: 'tertiary',
+              is_button: true,
+              disabled: true,
+              full_mobile: true,
+              extra_class: 'w-full opacity-70 cursor-not-allowed',
+              icon: 'icons/share_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              icon_class: 'inline-block' %>
+      </div>
       <%= render 'shared/button',
             button_text: "テキスト出力",
             path: '#',
@@ -414,11 +436,9 @@
 
       // Update tab styles
       tabs.forEach(t => {
-        t.classList.remove('text-blue-600', 'bg-blue-50', 'ring-1', 'ring-blue-100', 'shadow-sm');
-        t.classList.add('text-gray-600');
+        t.classList.remove('shuffly-results-tab-active');
       });
-      this.classList.remove('text-gray-600');
-      this.classList.add('text-blue-600', 'bg-blue-50', 'ring-1', 'ring-blue-100', 'shadow-sm');
+      this.classList.add('shuffly-results-tab-active');
 
       // Show target panel
       Object.values(panels).forEach(p => p.classList.add('hidden'));
@@ -707,13 +727,9 @@
       const tabEl = document.getElementById('tab-' + tab);
       if (tabEl) {
         if (tab === tabName) {
-          // Active tab styles
-          tabEl.classList.remove('text-gray-600', 'hover:text-blue-500');
-          tabEl.classList.add('text-blue-600', 'bg-blue-50', 'ring-1', 'ring-blue-100', 'shadow-sm');
+          tabEl.classList.add('shuffly-results-tab-active');
         } else {
-          // Inactive tab styles
-          tabEl.classList.remove('text-blue-600', 'bg-blue-50', 'ring-1', 'ring-blue-100', 'shadow-sm');
-          tabEl.classList.add('text-gray-600', 'hover:text-blue-500');
+          tabEl.classList.remove('shuffly-results-tab-active');
         }
       }
     });
