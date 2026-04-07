@@ -1,4 +1,4 @@
-[![Ruby](https://img.shields.io/badge/Ruby-3.2.3-ruby.svg)](https://ruby-lang.org)
+[![Ruby](https://img.shields.io/badge/Ruby-3.3.11-ruby.svg)](https://ruby-lang.org)
 [![Rails](https://img.shields.io/badge/Rails-7.2.3-red.svg)](https://rubyonrails.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org)
 [![Docker](https://img.shields.io/badge/Docker-2496ED.svg)](https://www.docker.com)
@@ -21,7 +21,7 @@ Rails アプリケーションです。懇親会、勉強会、ワークショ�
 
 ## 技術スタック
 
-- Ruby 3.2.3
+- Ruby 3.3.11
 - Rails 7.2.3
 - PostgreSQL
 - Docker Compose
@@ -78,7 +78,7 @@ docker compose build
 docker compose up
 ```
 
-起動後、`http://localhost:3000` を開きます。
+起動後、`http://localhost:3002` を開きます。
 
 ### よく使うコマンド
 

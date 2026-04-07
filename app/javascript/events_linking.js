@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
           },
           body: JSON.stringify({
+            token: token,
             event: {
               title: eventData.title || '',
               memo: eventData.memo || '',

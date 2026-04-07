@@ -19,7 +19,8 @@ RSpec.describe MemberListsController, type: :controller do
           get :index, format: :json
           json = JSON.parse(response.body)
           expect(json).to be_an(Array)
-          expect(json.first).to include('id', 'name', 'members', 'members_count', 'created_at')
+          expect(json.first).to include('id', 'name', 'preview_members', 'members_count', 'created_at')
+          expect(json.first).not_to have_key('members')
         end
       end
     end

@@ -177,28 +177,6 @@ class EventsController < ApplicationController
   end
 
   def normalized_event_params
-    params_hash = event_params.to_h
-
-    # JSON文字列をパースしてHashまたはArrayに変換
-    # パラメータが存在する場合のみ正規化を行う
-    [ "members_data", "group_rounds", "order_rounds", "role_rounds", "co_occurrence_cache" ].each do |key|
-      # キーが存在しない場合はスキップ（既存値を保持）
-      next unless params_hash.key?(key)
-
-      if params_hash[key].is_a?(String) && params_hash[key].present?
-        begin
-          params_hash[key] = JSON.parse(params_hash[key])
-        rescue JSON::ParserError => e
-          Rails.logger.error "Failed to parse #{key}: #{e.message}"
-          # パースに失敗した場合はデフォルト値を設定
-          params_hash[key] = (key == "members_data" || key == "co_occurrence_cache") ? {} : []
-        end
-      elsif params_hash[key].blank?
-        # 空文字列が明示的に送信された場合のみデフォルト値を設定
-        params_hash[key] = (key == "members_data" || key == "co_occurrence_cache") ? {} : []
-      end
-    end
-
-    params_hash
+    Event.normalize_json_fields(event_params.to_h)
   end
 end

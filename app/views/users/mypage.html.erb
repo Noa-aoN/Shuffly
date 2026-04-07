@@ -165,12 +165,12 @@
       <% end %>
 
       <%# スタイル設定カード %>
-      <div class="shuffly-card-link shuffly-card-link-disabled relative block px-6 md:px-10 py-8 group overflow-visible" aria-disabled="true">
-        <span class="shuffly-ribbon">準備中</span>
-        <div class="flex items-center justify-between gap-4">
+      <div class="shuffly-card-link shuffly-card-link-disabled relative block px-6 md:px-10 py-8 group overflow-visible cursor-not-allowed" aria-disabled="true">
+        <span class="shuffly-ribbon top-1">準備中</span>
+        <div class="flex items-center justify-between gap-4 cursor-not-allowed">
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-full flex items-center justify-center bg-[rgba(139,92,246,0.10)] border border-[rgba(139,92,246,0.14)]">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center bg-[rgba(139,92,246,0.10)] border border-[rgba(139,92,246,0.14)] cursor-not-allowed">
                 <%= image_tag 'icons/palette_24dp_1F1F1F.svg',
                               width: 24,
                               height: 24,
@@ -185,7 +185,7 @@
               <p>現在のテーマ：<%= User::THEME_LABELS[@user.theme_preference] || 'シンプル' %></p>
             </div>
           </div>
-          <svg class="w-5 h-5 text-[var(--shuffly-text-muted)] group-hover:text-[var(--shuffly-text-secondary)] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-[var(--shuffly-text-muted)] group-hover:text-[var(--shuffly-text-secondary)] transition-colors shrink-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>

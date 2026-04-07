@@ -99,4 +99,44 @@ RSpec.describe Event, type: :model do
       expect(event.normalized?).to be false
     end
   end
+
+  describe '.normalize_json_fields' do
+    it 'JSON文字列を型に応じて正規化する' do
+      params = {
+        'members_data' => '{"members":["Alice"]}',
+        'group_rounds' => '[{"round":1}]',
+        'title' => 'Test'
+      }
+
+      normalized = described_class.normalize_json_fields(params)
+
+      expect(normalized).to include(
+        'members_data' => { 'members' => [ 'Alice' ] },
+        'group_rounds' => [ { 'round' => 1 } ],
+        'title' => 'Test'
+      )
+    end
+
+    it '不正なJSONをデフォルト値へフォールバックする' do
+      params = {
+        'members_data' => 'invalid',
+        'order_rounds' => 'invalid'
+      }
+
+      normalized = described_class.normalize_json_fields(params)
+
+      expect(normalized).to include(
+        'members_data' => {},
+        'order_rounds' => []
+      )
+    end
+
+    it '元のハッシュは破壊しない' do
+      params = { 'members_data' => '{"members":["Alice"]}' }
+
+      described_class.normalize_json_fields(params)
+
+      expect(params).to eq('members_data' => '{"members":["Alice"]}')
+    end
+  end
 end

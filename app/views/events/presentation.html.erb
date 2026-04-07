@@ -4,7 +4,7 @@
 <!-- ============================================ -->
 
 <!-- メンテナンスオーバーレイ設定 -->
-<script>
+<script nonce="<%= content_security_policy_nonce %>">
   try { sessionStorage.removeItem('maintenance-hidden'); } catch (e) {}
   window.DEFAULT_MAINTENANCE = true;
 </script>
@@ -332,7 +332,7 @@
 <!-- ========================================== -->
 <!-- JavaScript（プレゼンテーション制御ロジック）-->
 <!-- ========================================== -->
-<script>
+<script nonce="<%= content_security_policy_nonce %>">
 (function(){
   function safeParse(v){
     if(!v) return null;

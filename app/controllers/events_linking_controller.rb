@@ -1,5 +1,6 @@
 class EventsLinkingController < ApplicationController
   before_action :authenticate_user!
+  before_action :ensure_valid_pending_token!, only: :create
 
   def show
     # ログイン後にLocalStorageのデータをサーバーに保存する確認画面を表示
@@ -41,6 +42,20 @@ class EventsLinkingController < ApplicationController
   end
 
   private
+
+  def ensure_valid_pending_token!
+    request_token = params[:token].to_s
+    session_token = session[:pending_event_token].to_s
+
+    return if request_token.present? && session_token.present? && ActiveSupport::SecurityUtils.secure_compare(request_token, session_token)
+
+    session[:pending_event_token] = nil if session_token.present?
+
+    respond_to do |format|
+      format.html { redirect_to root_path, alert: "保存リンクが無効です。もう一度やり直してください" }
+      format.json { render json: { success: false, errors: [ "保存リンクが無効です。もう一度やり直してください" ] }, status: :unprocessable_entity }
+    end
+  end
 
   def set_created_at_from_history(event)
     timestamps = collect_timestamps_from_rounds(event)
@@ -86,24 +101,6 @@ class EventsLinkingController < ApplicationController
   end
 
   def normalized_event_params
-    params_hash = event_params.to_h
-
-    # JSON文字列をパースしてHashまたはArrayに変換
-    [ "members_data", "group_rounds", "order_rounds", "role_rounds", "co_occurrence_cache" ].each do |key|
-      next unless params_hash.key?(key)
-
-      if params_hash[key].is_a?(String) && params_hash[key].present?
-        begin
-          params_hash[key] = JSON.parse(params_hash[key])
-        rescue JSON::ParserError => e
-          Rails.logger.error "Failed to parse #{key}: #{e.message}"
-          params_hash[key] = (key == "members_data" || key == "co_occurrence_cache") ? {} : []
-        end
-      elsif params_hash[key].blank?
-        params_hash[key] = (key == "members_data" || key == "co_occurrence_cache") ? {} : []
-      end
-    end
-
-    params_hash
+    Event.normalize_json_fields(event_params.to_h)
   end
 end
