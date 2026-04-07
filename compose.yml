@@ -27,8 +27,9 @@ services:
       - node_modules:/myapp/node_modules
     environment:
       TZ: Asia/Tokyo
+      PORT: 3002
     ports:
-      - "3000:3000"
+      - "3002:3002"
     depends_on:
       db:
         condition: service_healthy

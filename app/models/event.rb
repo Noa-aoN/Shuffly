@@ -1,4 +1,12 @@
 class Event < ApplicationRecord
+  NORMALIZED_JSON_FIELDS = %w[
+    members_data
+    group_rounds
+    order_rounds
+    role_rounds
+    co_occurrence_cache
+  ].freeze
+
   belongs_to :user, optional: true
 
   # バリデーション
@@ -51,7 +59,36 @@ class Event < ApplicationRecord
     data_version >= 2
   end
 
+  def self.normalize_json_fields(params_hash)
+    params_hash = params_hash.deep_dup
+
+    NORMALIZED_JSON_FIELDS.each do |key|
+      next unless params_hash.key?(key)
+
+      params_hash[key] = normalize_json_field_value(key, params_hash[key])
+    end
+
+    params_hash
+  end
+
   private
+
+  def self.normalize_json_field_value(key, value)
+    if value.is_a?(String) && value.present?
+      JSON.parse(value)
+    elsif value.blank?
+      default_json_value_for(key)
+    else
+      value
+    end
+  rescue JSON::ParserError => e
+    Rails.logger.error "Failed to parse #{key}: #{e.message}"
+    default_json_value_for(key)
+  end
+
+  def self.default_json_value_for(key)
+    %w[members_data co_occurrence_cache].include?(key) ? {} : []
+  end
 
   # JSONBフィールドをパースする（文字列の場合）
   def parse_jsonb_field(field_value)

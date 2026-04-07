@@ -78,7 +78,7 @@ docker compose build
 docker compose up
 ```
 
-起動後、`http://localhost:3000` を開きます。
+起動後、`http://localhost:3002` を開きます。
 
 ### よく使うコマンド
 
