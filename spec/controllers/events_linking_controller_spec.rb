@@ -118,6 +118,8 @@ RSpec.describe EventsLinkingController, type: :controller do
           session[:pending_event_token] = 'test_token'
           post :create, params: { event: { title: 'a' * 256 } }
           expect(response).to render_template(:show)
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(flash.now[:alert]).to eq('イベントの保存に失敗しました')
         end
 
         it 'JSON形式で失敗時エラーを返却' do

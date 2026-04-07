@@ -47,6 +47,11 @@ RSpec.describe MemberList, type: :model do
         member_list = build(:member_list, members_json: '["Alice", "Bob", "Charlie"]')
         expect(member_list).to be_valid
       end
+
+      it 'Array形式でも検証通過' do
+        member_list = build(:member_list, members_json: [ 'Alice', 'Bob', 'Charlie' ])
+        expect(member_list).to be_valid
+      end
     end
   end
 
@@ -64,6 +69,11 @@ RSpec.describe MemberList, type: :model do
     it 'JSONが無効な場合は空配列を返却' do
       member_list = build(:member_list, members_json: 'invalid')
       expect(member_list.members).to eq([])
+    end
+
+    it 'Array形式ならそのまま返却' do
+      member_list = build(:member_list, members_json: [ 'Alice', 'Bob' ])
+      expect(member_list.members).to eq([ 'Alice', 'Bob' ])
     end
   end
 

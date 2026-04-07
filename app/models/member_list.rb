@@ -6,8 +6,15 @@ class MemberList < ApplicationRecord
 
   # メンバーリストのメンバーを配列として返す
   def members
-    JSON.parse(members_json || "[]")
-  rescue JSON::ParserError
+    case members_json
+    when Array
+      members_json
+    when String
+      JSON.parse(members_json.presence || "[]")
+    else
+      []
+    end
+  rescue JSON::ParserError, TypeError
     []
   end
 
@@ -38,16 +45,23 @@ class MemberList < ApplicationRecord
       return
     end
 
-    begin
-      parsed = JSON.parse(members_json)
-      unless parsed.is_a?(Array)
-        errors.add(:members_json, "must be a JSON array")
+    parsed =
+      case members_json
+      when Array
+        members_json
+      when String
+        JSON.parse(members_json)
+      else
+        nil
       end
-      if parsed.empty?
-        errors.add(:members_json, "must have at least one member")
-      end
-    rescue JSON::ParserError
-      errors.add(:members_json, "must be valid JSON")
+
+    unless parsed.is_a?(Array)
+      errors.add(:members_json, "must be a JSON array")
+      return
     end
+
+    errors.add(:members_json, "must have at least one member") if parsed.empty?
+  rescue JSON::ParserError, TypeError
+    errors.add(:members_json, "must be valid JSON")
   end
 end

@@ -66,6 +66,7 @@
   <!-- ========================================== -->
   <!-- JavaScriptから送信されるhiddenフォーム -->
   <%= form_with(model: event, local: true, html: { id: 'saveForm', style: 'display:none' }) do |f| %>
+    <%= hidden_field_tag :original_id, event.id, id: 'originalEventIdInput' %>
     <%= f.hidden_field :data_version, value: 2, id: 'dataVersionInput' %>
     <%= f.hidden_field :members_data, id: 'membersDataInput' %>
     <%= f.hidden_field :group_rounds, id: 'groupRoundsInput' %>

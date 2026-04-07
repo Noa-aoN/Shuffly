@@ -76,6 +76,7 @@ RSpec.describe EventsController, type: :controller do
         it '作成に失敗' do
           post :create, params: { event: { title: 'a' * 256 } }
           expect(response).to render_template(:new)
+          expect(response).to have_http_status(:unprocessable_entity)
         end
       end
 
@@ -107,10 +108,28 @@ RSpec.describe EventsController, type: :controller do
       end
     end
 
-    # 更新モードのテスト - set_event before_actionがcreateでは実行されないため削除
     context '更新モードの場合' do
-      it 'updateアクションに処理を委譲' do
-        skip 'set_event before_actionがcreateでは実行されない'
+      before { login_as(user) }
+
+      it '対象イベントを更新する' do
+        post :create, params: {
+          update_mode: 'true',
+          original_id: event.id,
+          event: { title: 'Updated via create' }
+        }
+
+        expect(event.reload.title).to eq('Updated via create')
+        expect(response).to redirect_to(event_path(event))
+      end
+
+      it '対象IDがない場合は新規作成画面に戻す' do
+        post :create, params: {
+          update_mode: 'true',
+          event: { title: 'Updated via create' }
+        }
+
+        expect(response).to redirect_to(new_event_path)
+        expect(flash[:alert]).to eq('更新対象のイベントIDが不正です')
       end
     end
   end
@@ -161,6 +180,8 @@ RSpec.describe EventsController, type: :controller do
 
   describe 'PATCH #update' do
     context '有効なパラメータの場合' do
+      before { login_as(user) }
+
       it 'HTML形式でイベントを更新' do
         patch :update, params: { id: event.id, event: { title: 'Updated Title' } }
         expect(event.reload.title).to eq('Updated Title')
@@ -177,6 +198,14 @@ RSpec.describe EventsController, type: :controller do
     end
 
     context '無効なパラメータの場合' do
+      before { login_as(user) }
+
+      it 'HTML形式でnewテンプレートを再表示' do
+        patch :update, params: { id: event.id, event: { title: 'a' * 256 } }
+        expect(response).to render_template(:new)
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
       it 'JSON形式でエラーを返却' do
         patch :update, format: :json, params: { id: event.id, event: { title: 'a' * 256 } }
         json = JSON.parse(response.body)
@@ -186,6 +215,8 @@ RSpec.describe EventsController, type: :controller do
     end
 
     context 'JSONパラメータの正規化' do
+      before { login_as(user) }
+
       it 'members_dataを更新' do
         new_data = { 'members' => [ 'New', 'Member' ] }
         patch :update, params: {
@@ -193,6 +224,17 @@ RSpec.describe EventsController, type: :controller do
           event: { members_data: new_data.to_json }
         }
         expect(event.reload.members_data).to eq(new_data)
+      end
+    end
+
+    context '他ユーザーのイベントの場合' do
+      before { login_as(user) }
+
+      it '更新を拒否する' do
+        patch :update, params: { id: other_event.id, event: { title: 'Invalid Update' } }
+        expect(response).to redirect_to(root_path)
+        expect(flash[:alert]).to eq('このイベントを操作する権限がありません')
+        expect(other_event.reload.title).not_to eq('Invalid Update')
       end
     end
   end
@@ -216,6 +258,15 @@ RSpec.describe EventsController, type: :controller do
         expect(response).to redirect_to(mypage_path(tab: 'events'))
         expect(flash[:notice]).to eq('イベントを削除しました')
       end
+
+      it '他ユーザーのイベント削除を拒否する' do
+        other_event
+        expect {
+          delete :destroy, params: { id: other_event.id }
+        }.not_to change(Event, :count)
+        expect(response).to redirect_to(root_path)
+        expect(flash[:alert]).to eq('このイベントを操作する権限がありません')
+      end
     end
 
     context '匿名ユーザーの場合' do
@@ -225,7 +276,9 @@ RSpec.describe EventsController, type: :controller do
         anonymous_event = create(:event, user: nil)
         expect {
           delete :destroy, params: { id: anonymous_event.id }
-        }.to change(Event, :count).by(-1)
+        }.not_to change(Event, :count)
+        expect(response).to redirect_to(root_path)
+        expect(flash[:alert]).to eq('このイベントを操作する権限がありません')
       end
     end
   end

@@ -42,3 +42,9 @@
 !/app/assets/builds/.keep
 
 /node_modules
+
+# Local collaboration / workflow docs
+/AGENTS.md
+/CLAUDE.md
+/DESIGN.md
+/docs/decisons/
