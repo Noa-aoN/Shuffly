@@ -86,10 +86,10 @@ export default class extends Controller {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
           </div>
-          ${list.members && list.members.length > 0 ? `
+          ${list.preview_members && list.preview_members.length > 0 ? `
             <div class="mt-2 text-xs text-[var(--shuffly-text-muted)]">
-              ${this.escapeHtml(list.members.slice(0, 3).join('、'))}
-              ${list.members.length > 3 ? '...' : ''}
+              ${this.escapeHtml(list.preview_members.join('、'))}
+              ${list.members_count > list.preview_members.length ? '...' : ''}
             </div>
           ` : ''}
         </div>

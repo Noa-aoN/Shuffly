@@ -1,3 +1,6 @@
+import { buildNormalizedMembers, getCoOccurrenceMap } from "./shuffly/history_utils"
+import { serializeEventPayload } from "./shuffly/save_serializer"
+
 /*
   JavaScript 部分：UI / データ変換 / 操作ロジック
   - 内部データは membersRaw（hidden textarea）に保持
@@ -87,64 +90,12 @@ const ShufflyApp = (function() {
     return getGroupRound(entries, true) || 1;
   }
 
-  function getCoOccurrenceMap(entries, ignoreLast=true){
-    const map = {};
-    const historySets = {};
-    for(const e of entries) {
-      historySets[e.name] = new Set(ignoreLast ? e.history.slice(0, -1) : e.history);
-      map[e.name] = {};
-    }
-    for(const a of entries){
-      for(const b of entries){
-        if(a.name===b.name) continue;
-        let overlapCount = 0;
-        historySets[a.name].forEach((historyToken) => {
-          if(historySets[b.name].has(historyToken)) overlapCount += 1;
-        });
-        map[a.name][b.name] = overlapCount;
-      }
-    }
-    return map;
-  }
-
-  function buildNormalizedMembers(rawText = getRawValue()){
-    return rawText.trim().split(/[\r\n,]+/).map((line, index) => {
-      const parsed = parseEntry(line.trim());
-      return {
-        id: index + 1,
-        name: parsed.name,
-        history: parsed.history
-      };
-    }).filter(entry => entry.name);
-  }
-
   function collectGroupSettings(groupCount, displayNames, fixedMembers){
     return {
       group_count: groupCount,
       group_names: displayNames,
       fixed_members: fixedMembers
     };
-  }
-
-  function buildCoOccurrenceCacheFromRounds(groupRounds){
-    const cache = {};
-
-    groupRounds.forEach((round) => {
-      (round.assignments || []).forEach((assignment) => {
-        const memberIds = (assignment.members || [])
-          .map((member) => member.member_id)
-          .filter((memberId) => memberId !== undefined && memberId !== null);
-
-        for(let i = 0; i < memberIds.length; i += 1) {
-          for(let j = i + 1; j < memberIds.length; j += 1) {
-            const pairKey = [memberIds[i], memberIds[j]].sort((a, b) => a - b).join("-");
-            cache[pairKey] = (cache[pairKey] || 0) + 1;
-          }
-        }
-      });
-    });
-
-    return cache;
   }
 
   // 新規: 履歴内で「1回目のグループ割当」が最初に発生したインデックスを返す
@@ -1457,63 +1408,14 @@ const ShufflyApp = (function() {
   function saveResults(){
     try{
       // 正規化形式でデータを準備
-      const members = buildNormalizedMembers().map(({ id, name }) => ({ id, name }));
-      const membersById = new Map(members.map((member) => [member.id, member]));
-      const membersByName = new Map(members.map((member) => [member.name, member]));
+      const members = buildNormalizedMembers(getRawValue(), parseEntry).map(({ id, name }) => ({ id, name }));
+      const serialized = serializeEventPayload(historyData, members);
 
-      // members_dataを設定
-      document.getElementById('membersDataInput').value = JSON.stringify({ members: members });
-
-      const groupRounds = historyData.groups.map((entry, idx) => {
-        const assignments = (entry.data?.assignments || []).map((assignment) => ({
-          group_id: assignment.group_id,
-          group_name: assignment.group_name,
-          members: (assignment.members || []).map((memberRef) => {
-            const member = membersById.get(memberRef.member_id) || membersByName.get(memberRef.name);
-            return member ? { member_id: member.id, name: member.name } : null;
-          }).filter(Boolean)
-        }));
-        const groups = Object.fromEntries(assignments.map((assignment) => [
-          assignment.group_id,
-          assignment.members
-        ]));
-
-        return {
-          round: entry.round || (idx + 1),
-          timestamp: entry.timestamp,
-          assignments: assignments,
-          groups: groups,
-          settings: entry.data?.settings || {}
-        };
-      });
-      document.getElementById('groupRoundsInput').value = JSON.stringify(groupRounds);
-
-      // order_roundsを設定
-      document.getElementById('orderRoundsInput').value = JSON.stringify(historyData.order.map((entry, idx) => ({
-        round: entry.round || (idx + 1),
-        timestamp: entry.timestamp,
-        result: entry.data?.result || [],
-        order: entry.data?.result?.map(name => {
-          const member = membersByName.get(name);
-          return member ? { member_id: member.id, name: member.name } : null;
-        }).filter(Boolean) || []
-      })));
-
-      // role_roundsを設定
-      document.getElementById('roleRoundsInput').value = JSON.stringify(historyData.roles.map((entry, idx) => ({
-        round: entry.round || (idx + 1),
-        timestamp: entry.timestamp,
-        assignments: (entry.data?.assignments || []).map(a => {
-          const member = membersByName.get(a.name);
-          return member ? {
-            member_id: member.id,
-            name: member.name,
-            role: a.role
-          } : null;
-        }).filter(Boolean)
-      })));
-
-      document.getElementById('coOccurrenceCacheInput').value = JSON.stringify(buildCoOccurrenceCacheFromRounds(groupRounds));
+      document.getElementById('membersDataInput').value = JSON.stringify(serialized.membersData);
+      document.getElementById('groupRoundsInput').value = JSON.stringify(serialized.groupRounds);
+      document.getElementById('orderRoundsInput').value = JSON.stringify(serialized.orderRounds);
+      document.getElementById('roleRoundsInput').value = JSON.stringify(serialized.roleRounds);
+      document.getElementById('coOccurrenceCacheInput').value = JSON.stringify(serialized.coOccurrenceCache);
 
     }catch(e){
       console.warn('JSON シリアライズ失敗:', e);

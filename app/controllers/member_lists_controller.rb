@@ -9,11 +9,12 @@ class MemberListsController < ApplicationController
       format.html
       format.json do
         render json: @member_lists.map { |ml|
+          members = ml.members
           {
             id: ml.id,
             name: ml.name,
-            members: ml.members,
-            members_count: ml.members.count,
+            preview_members: members.first(3),
+            members_count: members.count,
             created_at: ml.created_at.strftime("%Y年%m月%d日")
           }
         }
