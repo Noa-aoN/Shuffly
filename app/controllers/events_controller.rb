@@ -14,6 +14,10 @@ class EventsController < ApplicationController
     if params[:load_event_id].present?
       @load_event = Event.find_by(id: params[:load_event_id])
       if @load_event
+        unless event_owned_by_current_user?(@load_event)
+          redirect_to root_path, alert: "このイベントを読み込む権限がありません" and return
+        end
+
         @event = @load_event
         @update_mode = true
 
@@ -119,6 +123,10 @@ class EventsController < ApplicationController
     return if user_signed_in? && @event.user_id == current_user.id
 
     redirect_to root_path, alert: "このイベントを操作する権限がありません"
+  end
+
+  def event_owned_by_current_user?(event)
+    user_signed_in? && event.user_id == current_user.id
   end
 
   def handle_update_mode

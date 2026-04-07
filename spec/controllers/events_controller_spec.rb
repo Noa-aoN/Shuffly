@@ -40,11 +40,35 @@ RSpec.describe EventsController, type: :controller do
 
     context '続きから作成する場合' do
       context '有効なload_event_idの場合' do
+        before { login_as(user) }
+
         it '既存イベントのデータを読み込み' do
           get :new, params: { load_event_id: event.id }
           expect(assigns(:load_event)).to eq(event)
           expect(assigns(:update_mode)).to be true
           expect(assigns(:load_event_data)).to include(:title, :members_data, :group_rounds)
+        end
+      end
+
+      context '他ユーザーのイベントを指定した場合' do
+        before { login_as(user) }
+
+        it '読み込みを拒否する' do
+          get :new, params: { load_event_id: other_event.id }
+
+          expect(response).to redirect_to(root_path)
+          expect(flash[:alert]).to eq('このイベントを読み込む権限がありません')
+        end
+      end
+
+      context '非ログインでイベントを指定した場合' do
+        before { logout }
+
+        it '読み込みを拒否する' do
+          get :new, params: { load_event_id: event.id }
+
+          expect(response).to redirect_to(root_path)
+          expect(flash[:alert]).to eq('このイベントを読み込む権限がありません')
         end
       end
 
