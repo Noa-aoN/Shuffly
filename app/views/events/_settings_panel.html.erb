@@ -74,6 +74,15 @@
         <p class="shuffly-hint text-sm mt-1">↑ 入力したメンバーは、できるだけ別々のグループに入るよう固定します。</p>
       </div>
 
+      <div class="shuffly-setting-card shuffly-setting-card-optional mb-4 rounded-2xl border border-[var(--shuffly-border)] px-4 py-3">
+        <div class="mb-2 flex items-center gap-2">
+          <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">同じグループにしたいメンバー</label>
+          <span class="shuffly-badge shuffly-badge-neutral">任意</span>
+        </div>
+        <textarea id="togetherMembersInput" rows="2" class="shuffly-textarea shuffly-textarea-compact mt-1 px-3 py-2" placeholder="例：田中, 鈴木&#10;佐藤, 高橋"></textarea>
+        <p class="shuffly-hint text-sm mt-1">↑ 同じ行のメンバーは、できるだけ同じグループになるようにまとめます。</p>
+      </div>
+
       <!-- グループサイズ表示インジケーター -->
       <div id="groupSizeHint" class="shuffly-indicator shuffly-indicator--warning text-base mt-1 mb-5 rounded-xl px-4 py-2">
         現在の1グループあたり：<span class="font-bold">未計算</span>
@@ -100,6 +109,15 @@
         <textarea id="fixedOrderInput" rows="3" class="shuffly-textarea px-3 py-2 mt-1" placeholder="例：1:メンバー3, 5:メンバー1, ..."></textarea>
         <p class="shuffly-hint text-sm mt-1">↑ 改行またはカンマ区切りで「番号:メンバー名」と入力してください。固定指定します。無効な指定は無視されます。</p>
       </div>
+
+      <div class="shuffly-setting-card shuffly-setting-card-optional rounded-2xl border border-[var(--shuffly-border)] px-4 py-3">
+        <div class="mb-2 flex items-center gap-2">
+          <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">除外メンバー</label>
+          <span class="shuffly-badge shuffly-badge-neutral">任意</span>
+        </div>
+        <textarea id="excludedOrderInput" rows="2" class="shuffly-textarea shuffly-textarea-compact mt-1 px-3 py-2" placeholder="例：メンバー2, メンバー7"></textarea>
+        <p class="shuffly-hint text-sm mt-1">↑ 入力したメンバーは、その回の順番決めから外します。</p>
+      </div>
     </div>
   </div>
 
@@ -110,85 +128,100 @@
     <div class="mb-4">
       <label class="shuffly-label block mb-2"><span class="shuffly-bullet text-sm">●</span> 役割決めオプション</label>
 
-      <!-- オプション: 役割名 -->
-      <div class="shuffly-setting-card shuffly-setting-card-primary rounded-2xl border border-[var(--shuffly-border)] px-4 py-4">
-        <div class="mb-2 flex items-center gap-2">
-          <label class="text-sm font-semibold text-[var(--shuffly-text)]">役割名</label>
-          <span class="shuffly-badge shuffly-badge-accent">必須</span>
-        </div>
-        <div class="space-y-3">
-          <div>
-            <textarea id="rolesInput" rows="4" class="shuffly-textarea px-3 py-2" placeholder="例：司会&#10;書記:2&#10;受付"></textarea>
-            <p class="shuffly-hint text-sm mt-1">↑ 人数を増やすときは「役割名:人数」と入力できます。</p>
+      <div class="flex flex-col gap-3">
+        <!-- オプション: 役割名 -->
+        <div class="shuffly-setting-card shuffly-setting-card-primary rounded-2xl border border-[var(--shuffly-border)] px-4 py-4">
+          <div class="mb-2 flex items-center gap-2">
+            <label class="text-sm font-semibold text-[var(--shuffly-text)]">役割名</label>
+            <span class="shuffly-badge shuffly-badge-accent">必須</span>
           </div>
-
           <div class="space-y-3">
             <div>
-              <p class="text-xs font-medium text-[var(--shuffly-text-muted)]">会議・打ち合わせ</p>
-              <div class="mt-2 flex flex-wrap gap-2">
-                <% ["司会", "進行", "書記", "タイムキーパー"].each do |role_name| %>
-                  <div class="role-preset-control" data-role-preset-control="<%= role_name %>">
-                    <button type="button"
-                            class="role-preset-button rounded-full border border-[var(--shuffly-border)] bg-white px-3 py-1.5 text-sm font-medium text-[var(--shuffly-text-secondary)] transition hover:border-[var(--shuffly-border-strong)] hover:text-[var(--shuffly-text)]"
-                            data-role-preset="<%= role_name %>"
-                            data-role-category="meeting">
-                      <%= role_name %>
-                    </button>
-                    <div class="role-inline-stepper is-inactive" data-role-stepper="<%= role_name %>">
-                      <button type="button" data-role-adjust="<%= role_name %>" data-role-delta="-1" aria-label="<%= "#{role_name}の人数を減らす" %>">-</button>
-                      <span class="min-w-[2rem] text-center text-xs font-semibold text-[var(--shuffly-text)]" data-role-count="<%= role_name %>">1</span>
-                      <button type="button" data-role-adjust="<%= role_name %>" data-role-delta="1" aria-label="<%= "#{role_name}の人数を増やす" %>">+</button>
+              <textarea id="rolesInput" rows="4" class="shuffly-textarea px-3 py-2" placeholder="例：司会&#10;書記:2&#10;受付"></textarea>
+              <p class="shuffly-hint text-sm mt-1 mb-4">↑ 人数を増やすときは「役割名:人数」と入力できます。</p>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <p class="text-xs font-medium text-[var(--shuffly-text-muted)]">会議・打ち合わせ</p>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <% ["司会", "進行", "書記", "タイムキーパー"].each do |role_name| %>
+                    <div class="role-preset-control" data-role-preset-control="<%= role_name %>">
+                      <button type="button"
+                              class="role-preset-button rounded-full border border-[var(--shuffly-border)] bg-white px-3 py-1.5 text-sm font-medium text-[var(--shuffly-text-secondary)] transition hover:border-[var(--shuffly-border-strong)] hover:text-[var(--shuffly-text)]"
+                              data-role-preset="<%= role_name %>"
+                              data-role-category="meeting">
+                        <%= role_name %>
+                      </button>
+                      <div class="role-inline-stepper is-inactive" data-role-stepper="<%= role_name %>">
+                        <button type="button" data-role-adjust="<%= role_name %>" data-role-delta="-1" aria-label="<%= "#{role_name}の人数を減らす" %>">-</button>
+                        <span class="min-w-[2rem] text-center text-xs font-semibold text-[var(--shuffly-text)]" data-role-count="<%= role_name %>">1</span>
+                        <button type="button" data-role-adjust="<%= role_name %>" data-role-delta="1" aria-label="<%= "#{role_name}の人数を増やす" %>">+</button>
+                      </div>
                     </div>
-                  </div>
-                <% end %>
+                  <% end %>
+                </div>
+              </div>
+
+              <div>
+                <p class="text-xs font-medium text-[var(--shuffly-text-muted)]">チーム・運営</p>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <% ["リーダー", "サブリーダー", "連絡係", "まとめ役"].each do |role_name| %>
+                    <div class="role-preset-control" data-role-preset-control="<%= role_name %>">
+                      <button type="button"
+                              class="role-preset-button rounded-full border border-[var(--shuffly-border)] bg-white px-3 py-1.5 text-sm font-medium text-[var(--shuffly-text-secondary)] transition hover:border-[var(--shuffly-border-strong)] hover:text-[var(--shuffly-text)]"
+                              data-role-preset="<%= role_name %>"
+                              data-role-category="team">
+                        <%= role_name %>
+                      </button>
+                      <div class="role-inline-stepper is-inactive" data-role-stepper="<%= role_name %>">
+                        <button type="button" data-role-adjust="<%= role_name %>" data-role-delta="-1" aria-label="<%= "#{role_name}の人数を減らす" %>">-</button>
+                        <span class="min-w-[2rem] text-center text-xs font-semibold text-[var(--shuffly-text)]" data-role-count="<%= role_name %>">1</span>
+                        <button type="button" data-role-adjust="<%= role_name %>" data-role-delta="1" aria-label="<%= "#{role_name}の人数を増やす" %>">+</button>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+
+              <div>
+                <p class="text-xs font-medium text-[var(--shuffly-text-muted)]">イベント</p>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <% ["受付", "会場案内", "撮影", "誘導"].each do |role_name| %>
+                    <div class="role-preset-control" data-role-preset-control="<%= role_name %>">
+                      <button type="button"
+                              class="role-preset-button rounded-full border border-[var(--shuffly-border)] bg-white px-3 py-1.5 text-sm font-medium text-[var(--shuffly-text-secondary)] transition hover:border-[var(--shuffly-border-strong)] hover:text-[var(--shuffly-text)]"
+                              data-role-preset="<%= role_name %>"
+                              data-role-category="event">
+                        <%= role_name %>
+                      </button>
+                      <div class="role-inline-stepper is-inactive" data-role-stepper="<%= role_name %>">
+                        <button type="button" data-role-adjust="<%= role_name %>" data-role-delta="-1" aria-label="<%= "#{role_name}の人数を減らす" %>">-</button>
+                        <span class="min-w-[2rem] text-center text-xs font-semibold text-[var(--shuffly-text)]" data-role-count="<%= role_name %>">1</span>
+                        <button type="button" data-role-adjust="<%= role_name %>" data-role-delta="1" aria-label="<%= "#{role_name}の人数を増やす" %>">+</button>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
               </div>
             </div>
 
-            <div>
-              <p class="text-xs font-medium text-[var(--shuffly-text-muted)]">チーム・運営</p>
-              <div class="mt-2 flex flex-wrap gap-2">
-                <% ["リーダー", "サブリーダー", "連絡係", "まとめ役"].each do |role_name| %>
-                  <div class="role-preset-control" data-role-preset-control="<%= role_name %>">
-                    <button type="button"
-                            class="role-preset-button rounded-full border border-[var(--shuffly-border)] bg-white px-3 py-1.5 text-sm font-medium text-[var(--shuffly-text-secondary)] transition hover:border-[var(--shuffly-border-strong)] hover:text-[var(--shuffly-text)]"
-                            data-role-preset="<%= role_name %>"
-                            data-role-category="team">
-                      <%= role_name %>
-                    </button>
-                    <div class="role-inline-stepper is-inactive" data-role-stepper="<%= role_name %>">
-                      <button type="button" data-role-adjust="<%= role_name %>" data-role-delta="-1" aria-label="<%= "#{role_name}の人数を減らす" %>">-</button>
-                      <span class="min-w-[2rem] text-center text-xs font-semibold text-[var(--shuffly-text)]" data-role-count="<%= role_name %>">1</span>
-                      <button type="button" data-role-adjust="<%= role_name %>" data-role-delta="1" aria-label="<%= "#{role_name}の人数を増やす" %>">+</button>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
-            </div>
-
-            <div>
-              <p class="text-xs font-medium text-[var(--shuffly-text-muted)]">イベント</p>
-              <div class="mt-2 flex flex-wrap gap-2">
-                <% ["受付", "会場案内", "撮影", "誘導"].each do |role_name| %>
-                  <div class="role-preset-control" data-role-preset-control="<%= role_name %>">
-                    <button type="button"
-                            class="role-preset-button rounded-full border border-[var(--shuffly-border)] bg-white px-3 py-1.5 text-sm font-medium text-[var(--shuffly-text-secondary)] transition hover:border-[var(--shuffly-border-strong)] hover:text-[var(--shuffly-text)]"
-                            data-role-preset="<%= role_name %>"
-                            data-role-category="event">
-                      <%= role_name %>
-                    </button>
-                    <div class="role-inline-stepper is-inactive" data-role-stepper="<%= role_name %>">
-                      <button type="button" data-role-adjust="<%= role_name %>" data-role-delta="-1" aria-label="<%= "#{role_name}の人数を減らす" %>">-</button>
-                      <span class="min-w-[2rem] text-center text-xs font-semibold text-[var(--shuffly-text)]" data-role-count="<%= role_name %>">1</span>
-                      <button type="button" data-role-adjust="<%= role_name %>" data-role-delta="1" aria-label="<%= "#{role_name}の人数を増やす" %>">+</button>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
-            </div>
+            <p class="shuffly-hint text-sm mb-0">↑ ボタンを押すと追加できます。人数は右側で調整できます。</p>
+            <div id="customRoleDefinitionsList" class="flex flex-wrap gap-2"></div>
           </div>
+        </div>
 
-          <p class="shuffly-hint text-sm">↑ ボタンを押すと追加できます。人数は右側で調整できます。</p>
-          <div id="customRoleDefinitionsList" class="flex flex-wrap gap-2"></div>
+        <div class="shuffly-setting-card shuffly-setting-card-optional rounded-2xl border border-[var(--shuffly-border)] px-4 py-3">
+          <div class="mb-2 flex items-center gap-2">
+            <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">除外メンバー</label>
+            <span class="shuffly-badge shuffly-badge-neutral">任意</span>
+          </div>
+          <textarea id="excludedRolesInput" rows="2" class="shuffly-textarea shuffly-textarea-compact mt-1 px-3 py-2" placeholder="例：メンバー2, メンバー7"></textarea>
+          <p class="shuffly-hint text-sm mt-1">↑ 入力したメンバーは、その回の役割決めから外します。</p>
+        </div>
+
+        <div id="rolesCountHint" class="shuffly-indicator shuffly-indicator--warning text-base mt-1 rounded-xl px-4 py-2">
+          役割の合計人数：<span class="font-bold">未設定</span>
         </div>
       </div>
     </div>

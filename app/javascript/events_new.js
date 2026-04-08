@@ -136,10 +136,145 @@ const ShufflyApp = (function() {
     return getRoleDefinitions().map((definition)=>definition.name);
   }
 
+  function parseCommaSeparatedList(text){
+    return (text || '').split(/[\r\n,、]+/).map((token)=>token.trim()).filter(Boolean);
+  }
+
+  function parseTogetherMemberGroups(text){
+    const mergedGroups = [];
+
+    (text || '').split(/\r?\n/).map((line)=>line.trim()).filter(Boolean).forEach((line)=>{
+      const names = Array.from(new Set(line.split(/[,、]+/).map((token)=>token.trim()).filter(Boolean)));
+      if(names.length < 2) return;
+
+      let current = new Set(names);
+      for(let index = mergedGroups.length - 1; index >= 0; index -= 1){
+        const existing = mergedGroups[index];
+        const overlaps = [...existing].some((name)=>current.has(name));
+        if(!overlaps) continue;
+
+        existing.forEach((name)=>current.add(name));
+        mergedGroups.splice(index, 1);
+      }
+
+      mergedGroups.push(current);
+    });
+
+    return mergedGroups.map((group)=>Array.from(group));
+  }
+
+  function buildGroupUnits(entries, fixedSet, togetherGroups){
+    const entryByName = new Map(entries.map((entry)=>[entry.name, entry]));
+    const claimedNames = new Set();
+    const ignoredNames = new Set();
+    const ignoredGroups = [];
+
+    const togetherUnits = togetherGroups.map((group)=>group.filter((name)=>{
+      if(entryByName.has(name)) return true;
+      ignoredNames.add(name);
+      return false;
+    })).filter((group)=>group.length > 1).map((group)=>{
+      group.forEach((name)=>claimedNames.add(name));
+      const members = group.map((name)=>entryByName.get(name)).filter(Boolean);
+      return {
+        key: group.join('|'),
+        members,
+        fixedMembers: members.filter((member)=>fixedSet.has(member.name))
+      };
+    });
+
+    const units = togetherUnits.concat(
+      entries
+        .filter((entry)=>!claimedNames.has(entry.name))
+        .map((entry)=>({
+          key: entry.name,
+          members: [entry],
+          fixedMembers: fixedSet.has(entry.name) ? [entry] : []
+        }))
+    );
+
+    units.forEach((unit)=>{
+      if(unit.fixedMembers.length > 1){
+        ignoredGroups.push(unit.members.map((member)=>member.name));
+      }
+    });
+
+    return {
+      units: units.filter((unit)=>unit.fixedMembers.length <= 1),
+      ignoredNames: Array.from(ignoredNames),
+      ignoredGroups
+    };
+  }
+
+  function calculateUnitCoScore(unitMembers, groupMembers, coMap){
+    return unitMembers.reduce((total, unitMember)=>(
+      total + groupMembers.reduce((groupTotal, groupMember)=>(
+        groupTotal + ((coMap[unitMember.name] && coMap[unitMember.name][groupMember.name]) || 0)
+      ), 0)
+    ), 0);
+  }
+
+  function pickBestGroupForUnit(unit, groupIds, groups, coMap, preferredGroup = null){
+    function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+    const projections = groupIds.map((groupId)=>({
+      groupId,
+      projectedSize: groups[groupId].length + unit.members.length,
+      coScore: calculateUnitCoScore(unit.members, groups[groupId], coMap)
+    }));
+
+    const minProjectedSize = Math.min(...projections.map((projection)=>projection.projectedSize));
+    if(preferredGroup){
+      const preferredProjection = projections.find((projection)=>projection.groupId === preferredGroup);
+      if(preferredProjection && preferredProjection.projectedSize <= minProjectedSize + 1){
+        return preferredGroup;
+      }
+    }
+
+    const sizeCandidates = projections.filter((projection)=>projection.projectedSize === minProjectedSize);
+    const minCoScore = Math.min(...sizeCandidates.map((projection)=>projection.coScore));
+    const tied = sizeCandidates.filter((projection)=>projection.coScore === minCoScore).map((projection)=>projection.groupId);
+    return pickRandom(tied);
+  }
+
   function buildRoleOutputLines(assignments){
     return (assignments || []).map((assignment)=>(
       assignment.role ? `${assignment.name}: ${assignment.role}` : `${assignment.name}: `
     ));
+  }
+
+  function updateRoleCountHint(definitions = getRoleDefinitions()){
+    const hint = document.getElementById('rolesCountHint');
+    if(!hint) return;
+
+    const allMembers = getRawValue().trim()
+      ? getRawValue().trim().split(/[\r\n,]+/).map((token)=>token.trim()).filter(Boolean).map((token)=>token.split('#')[0].trim())
+      : [];
+    const excludedMembers = parseCommaSeparatedList(document.getElementById('excludedRolesInput')?.value || '')
+      .filter((member, index, array)=>array.indexOf(member) === index && allMembers.includes(member));
+    const memberCount = allMembers.length;
+    const availableMemberCount = Math.max(memberCount - excludedMembers.length, 0);
+    const totalRoleCount = normalizeRoleDefinitions(definitions).reduce((sum, definition)=>sum + definition.count, 0);
+
+    hint.classList.remove('shuffly-indicator--warning', 'shuffly-indicator--danger');
+    if(totalRoleCount === 0){
+      hint.classList.add('shuffly-indicator--warning');
+      hint.innerHTML = '役割の合計人数：<span class="font-bold">未設定</span>';
+      return;
+    }
+
+    if(availableMemberCount > 0 && totalRoleCount > availableMemberCount){
+      hint.classList.add('shuffly-indicator--danger');
+      hint.innerHTML = `役割の合計人数：<span class="font-bold">${totalRoleCount}人</span> / 対象メンバー <span class="font-bold">${availableMemberCount}人</span>`;
+      return;
+    }
+
+    hint.classList.add('shuffly-indicator--warning');
+    if(availableMemberCount > 0){
+      hint.innerHTML = `役割の合計人数：<span class="font-bold">${totalRoleCount}人</span> / 対象メンバー <span class="font-bold">${availableMemberCount}人</span>`;
+    } else {
+      hint.innerHTML = `役割の合計人数：<span class="font-bold">${totalRoleCount}人</span>`;
+    }
   }
 
   function escapeHtml(value){
@@ -189,6 +324,38 @@ const ShufflyApp = (function() {
       delete settings.role_definitions;
       delete settings.roles;
     }
+
+    writeSettingsJson(settings);
+  }
+
+  function syncAuxiliarySettings(){
+    const settings = readSettingsJson();
+    const customGroupNames = parseCommaSeparatedList(document.getElementById('customGroupNames')?.value || '');
+    const togetherMembers = parseTogetherMemberGroups(document.getElementById('togetherMembersInput')?.value || '');
+    const fixedMembers = parseCommaSeparatedList(document.getElementById('fixedMembersInput')?.value || '');
+    const excludedMembers = parseCommaSeparatedList(document.getElementById('excludedOrderInput')?.value || '');
+    const fixedOrder = parseCommaSeparatedList(document.getElementById('fixedOrderInput')?.value || '');
+    const groupCountInput = document.getElementById('groupCount');
+    settings.group_count = clampGroupCount(groupCountInput?.value || MIN_GROUPS);
+
+    if(customGroupNames.length > 0) settings.custom_group_names = customGroupNames;
+    else delete settings.custom_group_names;
+
+    if(togetherMembers.length > 0) settings.together_members = togetherMembers;
+    else delete settings.together_members;
+
+    if(fixedMembers.length > 0) settings.fixed_members = fixedMembers;
+    else delete settings.fixed_members;
+
+    if(excludedMembers.length > 0) settings.order_excluded_members = excludedMembers;
+    else delete settings.order_excluded_members;
+
+    const excludedRoleMembers = parseCommaSeparatedList(document.getElementById('excludedRolesInput')?.value || '');
+    if(excludedRoleMembers.length > 0) settings.role_excluded_members = excludedRoleMembers;
+    else delete settings.role_excluded_members;
+
+    if(fixedOrder.length > 0) settings.fixed_order = fixedOrder;
+    else delete settings.fixed_order;
 
     writeSettingsJson(settings);
   }
@@ -246,6 +413,7 @@ const ShufflyApp = (function() {
     }
     syncRolePresetButtons(normalized);
     renderRoleDefinitions(normalized);
+    updateRoleCountHint(normalized);
     updateRoleSettings(normalized);
   }
 
@@ -299,11 +467,12 @@ const ShufflyApp = (function() {
     return getGroupRound(entries, true) || 1;
   }
 
-  function collectGroupSettings(groupCount, displayNames, fixedMembers){
+  function collectGroupSettings(groupCount, displayNames, fixedMembers, togetherMembers){
     return {
       group_count: groupCount,
       group_names: displayNames,
-      fixed_members: fixedMembers
+      fixed_members: fixedMembers,
+      together_members: togetherMembers
     };
   }
 
@@ -444,83 +613,51 @@ const ShufflyApp = (function() {
     const groups=Object.fromEntries(groupIds.map(g=>[g,[]]));
     const coMap=getCoOccurrenceMap(entries);
 
-    const fixedRaw = (document.getElementById('fixedMembersInput').value || "").split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+    const fixedRaw = parseCommaSeparatedList(document.getElementById('fixedMembersInput')?.value || "");
+    const togetherRawText = document.getElementById('togetherMembersInput')?.value || "";
+    const togetherGroups = parseTogetherMemberGroups(togetherRawText);
     const fixedSet = new Set(fixedRaw);
-    const fixedEntries = entries.filter(e=>fixedSet.has(e.name));
-    const otherEntries = entries.filter(e=>!fixedSet.has(e.name));
+    const { units, ignoredNames, ignoredGroups } = buildGroupUnits(entries, fixedSet, togetherGroups);
+    const fixedUnits = units
+      .filter((unit)=>unit.fixedMembers.length === 1)
+      .sort((left, right)=>right.members.length - left.members.length);
+    const otherUnits = units
+      .filter((unit)=>unit.fixedMembers.length === 0)
+      .sort((left, right)=>right.members.length - left.members.length);
 
     function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+    if(ignoredNames.length > 0 || ignoredGroups.length > 0){
+      const messages = [];
+      if(ignoredNames.length > 0) messages.push('存在しない名前の同グループ指定があります');
+      if(ignoredGroups.length > 0) messages.push('分散固定メンバーと競合する同グループ指定があります');
+      showToast(messages.join('、') + '（無視されます）');
+    }
 
     // 変更点：分散固定メンバーは初回はランダムに各グループへ割当てるが、
     // 2回目以降はできるかぎり直前の割当（履歴の最後のグループ）に固定する。
     // ただしバランスが大きく崩れる場合は空きグループや最小グループへ割当てる。
-    for(const p of fixedEntries){
-      const emptyGroups = groupIds.filter(g=>groups[g].length===0);
-      let chosen = null;
+    for(const unit of fixedUnits){
+      const pivot = unit.fixedMembers[0];
 
       // 最後の履歴から直前のグループを取得
-      const last = p.history.at(-1);
+      const last = pivot.history.at(-1);
       const m = last ? last.match(/#\d+([A-Z])$/) : null;
       const preferred = m ? m[1] : null;
+      const chosen = pickBestGroupForUnit(unit, groupIds, groups, coMap, preferred && groupIds.includes(preferred) ? preferred : null);
 
-      if(preferred && groupIds.includes(preferred)){
-        // 現在の最小グループサイズを取得
-        const minSize = Math.min(...groupIds.map(g=>groups[g].length));
-        // できるだけ同じグループに戻す：ただしそのグループが最小サイズよりも大きすぎるときは避ける
-        // （バランスを保つために minSize + 1 を許容上限とする）
-        if(groups[preferred].length <= minSize + 1){
-          chosen = preferred;
-        } else if(emptyGroups.length > 0){
-          chosen = pickRandom(emptyGroups);
-        } else {
-          const candidates = groupIds.filter(g=>groups[g].length===minSize);
-          chosen = pickRandom(candidates);
-        }
-      } else {
-        // preferred が無い（初回）または無効な場合は既存のルールに従う
-        if(emptyGroups.length>0){
-          chosen = pickRandom(emptyGroups);
-        } else {
-          const minSize = Math.min(...groupIds.map(g=>groups[g].length));
-          const candidates = groupIds.filter(g=>groups[g].length===minSize);
-          chosen = pickRandom(candidates);
-        }
-      }
-
-      if(!chosen){
-        // 最終手段：最小グループに入れる
-        const minSize = Math.min(...groupIds.map(g=>groups[g].length));
-        const candidates = groupIds.filter(g=>groups[g].length===minSize);
-        chosen = pickRandom(candidates);
-      }
-
-      groups[chosen].push(p);
-      p.assignedGroup = chosen;
+      unit.members.forEach((member)=>{
+        groups[chosen].push(member);
+        member.assignedGroup = chosen;
+      });
     }
 
-    for(const p of otherEntries){
-      const emptyGroups = groupIds.filter(g=>groups[g].length===0);
-      if(emptyGroups.length>0){
-        const chosen = pickRandom(emptyGroups);
-        groups[chosen].push(p);
-        p.assignedGroup = chosen;
-        continue;
-      }
-
-      const minSize=Math.min(...groupIds.map(g=>groups[g].length));
-      const candidates=groupIds.filter(g=>groups[g].length===minSize);
-
-      let minMK=Infinity;
-      const scores=[];
-      for(const g of candidates){
-        const mk=groups[g].reduce((acc,q)=>acc+(coMap[p.name][q.name]||0),0);
-        scores.push({g, mk});
-        if(mk<minMK) minMK=mk;
-      }
-      const tied = scores.filter(s=>s.mk===minMK).map(s=>s.g);
-      const selected = pickRandom(tied);
-      groups[selected].push(p);
-      p.assignedGroup = selected;
+    for(const unit of otherUnits){
+      const selected = pickBestGroupForUnit(unit, groupIds, groups, coMap);
+      unit.members.forEach((member)=>{
+        groups[selected].push(member);
+        member.assignedGroup = selected;
+      });
     }
 
     // 役割がある場合は順番に割当
@@ -557,7 +694,7 @@ const ShufflyApp = (function() {
         name: member.name
       }))
     }));
-    const groupSettings = collectGroupSettings(groupCount, displayNames, fixedRaw);
+    const groupSettings = collectGroupSettings(groupCount, displayNames, fixedRaw, togetherGroups);
 
     updateParticipantCount(); showGroups(); showStats(); pushToHistory('groups', {
       membersRaw: updatedRaw,
@@ -574,15 +711,20 @@ const ShufflyApp = (function() {
   function assignOrder(){
     const raw = getRawValue().trim();
     const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
-    let members = rawList.map(s=>s.split('#')[0].trim());
+    const allMembers = rawList.map(s=>s.split('#')[0].trim());
+    const excludedRaw = parseCommaSeparatedList(document.getElementById('excludedOrderInput')?.value || "");
+    const excludedSet = new Set(excludedRaw);
+    const excludedMembers = allMembers.filter((member)=>excludedSet.has(member));
+    const invalidExcludedMembers = excludedRaw.filter((member)=>!allMembers.includes(member));
+    let members = allMembers.filter((member)=>!excludedSet.has(member));
     if(members.length === 0){
       document.getElementById('orderOutput').value = "";
       if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = "[]";
-      showToast("メンバーがいません");
+      showToast(excludedMembers.length > 0 ? "順番を決める対象メンバーがいません" : "メンバーがいません");
       return;
     }
 
-    const fixedRaw = (document.getElementById('fixedOrderInput')?.value || "").split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+    const fixedRaw = parseCommaSeparatedList(document.getElementById('fixedOrderInput')?.value || "");
     const fixedMap = {};
     const invalids = [];
     for(const line of fixedRaw){
@@ -607,7 +749,10 @@ const ShufflyApp = (function() {
     for(const posStr in fixedMap){
       const pos = parseInt(posStr,10);
       const name = fixedMap[pos];
-      if(!namesSet.has(name)){
+      if(excludedSet.has(name)){
+        invalidNameEntries.push(`${pos}: ${name}`);
+        delete fixedMap[pos];
+      } else if(!namesSet.has(name)){
         invalidNameEntries.push(`${pos}: ${name}`);
         delete fixedMap[pos];
       } else {
@@ -615,10 +760,11 @@ const ShufflyApp = (function() {
       }
     }
 
-    if(invalids.length>0 || invalidNameEntries.length>0){
+    if(invalids.length>0 || invalidNameEntries.length>0 || invalidExcludedMembers.length > 0){
       const msgs = [];
       if(invalids.length>0) msgs.push("固定指定の書式が不正な行があります");
       if(invalidNameEntries.length>0) msgs.push("メンバーに存在しない名前の固定指定があります");
+      if(invalidExcludedMembers.length>0) msgs.push("メンバーに存在しない除外指定があります");
       showToast(msgs.join('、') + "（無視されます）");
     }
 
@@ -647,8 +793,13 @@ const ShufflyApp = (function() {
     const orderJson = result.map((name, idx) => ({ name, order: idx+1 }));
     if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = JSON.stringify(orderJson);
 
+    const orderSettings = {
+      excluded_members: excludedMembers,
+      fixed_order: fixedRaw
+    };
+
     // 履歴に保存
-    pushToHistory('order', { result: result });
+    pushToHistory('order', { result: result, settings: orderSettings });
     // 回次表示を更新（履歴を追加した後に確実に更新）
     updateOrderRoundDisplay();
 
@@ -659,13 +810,19 @@ const ShufflyApp = (function() {
   function assignRoles(){
     const raw = getRawValue().trim();
     const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
-    let members = rawList.map(s=>s.split('#')[0].trim());
-    if(members.length===0){ showToast("メンバーがいません"); return; }
+    const allMembers = rawList.map(s=>s.split('#')[0].trim());
+    const excludedRaw = parseCommaSeparatedList(document.getElementById('excludedRolesInput')?.value || "");
+    const excludedSet = new Set(excludedRaw);
+    const excludedMembers = allMembers.filter((member)=>excludedSet.has(member));
+    const invalidExcludedMembers = excludedRaw.filter((member)=>!allMembers.includes(member));
+    let members = allMembers.filter((member)=>!excludedSet.has(member));
+    if(members.length===0){ showToast(excludedMembers.length > 0 ? "役割を決める対象メンバーがいません" : "メンバーがいません"); return; }
 
     const roleDefinitions = getRoleDefinitions();
     if(roleDefinitions.length===0){ showToast("役割が未入力です"); return; }
     const totalRoleCount = roleDefinitions.reduce((sum, definition)=>sum + definition.count, 0);
     if(totalRoleCount > members.length){ showToast("役割の合計人数がメンバー数を超えています"); return; }
+    if(invalidExcludedMembers.length > 0){ showToast("メンバーに存在しない除外指定があります（無視されます）"); }
 
     function shuffleArray(arr){
       for(let i=arr.length-1;i>0;i--){
@@ -694,10 +851,15 @@ const ShufflyApp = (function() {
     settings.role_assignments = assignments.map((assignment)=>({ name: assignment.name, role: assignment.role }));
     settings.role_definitions = roleDefinitions;
     settings.roles = serializeRoleDefinitions(roleDefinitions);
+    settings.role_excluded_members = excludedMembers;
     writeSettingsJson(settings);
 
     // 履歴に保存
-    pushToHistory('roles', { assignments: assignments, definitions: roleDefinitions });
+    pushToHistory('roles', {
+      assignments: assignments,
+      definitions: roleDefinitions,
+      settings: { excluded_members: excludedMembers }
+    });
     // 回次表示を更新（履歴を追加した後に確実に更新）
     updateRolesRoundDisplay();
 
@@ -1101,6 +1263,8 @@ const ShufflyApp = (function() {
         }
       }
     }
+
+    updateRoleCountHint();
 
     // 回次表示を更新（メンバーや履歴が変わったときに反映）
     updateGroupRoundDisplay();
@@ -1728,6 +1892,7 @@ const ShufflyApp = (function() {
     updateParticipantCount();
     syncGroupCountPresetButtons();
     setRoleDefinitions(getRoleDefinitions());
+    syncAuxiliarySettings();
     // 初期化時には履歴を作成しない（グループ分け実行時のみ履歴を保存）
     // これにより「0回目（未実施）」が履歴として保存される問題を回避
     // if(shufflyHistory.length === 0 && getRawValue().trim() !== "") pushToHistory('groups');
@@ -1828,8 +1993,13 @@ const ShufflyApp = (function() {
     });
 
     // 入力関連のイベント
-    bindIf('groupCount', 'input', ()=>{ updateParticipantCount(); syncGroupCountPresetButtons(); });
-    bindIf('customGroupNames', 'input', ()=>{ updateParticipantCount(); });
+    bindIf('groupCount', 'input', ()=>{ updateParticipantCount(); syncGroupCountPresetButtons(); syncAuxiliarySettings(); });
+    bindIf('customGroupNames', 'input', ()=>{ updateParticipantCount(); syncAuxiliarySettings(); });
+    bindIf('fixedMembersInput', 'input', ()=>{ syncAuxiliarySettings(); });
+    bindIf('togetherMembersInput', 'input', ()=>{ syncAuxiliarySettings(); });
+    bindIf('fixedOrderInput', 'input', ()=>{ syncAuxiliarySettings(); });
+    bindIf('excludedOrderInput', 'input', ()=>{ syncAuxiliarySettings(); });
+    bindIf('excludedRolesInput', 'input', ()=>{ syncAuxiliarySettings(); updateRoleCountHint(); });
     bindIf('rolesInput', 'input', ()=>{ setRoleDefinitions(getRoleDefinitions()); });
 
     // インポート / サンプルデータ / クリア
@@ -2213,20 +2383,43 @@ const ShufflyApp = (function() {
   // 設定データをUIに復元する関数
   function restoreSettingsUI() {
     const settingsField = document.getElementById('settingsJsonInput');
+    const latestGroupSettings = historyData.groups.at(-1)?.data?.settings || {};
+    const latestOrderSettings = historyData.order.at(-1)?.data?.settings || {};
+    const latestRoleDefinitions = historyData.roles.at(-1)?.data?.definitions || [];
+    const latestRoleSettings = historyData.roles.at(-1)?.data?.settings || {};
     if (!settingsField || !settingsField.value) {
-      if(historyData.roles.length > 0){
-        const latestRoleEntry = historyData.roles[historyData.roles.length - 1];
-        if(latestRoleEntry?.data?.definitions){
-          setRoleDefinitions(latestRoleEntry.data.definitions);
-          return;
-        }
+      const groupCountEl = document.getElementById('groupCount');
+      const customNamesEl = document.getElementById('customGroupNames');
+      const togetherMembersEl = document.getElementById('togetherMembersInput');
+      const excludedOrderEl = document.getElementById('excludedOrderInput');
+      const excludedRolesEl = document.getElementById('excludedRolesInput');
+
+      if(groupCountEl && latestGroupSettings.group_count) groupCountEl.value = latestGroupSettings.group_count;
+      if(customNamesEl && Array.isArray(latestGroupSettings.group_names) && latestGroupSettings.group_names.length > 0) customNamesEl.value = latestGroupSettings.group_names.join('\n');
+      const fixedMembersEl = document.getElementById('fixedMembersInput');
+      if(fixedMembersEl && Array.isArray(latestGroupSettings.fixed_members) && latestGroupSettings.fixed_members.length > 0) fixedMembersEl.value = latestGroupSettings.fixed_members.join('\n');
+      if(togetherMembersEl && Array.isArray(latestGroupSettings.together_members) && latestGroupSettings.together_members.length > 0) {
+        togetherMembersEl.value = latestGroupSettings.together_members.map((group)=>Array.isArray(group) ? group.join(', ') : group).join('\n');
       }
-      setRoleDefinitions(getRoleDefinitions());
+      if(excludedOrderEl && Array.isArray(latestOrderSettings.excluded_members) && latestOrderSettings.excluded_members.length > 0) {
+        excludedOrderEl.value = latestOrderSettings.excluded_members.join('\n');
+      }
+      if(excludedRolesEl && Array.isArray(latestRoleSettings.excluded_members) && latestRoleSettings.excluded_members.length > 0) {
+        excludedRolesEl.value = latestRoleSettings.excluded_members.join('\n');
+      }
+      const fixedOrderEl = document.getElementById('fixedOrderInput');
+      if(fixedOrderEl && Array.isArray(latestOrderSettings.fixed_order) && latestOrderSettings.fixed_order.length > 0) fixedOrderEl.value = latestOrderSettings.fixed_order.join('\n');
+      setRoleDefinitions(latestRoleDefinitions.length > 0 ? latestRoleDefinitions : getRoleDefinitions());
       return;
     }
 
     try {
-      const settings = JSON.parse(settingsField.value);
+      const settings = {
+        ...latestGroupSettings,
+        ...latestOrderSettings,
+        role_excluded_members: latestRoleSettings.excluded_members || [],
+        ...(JSON.parse(settingsField.value) || {})
+      };
       if (!settings) return;
 
       // グループ数を復元
@@ -2245,10 +2438,54 @@ const ShufflyApp = (function() {
         }
       }
 
+      if (settings.together_members && Array.isArray(settings.together_members) && settings.together_members.length > 0) {
+        const togetherMembersEl = document.getElementById('togetherMembersInput');
+        if (togetherMembersEl) {
+          togetherMembersEl.value = settings.together_members.map((group)=>Array.isArray(group) ? group.join(', ') : group).join('\n');
+        }
+      }
+
+      if (settings.fixed_members && Array.isArray(settings.fixed_members) && settings.fixed_members.length > 0) {
+        const fixedMembersEl = document.getElementById('fixedMembersInput');
+        if (fixedMembersEl) {
+          fixedMembersEl.value = settings.fixed_members.join('\n');
+        }
+      }
+
+      if (settings.excluded_members && Array.isArray(settings.excluded_members) && settings.excluded_members.length > 0) {
+        const excludedOrderEl = document.getElementById('excludedOrderInput');
+        if (excludedOrderEl) {
+          excludedOrderEl.value = settings.excluded_members.join('\n');
+        }
+      }
+
+      if (settings.order_excluded_members && Array.isArray(settings.order_excluded_members) && settings.order_excluded_members.length > 0) {
+        const excludedOrderEl = document.getElementById('excludedOrderInput');
+        if (excludedOrderEl) {
+          excludedOrderEl.value = settings.order_excluded_members.join('\n');
+        }
+      }
+
+      if (settings.role_excluded_members && Array.isArray(settings.role_excluded_members) && settings.role_excluded_members.length > 0) {
+        const excludedRolesEl = document.getElementById('excludedRolesInput');
+        if (excludedRolesEl) {
+          excludedRolesEl.value = settings.role_excluded_members.join('\n');
+        }
+      }
+
+      if (settings.fixed_order && Array.isArray(settings.fixed_order) && settings.fixed_order.length > 0) {
+        const fixedOrderEl = document.getElementById('fixedOrderInput');
+        if (fixedOrderEl) {
+          fixedOrderEl.value = settings.fixed_order.join('\n');
+        }
+      }
+
       if (Array.isArray(settings.role_definitions) && settings.role_definitions.length > 0) {
         setRoleDefinitions(settings.role_definitions);
       } else if (settings.roles && typeof settings.roles === 'string' && settings.roles.trim()) {
         setRoleDefinitions(parseRoleDefinitions(settings.roles));
+      } else if (latestRoleDefinitions.length > 0) {
+        setRoleDefinitions(latestRoleDefinitions);
       } else {
         setRoleDefinitions(getRoleDefinitions());
       }
@@ -2269,6 +2506,24 @@ const ShufflyApp = (function() {
       }
       if (settings.custom_group_names && Array.isArray(settings.custom_group_names) && settings.custom_group_names.length > 0) {
         cleanedSettings.custom_group_names = settings.custom_group_names;
+      }
+      if (settings.together_members && Array.isArray(settings.together_members) && settings.together_members.length > 0) {
+        cleanedSettings.together_members = settings.together_members;
+      }
+      if (settings.fixed_members && Array.isArray(settings.fixed_members) && settings.fixed_members.length > 0) {
+        cleanedSettings.fixed_members = settings.fixed_members;
+      }
+      if (settings.excluded_members && Array.isArray(settings.excluded_members) && settings.excluded_members.length > 0) {
+        cleanedSettings.excluded_members = settings.excluded_members;
+      }
+      if (settings.order_excluded_members && Array.isArray(settings.order_excluded_members) && settings.order_excluded_members.length > 0) {
+        cleanedSettings.order_excluded_members = settings.order_excluded_members;
+      }
+      if (settings.role_excluded_members && Array.isArray(settings.role_excluded_members) && settings.role_excluded_members.length > 0) {
+        cleanedSettings.role_excluded_members = settings.role_excluded_members;
+      }
+      if (settings.fixed_order && Array.isArray(settings.fixed_order) && settings.fixed_order.length > 0) {
+        cleanedSettings.fixed_order = settings.fixed_order;
       }
 
       // 設定がある場合のみ保存
@@ -2468,7 +2723,8 @@ document.addEventListener('DOMContentLoaded', () => {
                       round: round.round,
                       timestamp: round.timestamp || Date.now(),
                       data: {
-                        result: orderResult
+                        result: orderResult,
+                        settings: round.settings || {}
                       }
                     });
                   }
@@ -2497,7 +2753,8 @@ document.addEventListener('DOMContentLoaded', () => {
                       timestamp: round.timestamp || Date.now(),
                       data: {
                         assignments: roleAssignments,
-                        definitions: groupedDefinitions
+                        definitions: groupedDefinitions,
+                        settings: round.settings || {}
                       }
                     });
                   }
