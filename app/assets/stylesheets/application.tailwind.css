@@ -279,6 +279,11 @@ body.shuffly-app {
   font-weight: 600;
 }
 
+#resultsCard .shuffly-disclosure-text {
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
 .shuffly-input,
 .shuffly-textarea,
 .shuffly-select,

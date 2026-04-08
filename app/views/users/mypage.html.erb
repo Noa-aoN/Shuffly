@@ -1,5 +1,11 @@
 <%# マイページ %>
 
+<% tab_descriptions = {
+  'events' => '保存したイベントを開いて、続きから編集できます。',
+  'member_lists' => 'よく使うメンバーをまとめて管理できます。',
+  'account' => 'アカウント情報や各種設定を確認できます。'
+} %>
+
 <div class="max-w-6xl mx-auto px-6 py-6 md:py-8">
   <%# ユーザー情報ヘッダー %>
   <div class="shuffly-card px-6 md:px-10 py-8 mb-6">
@@ -15,14 +21,14 @@
       </div>
       <%# 統計情報 %>
       <div class="flex flex-col sm:items-end gap-2 text-sm">
-        <span class="shuffly-badge shuffly-badge-accent">
+        <%= link_to mypage_path(tab: 'events'), class: "shuffly-badge shuffly-badge-accent transition hover:brightness-95", data: { turbo: true } do %>
           <%= image_tag 'icons/event_note_24dp_1F1F1F.svg', width: 16, height: 16, class: "text-blue-600", alt: "" %>
           <%= @events_count %>件のイベント
-        </span>
-        <span class="shuffly-badge shuffly-badge-success">
+        <% end %>
+        <%= link_to mypage_path(tab: 'member_lists'), class: "shuffly-badge shuffly-badge-success transition hover:brightness-95", data: { turbo: true } do %>
           <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, class: "text-green-600", alt: "" %>
           <%= @member_lists_count %>件のメンバーリスト
-        </span>
+        <% end %>
       </div>
     </div>
   </div>
@@ -37,6 +43,10 @@
           ],
           active_tab: @active_tab %>
   </div>
+
+  <p class="mb-5 text-sm text-[var(--shuffly-text-secondary)]">
+    <%= tab_descriptions[@active_tab] || tab_descriptions['events'] %>
+  </p>
 
   <%# タブコンテンツ %>
   <% case @active_tab %>
@@ -213,18 +223,21 @@
           <%= link_to event_path(event), class: "shuffly-card-link block px-6 md:px-10 py-8 cursor-pointer group" do %>
             <div class="flex items-center justify-between gap-4">
               <div class="flex-1">
-                <h3 class="font-semibold text-lg text-[var(--shuffly-text)] mb-2">
-                  <%= event.title.presence || "イベント #{event.id}" %>
-                </h3>
-                <div class="flex flex-wrap items-center gap-3 text-sm text-[var(--shuffly-text-secondary)]">
-                  <span class="flex items-center gap-1">
-                    <%= image_tag 'icons/today_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "作成日アイコン" %>
-                    作成: <%= format_datetime(event.created_at) %>
-                  </span>
-                  <span class="flex items-center gap-1">
-                    <%= image_tag 'icons/schedule_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "更新日アイコン" %>
-                    更新: <%= format_datetime(event.updated_at) %>
-                  </span>
+                <div class="mb-2 flex items-start justify-between gap-3">
+                  <h3 class="font-semibold text-lg text-[var(--shuffly-text)]">
+                    <%= event.title.presence || "イベント #{event.id}" %>
+                  </h3>
+                  <% if event.memo.present? %>
+                    <span class="shuffly-badge shuffly-badge-neutral !px-2 !py-0.5 text-xs shrink-0">
+                      メモあり
+                    </span>
+                  <% end %>
+                </div>
+                <div class="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-[var(--shuffly-text-secondary)]">
+                  <div class="flex flex-col gap-1 text-xs text-[var(--shuffly-text-muted)]">
+                    <p>更新: <%= format_datetime(event.updated_at) %></p>
+                    <p>作成: <%= format_datetime(event.created_at) %></p>
+                  </div>
                   <span class="flex items-center gap-1">
                     <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, alt: "メンバー数アイコン" %>
                     <%= event.members_list.count %>人
@@ -234,15 +247,17 @@
                   <% order_count = event.order_history.count %>
                   <% role_count = event.role_history.count %>
                   <% if group_count > 0 || order_count > 0 || role_count > 0 %>
-                    <span class="shuffly-badge shuffly-badge-accent !px-2 !py-0.5 text-xs">
-                      グループ: <strong><%= group_count %></strong>回
-                    </span>
-                    <span class="shuffly-badge shuffly-badge-success !px-2 !py-0.5 text-xs">
-                      順番: <strong><%= order_count %></strong>回
-                    </span>
-                    <span class="shuffly-badge shuffly-badge-neutral !px-2 !py-0.5 text-xs">
-                      役割: <strong><%= role_count %></strong>回
-                    </span>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="shuffly-badge shuffly-badge-accent !px-2 !py-0.5 text-xs">
+                        グループ: <strong><%= group_count %></strong>回
+                      </span>
+                      <span class="shuffly-badge shuffly-badge-success !px-2 !py-0.5 text-xs">
+                        順番: <strong><%= order_count %></strong>回
+                      </span>
+                      <span class="shuffly-badge shuffly-badge-neutral !px-2 !py-0.5 text-xs">
+                        役割: <strong><%= role_count %></strong>回
+                      </span>
+                    </div>
                   <% end %>
                 </div>
               </div>
