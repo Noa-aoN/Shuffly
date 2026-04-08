@@ -44,7 +44,7 @@
     </div>
   </div>
 
-  <label class="shuffly-label block mb-2 font-semibold"><span class="shuffly-bullet text-sm">●</span> メンバーリスト</label>
+  <label class="shuffly-section-heading block mb-2 font-semibold"><span class="shuffly-bullet">●</span> メンバーリスト</label>
 
   <!-- ========================================== -->
   <!-- 内部データ保持エリア（hidden）             -->
@@ -63,10 +63,10 @@
   <!-- ユーザー入力エリア                         -->
   <!-- ========================================== -->
   <!-- ユーザーが編集可能なテキストエリア。membersRawと自動同期 -->
-  <textarea id="membersInput" rows="10" class="shuffly-textarea px-3 py-2" placeholder="例：メンバー1, メンバー2, ..."></textarea>
+  <textarea id="membersInput" rows="10" class="shuffly-textarea px-3 py-2" placeholder="例：田中, 鈴木, 佐藤"></textarea>
 
   <!-- 入力ヒント -->
-  <p class="shuffly-hint text-sm mb-5">↑ 改行またはカンマ区切りで、同じ名前が重ならないように入力してください。</p>
+  <p class="shuffly-hint text-sm mb-5">↑ 改行またはカンマ区切りで、同じ名前は1回だけ入力してください。</p>
 
   <!-- メンバー数表示インジケーター -->
   <div id="memberCountHint" class="shuffly-indicator shuffly-indicator--warning text-base mt-1 mb-7 rounded-xl px-4 py-2">

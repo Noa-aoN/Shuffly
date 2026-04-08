@@ -1951,12 +1951,12 @@ const ShufflyApp = (function() {
     if(sc && btn && textSpan && icon){
       if(statsCollapsed){
         sc.classList.add('hidden');
-        textSpan.innerHTML = '<span class="text-sm text-blue-500">●</span> 統計情報';
+        textSpan.textContent = '統計のメモ';
         btn.setAttribute('aria-expanded', 'false');
         icon.src = ICON_EXPAND;
       } else {
         sc.classList.remove('hidden');
-        textSpan.innerHTML = '<span class="text-sm text-blue-500">●</span> 統計情報';
+        textSpan.textContent = '統計のメモ';
         btn.setAttribute('aria-expanded', 'true');
         icon.src = ICON_COLLAPSE;
       }
@@ -1966,16 +1966,15 @@ const ShufflyApp = (function() {
     const obtn = document.getElementById('btn-toggle-options');
     const otext = document.getElementById('btn-toggle-options-text');
     const oicon = document.getElementById('btn-toggle-options-icon');
-    if(oc && obtn && otext && oicon){
+      if(oc && obtn && otext && oicon){
       if(optionsCollapsed){
         oc.classList.add('hidden');
-        // preserve dot styling by setting innerHTML so the dot keeps text-blue-500
-        otext.innerHTML = '<span class="text-sm text-blue-500">●</span> グループ表示オプション';
+        otext.textContent = '表示の調整';
         obtn.setAttribute('aria-expanded', 'false');
         oicon.src = ICON_EXPAND;
       } else {
         oc.classList.remove('hidden');
-        otext.innerHTML = '<span class="text-sm text-blue-500">●</span> グループ表示オプション';
+        otext.textContent = '表示の調整';
         obtn.setAttribute('aria-expanded', 'true');
         oicon.src = ICON_COLLAPSE;
       }
@@ -2141,7 +2140,7 @@ const ShufflyApp = (function() {
       sc.classList.toggle('hidden');
       const expanded = !sc.classList.contains('hidden');
       statsCollapsed = sc.classList.contains('hidden');
-      textSpan.innerHTML = '<span class="text-sm text-blue-500">●</span> 統計情報';
+      textSpan.textContent = '統計のメモ';
       btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       icon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
       if(!statsCollapsed) showStats();
@@ -2158,8 +2157,7 @@ const ShufflyApp = (function() {
       oc.classList.toggle('hidden');
       const expanded = !oc.classList.contains('hidden');
       optionsCollapsed = oc.classList.contains('hidden');
-      // preserve dot styling by setting innerHTML so the dot keeps text-blue-500
-      textSpan.innerHTML = '<span class="text-sm text-blue-500">●</span> グループ表示オプション';
+      textSpan.textContent = '表示の調整';
       btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       icon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
       // 変更点：グループ分け実行が行われていない限り、開閉時に groupOutput を更新しない
