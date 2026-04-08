@@ -36,7 +36,20 @@ export default class extends Controller {
     if (!template) return
 
     const title = template.dataset.detailTitle || ""
-    this.modalTitleTarget.textContent = title
+    const badge = template.dataset.detailBadge
+    this.modalTitleTarget.innerHTML = ""
+
+    const titleText = document.createElement("span")
+    titleText.textContent = title
+    this.modalTitleTarget.appendChild(titleText)
+
+    if (badge) {
+      const badgeEl = document.createElement("span")
+      badgeEl.className = "lp-detail-badge"
+      badgeEl.textContent = badge
+      this.modalTitleTarget.appendChild(badgeEl)
+    }
+
     this.modalBodyTarget.innerHTML = template.innerHTML
     this.modalTarget.classList.remove("hidden")
     this.modalTarget.classList.add("flex")

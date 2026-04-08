@@ -28,6 +28,7 @@
   detail_sample_title ||= nil
   detail_sample_lines ||= []
   clickable = detail_id.present?
+  detail_badge ||= nil
 %>
 
 <!-- ========================================== -->
@@ -70,7 +71,7 @@
       <p class="text-sm text-[var(--shuffly-text-secondary)]"><%= raw description %></p>
     <% if clickable %>
       </button>
-      <template data-lp-cards-target="detail" data-detail-id="<%= detail_id %>" data-detail-title="<%= detail_title %>">
+      <template data-lp-cards-target="detail" data-detail-id="<%= detail_id %>" data-detail-title="<%= detail_title %>" data-detail-badge="<%= detail_badge %>">
         <div class="space-y-5">
           <p class="text-sm leading-7 text-[var(--shuffly-text-secondary)]"><%= raw detail_copy %></p>
           <% if detail_sample_lines.present? %>

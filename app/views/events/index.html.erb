@@ -35,7 +35,7 @@
         <h2 class="lp-wordmark mb-5 text-[clamp(3.5rem,10vw,5.75rem)] text-[var(--shuffly-text)]">
           <span class="lp-wordmark-accent">Shuffly</span>
         </h2>
-        <p class="lp-lead text-lg mb-5 text-[var(--shuffly-text-secondary)]"><span class="rounded-md bg-[rgba(254,240,138,0.82)] px-2 py-1 text-[var(--shuffly-text)] shadow-[inset_0_0_0_1px_rgba(202,138,4,0.12)] font-medium">グループ・順番・役割決め</span>が、簡単かつスピーディに。</p>
+        <p class="lp-lead text-lg mb-5 text-[var(--shuffly-text-secondary)]"><span class="rounded-md bg-[rgba(254,240,138,0.82)] px-2 py-1 text-[var(--shuffly-text)] shadow-[inset_0_0_0_1px_rgba(202,138,4,0.12)] font-medium">グループ分け・順番決め・役割分担</span>を、その場で素早く。</p>
         <div class="lp-value-strip mb-8 flex flex-wrap items-center justify-center gap-2 text-sm text-[var(--shuffly-text-secondary)]">
           <span class="lp-value-pill">登録なしですぐ開始</span>
           <span class="lp-value-pill">ログイン後は保存と再開に対応</span>
@@ -74,6 +74,7 @@
             <% else %>
               <%= render 'shared/button',
                     button_text: 'ログインして使う',
+                    button_text: '保存しながら使う',
                     path: new_user_session_path,
                     variant: 'secondary',
                     full_mobile: true,
@@ -155,11 +156,11 @@
         <!-- メンバーリストの保存 -->
         <%= render 'events/feature_card',
               icon: 'icons/save_24dp_1F1F1F.svg',
-              title: 'メンバーリストの保存',
+              title: 'よく使うメンバーを保存・呼び出す',
               description: 'よく使うメンバーリストを保存して<br>いつでも呼び出せます。',
               card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong shuffly-feature-card--muted',
               detail_id: 'member-lists',
-              detail_title: 'メンバーリストの保存',
+              detail_title: 'よく使うメンバーを保存・呼び出す',
               detail_copy: 'クラス、チーム、運営メンバーなど、何度も使う名前一覧を保存して呼び出せます。毎回の貼り付けや入力を省けます。',
               detail_sample_title: '保存例',
               detail_sample_lines: ['3年A組 32名', '新歓運営チーム 14名', '研究会メンバー 11名'] %>
@@ -167,11 +168,11 @@
         <!-- シャッフル履歴の確認 -->
         <%= render 'events/feature_card',
               icon: 'icons/content_paste_search_24dp_1F1F1F.svg',
-              title: 'シャッフル履歴の確認',
+              title: '前回の結果を見返す・再開する',
               description: '過去のグループ分けや順番決めの結果を<br>保存・確認できます。',
               card_bg: 'shuffly-feature-card--info shuffly-feature-card--info-strong shuffly-feature-card--muted',
               detail_id: 'history',
-              detail_title: 'シャッフル履歴の確認',
+              detail_title: '前回の結果を見返す・再開する',
               detail_copy: '前回どう分けたか、どの順番だったかを後から見返せます。連続イベントや定例運営で、前回との重なりを避けたいときにも便利です。',
               detail_sample_title: '履歴例',
               detail_sample_lines: ['4/08 勉強会班分け', '4/01 発表順決定', '3/28 司会・書記の役割分担'] %>
@@ -179,14 +180,15 @@
         <!-- 画面スタイルの変更 -->
         <%= render 'events/feature_card',
               icon: 'icons/palette_24dp_1F1F1F.svg',
-              title: '画面スタイルの変更',
+              title: '画面スタイルをTPOに合わせる',
               description: 'テーマや表示スタイルを切り替えられます。',
               card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong shuffly-feature-card--muted',
               detail_id: 'themes',
-              detail_title: '画面スタイルの変更',
-              detail_copy: '見やすさや雰囲気に合わせて画面スタイルを切り替えられます。発表中、準備中、個人利用など、状況に合わせて整えられます。',
+              detail_title: '画面スタイルをTPOに合わせる',
+              detail_badge: '準備中',
+              detail_copy: '見やすさや雰囲気に合わせて画面スタイルを切り替えられます。会議、イベント、個人利用など、その場に合った表示で使えます。',
               detail_sample_title: '切り替え例',
-              detail_sample_lines: ['やわらかい通常表示', '落ち着いた閲覧向け表示', '自分好みのテーマ設定'] %>
+              detail_sample_lines: ['会議中など落ち着いた表示', 'パーティ中など楽しい表示', '自分好みに整えた表示'] %>
       </div>
     </div>
   </section>
@@ -205,7 +207,7 @@
         <!-- ステップ1: メンバーを入力 -->
         <%= render 'events/feature_card',
               number: 1,
-              title: 'メンバーを入力',
+              title: 'メンバーを入力・読み込み',
               description: '名前を一人ずつ入力するか<br>リストを貼り付けます。',
               card_bg: 'shuffly-feature-card--accent',
               detail_id: 'step-members',
@@ -245,7 +247,7 @@
     <div class="absolute inset-0 bg-black/35 backdrop-blur-sm" data-action="click->lp-cards#closeModal"></div>
     <div class="lp-card-modal-panel relative z-10 w-full max-w-xl rounded-[28px] border border-[var(--shuffly-border)] bg-[rgba(255,255,255,0.95)] px-6 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
       <div class="flex items-start justify-between gap-4">
-        <h3 class="text-xl font-bold text-[var(--shuffly-text)]" data-lp-cards-target="modalTitle"></h3>
+        <h3 class="lp-modal-title text-xl font-bold text-[var(--shuffly-text)]" data-lp-cards-target="modalTitle"></h3>
         <button type="button" class="lp-modal-close" data-action="click->lp-cards#closeModal" aria-label="閉じる">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
