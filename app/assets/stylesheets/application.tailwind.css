@@ -555,12 +555,13 @@ body.shuffly-app {
   font-family: var(--shuffly-font-sans);
   font-weight: 700;
   letter-spacing: -0.03em;
-  line-height: 0.95;
+  line-height: 0.99;
   text-wrap: balance;
 }
 
 .lp-wordmark-accent {
   display: inline-block;
+  padding-bottom: 0.08em;
   background:
     radial-gradient(circle at 20% 22%, rgba(120, 119, 255, 0.9) 0, rgba(120, 119, 255, 0.9) 0.58rem, transparent 1rem),
     radial-gradient(circle at 76% 28%, rgba(96, 165, 250, 0.82) 0, rgba(96, 165, 250, 0.82) 0.52rem, transparent 0.95rem),
@@ -571,12 +572,23 @@ body.shuffly-app {
   background-position: 0 0, 0 0, 0 0, 0 0;
   -webkit-background-clip: text;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
   color: transparent;
-  -webkit-text-stroke: 0.01em rgba(79, 70, 229, 0.08);
+  -webkit-text-stroke: 0.012em rgba(42, 58, 92, 0.08);
   text-shadow:
     0 8px 20px rgba(79, 70, 229, 0.09),
     0 2px 6px rgba(15, 23, 42, 0.035);
   animation: lpWordmarkDrift 14s linear infinite;
+  transition: filter 180ms ease, text-shadow 180ms ease;
+}
+
+.lp-wordmark-accent.is-shuffling {
+  animation-duration: 1.4s;
+  background-size: 4.8rem 4.8rem, 5.6rem 5.6rem, 5.2rem 5.2rem, 4.4rem 4.4rem, 100% 100%;
+  filter: saturate(1.24) brightness(1.04);
+  text-shadow:
+    0 14px 30px rgba(79, 70, 229, 0.16),
+    0 3px 10px rgba(15, 23, 42, 0.05);
 }
 
 .lp-lead {
@@ -640,7 +652,7 @@ body.shuffly-app {
 
   .lp-wordmark {
     letter-spacing: -0.04em;
-    line-height: 0.96;
+    line-height: 1;
   }
 }
 
@@ -702,8 +714,14 @@ body.shuffly-app {
   background: linear-gradient(180deg, rgba(245, 247, 251, 0), rgba(245, 247, 251, 0.58) 82%, rgba(245, 247, 251, 0.86) 100%);
 }
 
-.lp-card {
+.lp-card-shell {
   position: absolute;
+  transition: transform 180ms ease-out;
+  will-change: transform;
+}
+
+.lp-card {
+  position: relative;
   display: block;
   width: 8.8rem;
   height: 12.4rem;
@@ -752,11 +770,11 @@ body.shuffly-app {
   bottom: 2.3rem;
 }
 
-.lp-card-field .lp-card:nth-child(odd) {
+.lp-card-field .lp-card-shell:nth-child(odd) .lp-card {
   transform-origin: 30% 50%;
 }
 
-.lp-card-field .lp-card:nth-child(even) {
+.lp-card-field .lp-card-shell:nth-child(even) .lp-card {
   transform-origin: 70% 50%;
 }
 
@@ -787,51 +805,75 @@ body.shuffly-app {
   box-shadow: none;
 }
 
-.lp-card--1 {
+.lp-card-shell--1 {
   top: 9%;
   left: 6%;
+}
+
+.lp-card-shell--2 {
+  top: 20%;
+  left: 22%;
+}
+
+.lp-card-shell--3 {
+  top: 12%;
+  right: 18%;
+}
+
+.lp-card-shell--4 {
+  top: 33%;
+  right: 5%;
+}
+
+.lp-card-shell--5 {
+  top: 42%;
+  left: 10%;
+}
+
+.lp-card-shell--6 {
+  top: 56%;
+  left: 31%;
+}
+
+.lp-card-shell--7 {
+  top: 52%;
+  right: 24%;
+}
+
+.lp-card-shell--8 {
+  top: 68%;
+  right: 8%;
+}
+
+.lp-card--1 {
   animation: lpCardShuffleA 24s ease-in-out infinite;
 }
 
 .lp-card--2 {
-  top: 20%;
-  left: 22%;
   animation: lpCardShuffleB 28s ease-in-out infinite;
 }
 
 .lp-card--3 {
-  top: 12%;
-  right: 18%;
   animation: lpCardShuffleC 26s ease-in-out infinite;
 }
 
 .lp-card--4 {
-  top: 33%;
-  right: 5%;
   animation: lpCardShuffleD 30s ease-in-out infinite;
 }
 
 .lp-card--5 {
-  top: 42%;
-  left: 10%;
   animation: lpCardShuffleE 27s ease-in-out infinite;
 }
 
 .lp-card--6 {
-  top: 56%;
-  left: 31%;
   animation: lpCardShuffleF 29s ease-in-out infinite;
 }
 
 .lp-card--7 {
-  top: 52%;
-  right: 24%;
   animation: lpCardShuffleG 25s ease-in-out infinite;
 }
 
 .lp-card--8 {
-  top: 68%;
-  right: 8%;
   animation: lpCardShuffleH 31s ease-in-out infinite;
 }
 

@@ -2,24 +2,24 @@
 <!-- トップページ（ランディングページ）          -->
 <!-- サービス紹介、機能説明、使い方ガイド        -->
 <!-- ============================================ -->
-<div class="events-index-page min-h-screen pb-10" data-controller="lp-cards">
+<div class="events-index-page min-h-screen pb-10" data-controller="lp-cards" data-action="mousemove->lp-cards#handlePointer mouseleave->lp-cards#resetPointer">
 
   <!-- ========================================== -->
   <!-- 背景アニメーションレイヤー                 -->
   <!-- ========================================== -->
-  <div class="lp-background pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+  <div class="lp-background pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true" data-lp-cards-target="background">
     <div class="lp-ambient lp-ambient--violet"></div>
     <div class="lp-ambient lp-ambient--sky"></div>
     <div class="lp-ambient lp-ambient--amber"></div>
     <div class="lp-card-field">
-      <span class="lp-card lp-card--1"></span>
-      <span class="lp-card lp-card--2"></span>
-      <span class="lp-card lp-card--3 lp-card--abstract"></span>
-      <span class="lp-card lp-card--4"></span>
-      <span class="lp-card lp-card--5 lp-card--abstract"></span>
-      <span class="lp-card lp-card--6 lp-card--abstract"></span>
-      <span class="lp-card lp-card--7"></span>
-      <span class="lp-card lp-card--8"></span>
+      <span class="lp-card-shell lp-card-shell--1" data-lp-cards-target="cardShell"><span class="lp-card lp-card--1"></span></span>
+      <span class="lp-card-shell lp-card-shell--2" data-lp-cards-target="cardShell"><span class="lp-card lp-card--2"></span></span>
+      <span class="lp-card-shell lp-card-shell--3" data-lp-cards-target="cardShell"><span class="lp-card lp-card--3 lp-card--abstract"></span></span>
+      <span class="lp-card-shell lp-card-shell--4" data-lp-cards-target="cardShell"><span class="lp-card lp-card--4"></span></span>
+      <span class="lp-card-shell lp-card-shell--5" data-lp-cards-target="cardShell"><span class="lp-card lp-card--5 lp-card--abstract"></span></span>
+      <span class="lp-card-shell lp-card-shell--6" data-lp-cards-target="cardShell"><span class="lp-card lp-card--6 lp-card--abstract"></span></span>
+      <span class="lp-card-shell lp-card-shell--7" data-lp-cards-target="cardShell"><span class="lp-card lp-card--7"></span></span>
+      <span class="lp-card-shell lp-card-shell--8" data-lp-cards-target="cardShell"><span class="lp-card lp-card--8"></span></span>
     </div>
     <div class="lp-glow"></div>
   </div>
@@ -33,7 +33,7 @@
         <!-- サービスタイトル -->
         <p class="lp-kicker mb-2 text-[0.95rem] md:text-base text-[var(--shuffly-text-secondary)]">シャッフリー</p>
         <h2 class="lp-wordmark mb-5 text-[clamp(3.5rem,10vw,5.75rem)] text-[var(--shuffly-text)]">
-          <span class="lp-wordmark-accent">Shuffly</span>
+          <span class="lp-wordmark-accent" data-lp-cards-target="wordmark" data-action="mouseenter->lp-cards#activateWordmark mouseleave->lp-cards#deactivateWordmark focus->lp-cards#activateWordmark blur->lp-cards#deactivateWordmark">Shuffly</span>
         </h2>
         <p class="lp-lead text-lg mb-5 text-[var(--shuffly-text-secondary)]"><span class="rounded-md bg-[rgba(254,240,138,0.82)] px-2 py-1 text-[var(--shuffly-text)] shadow-[inset_0_0_0_1px_rgba(202,138,4,0.12)] font-medium">グループ分け・順番決め・役割分担</span>を、その場で素早く。</p>
         <div class="lp-value-strip mb-8 flex flex-wrap items-center justify-center gap-2 text-sm text-[var(--shuffly-text-secondary)]">
@@ -99,7 +99,7 @@
     <div class="max-w-6xl mx-auto px-6 py-1">
       <!-- セクションタイトル -->
       <h3 class="shuffly-section-title text-2xl md:text-3xl text-center mb-3 font-bold">できること</h3>
-      <p class="shuffly-section-copy mb-8 text-center">Shufflyで、あらゆる「分ける」「決める」を瞬時に解決。</p>
+      <p class="shuffly-section-copy mb-8 text-center">Shufflyで、分ける・決めるをその場でスムーズに。</p>
 
       <!-- 機能カード3枚 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -149,7 +149,7 @@
     <div class="max-w-6xl mx-auto px-6 py-1">
       <!-- セクションタイトル -->
       <h3 class="shuffly-section-title text-2xl md:text-3xl text-center mb-3 font-bold">ログインするとできること</h3>
-      <p class="shuffly-section-copy mb-8 text-center">アカウントを作成して、さらに便利な機能を活用しましょう。</p>
+      <p class="shuffly-section-copy mb-8 text-center">ログインすると、保存や再開がもっと便利に。</p>
 
       <!-- 機能カード3枚 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -200,7 +200,7 @@
     <div class="max-w-6xl mx-auto px-6 text-center py-1">
       <!-- セクションタイトル -->
       <h3 class="shuffly-section-title text-2xl md:text-3xl text-center mb-3 font-bold">使い方</h3>
-      <p class="shuffly-section-copy mb-8 text-center">たった3ステップで、面倒な作業はすべて完了。</p>
+      <p class="shuffly-section-copy mb-8 text-center">3ステップで、準備から決定までスムーズに。</p>
 
       <!-- ステップカード3枚 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
