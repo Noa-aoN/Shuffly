@@ -360,6 +360,50 @@ const ShufflyApp = (function() {
     writeSettingsJson(settings);
   }
 
+  function buildOptionalCardSummary(card){
+    const sourceId = card?.dataset.summarySource;
+    const kind = card?.dataset.summaryKind || 'list';
+    const source = sourceId ? document.getElementById(sourceId) : null;
+    const rawValue = source?.value || '';
+
+    if(kind === 'group-list'){
+      const groups = parseTogetherMemberGroups(rawValue);
+      return groups.length > 0 ? `${groups.length}組入力` : '未入力';
+    }
+
+    const items = parseCommaSeparatedList(rawValue);
+    return items.length > 0 ? `${items.length}件入力` : '未入力';
+  }
+
+  function syncOptionalCardState(card){
+    if(!card) return;
+    const expanded = card.dataset.expanded !== 'false';
+    const content = card.querySelector('[data-optional-content]');
+    const summary = card.querySelector('[data-optional-summary]');
+    const toggle = card.querySelector('[data-optional-toggle]');
+    const label = card.querySelector('[data-optional-toggle-label]');
+
+    if(content) content.classList.toggle('hidden', !expanded);
+    if(summary){
+      summary.textContent = buildOptionalCardSummary(card);
+      summary.classList.toggle('hidden', expanded);
+    }
+    if(toggle) toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    if(label) label.textContent = expanded ? '-' : '+';
+  }
+
+  function setOptionalCardExpanded(card, expanded){
+    if(!card) return;
+    card.dataset.expanded = expanded ? 'true' : 'false';
+    syncOptionalCardState(card);
+  }
+
+  function syncOptionalCardSummaries(){
+    document.querySelectorAll('[data-optional-card]').forEach((card)=>{
+      syncOptionalCardState(card);
+    });
+  }
+
   function syncRolePresetButtons(definitions = getRoleDefinitions()){
     const activeRoles = new Set(normalizeRoleDefinitions(definitions).map((definition)=>definition.name));
     document.querySelectorAll('[data-role-preset]').forEach((button)=>{
@@ -1893,6 +1937,7 @@ const ShufflyApp = (function() {
     syncGroupCountPresetButtons();
     setRoleDefinitions(getRoleDefinitions());
     syncAuxiliarySettings();
+    syncOptionalCardSummaries();
     // 初期化時には履歴を作成しない（グループ分け実行時のみ履歴を保存）
     // これにより「0回目（未実施）」が履歴として保存される問題を回避
     // if(shufflyHistory.length === 0 && getRawValue().trim() !== "") pushToHistory('groups');
@@ -2028,6 +2073,24 @@ const ShufflyApp = (function() {
       button.addEventListener('click', ()=>{
         toggleRolePreset(button.dataset.rolePreset, button.dataset.roleCategory || null);
       });
+    });
+
+    document.querySelectorAll('[data-optional-toggle]').forEach((button)=>{
+      button.addEventListener('click', ()=>{
+        const card = button.closest('[data-optional-card]');
+        if(!card) return;
+        setOptionalCardExpanded(card, card.dataset.expanded === 'false');
+      });
+    });
+
+    document.querySelectorAll('[data-optional-card]').forEach((card)=>{
+      const sourceId = card.dataset.summarySource;
+      const source = sourceId ? document.getElementById(sourceId) : null;
+      if(source){
+        source.addEventListener('input', ()=>{
+          syncOptionalCardState(card);
+        });
+      }
     });
 
     const roleSettingsPanel = document.getElementById('panel-settings-roles');
