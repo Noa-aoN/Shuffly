@@ -93,6 +93,8 @@ a:focus-visible {
    ======================================== */
 
 :root {
+  --shuffly-font-sans: "M PLUS 1p", "Manrope", "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  --shuffly-font-display: "Sora", "Avenir Next", "Segoe UI", sans-serif;
   --shuffly-bg: #f5f7fb;
   --shuffly-bg-elevated: rgba(255, 255, 255, 0.88);
   --shuffly-bg-subtle: rgba(246, 248, 252, 0.84);
@@ -119,7 +121,7 @@ body.shuffly-app {
   background:
     radial-gradient(circle at top, rgba(124, 92, 255, 0.08), transparent 30rem),
     linear-gradient(180deg, #fcfdff 0%, var(--shuffly-bg) 55%, #f3f6fb 100%);
-  font-family: Inter, "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  font-family: var(--shuffly-font-sans);
 }
 
 .shuffly-shell {
@@ -542,6 +544,55 @@ body.shuffly-app {
   isolation: isolate;
 }
 
+.lp-kicker {
+  font-family: var(--shuffly-font-sans);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lp-wordmark {
+  font-family: var(--shuffly-font-sans);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+.lp-wordmark-accent {
+  display: inline-block;
+  background:
+    radial-gradient(circle at 20% 22%, rgba(120, 119, 255, 0.9) 0, rgba(120, 119, 255, 0.9) 0.58rem, transparent 1rem),
+    radial-gradient(circle at 76% 28%, rgba(96, 165, 250, 0.82) 0, rgba(96, 165, 250, 0.82) 0.52rem, transparent 0.95rem),
+    radial-gradient(circle at 34% 72%, rgba(168, 85, 247, 0.74) 0, rgba(168, 85, 247, 0.74) 0.44rem, transparent 0.88rem),
+    radial-gradient(circle at 62% 68%, rgba(129, 140, 248, 0.58) 0, rgba(129, 140, 248, 0.58) 0.34rem, transparent 0.74rem),
+    linear-gradient(135deg, rgba(23, 33, 52, 0.99) 0%, rgba(49, 71, 112, 0.99) 44%, rgba(82, 74, 230, 0.99) 100%);
+  background-size: 6.2rem 6.2rem, 7rem 7rem, 6.8rem 6.8rem, 5.5rem 5.5rem, 100% 100%;
+  background-position: 0 0, 0 0, 0 0, 0 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 0.01em rgba(79, 70, 229, 0.08);
+  text-shadow:
+    0 8px 20px rgba(79, 70, 229, 0.09),
+    0 2px 6px rgba(15, 23, 42, 0.035);
+  animation: lpWordmarkDrift 14s linear infinite;
+}
+
+.lp-lead {
+  font-family: var(--shuffly-font-sans);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.8;
+}
+
+@media (max-width: 767px) {
+  .lp-wordmark {
+    letter-spacing: -0.04em;
+    line-height: 0.96;
+  }
+}
+
 .lp-background {
   z-index: 0;
 }
@@ -806,6 +857,30 @@ body.shuffly-app {
   28% { transform: translate3d(-4vw, -4vh, 0) rotate(4deg); }
   58% { transform: translate3d(-9vw, 1vh, 0) rotate(11deg); }
   82% { transform: translate3d(-2vw, 5vh, 0) rotate(6deg); }
+}
+
+@keyframes lpWordmarkDrift {
+  0% {
+    background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
+  }
+  25% {
+    background-position: 1.6rem -0.9rem, -1.8rem 1rem, 1rem 1.5rem, -0.8rem 1.2rem, 0 0;
+  }
+  50% {
+    background-position: 3rem -1.8rem, -3rem 2rem, 2rem 2.8rem, -1.5rem 2rem, 0 0;
+  }
+  75% {
+    background-position: 1.2rem -2.4rem, -1rem 3rem, 3rem 1.4rem, -2.2rem 0.6rem, 0 0;
+  }
+  100% {
+    background-position: 4.2rem -3rem, -4rem 3.2rem, 3.4rem 3.8rem, -3rem 2.4rem, 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-wordmark-accent {
+    animation: none;
+  }
 }
 
 .events-index-page .index-feature-card {
