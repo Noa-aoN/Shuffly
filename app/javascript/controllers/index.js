@@ -15,3 +15,6 @@ application.register("member-list-import", MemberListImportController)
 
 import PasswordToggleController from "./password_toggle_controller"
 application.register("password-toggle", PasswordToggleController)
+
+import LpCardsController from "./lp_cards_controller"
+application.register("lp-cards", LpCardsController)

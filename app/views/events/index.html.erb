@@ -2,74 +2,27 @@
 <!-- トップページ（ランディングページ）          -->
 <!-- サービス紹介、機能説明、使い方ガイド        -->
 <!-- ============================================ -->
-<div class="events-index-page min-h-screen pb-10">
+<div class="events-index-page min-h-screen pb-10" data-controller="lp-cards" data-action="mousemove->lp-cards#handlePointer mouseleave->lp-cards#resetPointer">
 
   <!-- ========================================== -->
   <!-- 背景アニメーションレイヤー                 -->
   <!-- ========================================== -->
-  <div class="pointer-events-none fixed inset-0 bg-icons-animation"></div>
-
-  <!-- ========================================== -->
-  <!-- アニメーションスタイル定義                 -->
-  <!-- ========================================== -->
-  <style>
-    .bg-icons-animation {
-      background-image: url("<%= asset_path 'icons/shuffle_24dp_1F1F1F.svg' %>");
-      background-size: 57px 57px;
-      background-repeat: repeat;
-      opacity: 0.06;
-      animation:
-        smoothFlow 40s linear infinite,
-        shuffleMoment 12s ease-in-out infinite;
-      will-change: background-position, transform;
-    }
-
-    /* 基本：滑らかに右方向へ流れる */
-    @keyframes smoothFlow {
-      0% {
-        background-position: 0 0;
-      }
-      100% {
-        background-position: 2000px 0;
-      }
-    }
-
-    /* たまにシャッフル効果：位置と回転が一瞬ランダムに動く */
-    @keyframes shuffleMoment {
-      0%, 85% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-      }
-      87% {
-        transform: translate(12px, -8px) rotate(2deg) scale(1.02);
-      }
-      89% {
-        transform: translate(-10px, 6px) rotate(-1.5deg) scale(0.98);
-      }
-      91% {
-        transform: translate(8px, -5px) rotate(1deg) scale(1.01);
-      }
-      93% {
-        transform: translate(-6px, 4px) rotate(-0.5deg) scale(0.99);
-      }
-      95%, 100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-      }
-    }
-
-    /* 各カードにマウスオーバーでピクッと動く動作を付与 */
-    .events-index-page .index-feature-card {
-      transition: transform 140ms cubic-bezier(.2,.8,.2,1), box-shadow 140ms;
-      will-change: transform;
-    }
-    .events-index-page .index-feature-card:hover {
-      transform: translateY(-6px) rotate(-0.6deg);
-      box-shadow: 0 12px 28px rgba(10, 25, 47, 0.08);
-    }
-    .events-index-page .index-feature-card:active {
-      transform: translateY(-2px) rotate(-0.2deg);
-      transition-duration: 80ms;
-    }
-  </style>
+  <div class="lp-background pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true" data-lp-cards-target="background">
+    <div class="lp-ambient lp-ambient--violet"></div>
+    <div class="lp-ambient lp-ambient--sky"></div>
+    <div class="lp-ambient lp-ambient--amber"></div>
+    <div class="lp-card-field">
+      <span class="lp-card-shell lp-card-shell--1" data-lp-cards-target="cardShell"><span class="lp-card lp-card--1"></span></span>
+      <span class="lp-card-shell lp-card-shell--2" data-lp-cards-target="cardShell"><span class="lp-card lp-card--2"></span></span>
+      <span class="lp-card-shell lp-card-shell--3" data-lp-cards-target="cardShell"><span class="lp-card lp-card--3 lp-card--abstract"></span></span>
+      <span class="lp-card-shell lp-card-shell--4" data-lp-cards-target="cardShell"><span class="lp-card lp-card--4"></span></span>
+      <span class="lp-card-shell lp-card-shell--5" data-lp-cards-target="cardShell"><span class="lp-card lp-card--5 lp-card--abstract"></span></span>
+      <span class="lp-card-shell lp-card-shell--6" data-lp-cards-target="cardShell"><span class="lp-card lp-card--6 lp-card--abstract"></span></span>
+      <span class="lp-card-shell lp-card-shell--7" data-lp-cards-target="cardShell"><span class="lp-card lp-card--7"></span></span>
+      <span class="lp-card-shell lp-card-shell--8" data-lp-cards-target="cardShell"><span class="lp-card lp-card--8"></span></span>
+    </div>
+    <div class="lp-glow"></div>
+  </div>
 
   <!-- ========================================== -->
   <!-- メインヒーローセクション                   -->
@@ -78,12 +31,19 @@
     <div class="hero-content text-center">
       <div class="max-w-5xl">
         <!-- サービスタイトル -->
-        <p class="mb-1 text-xl font-semibold tracking-wide text-[var(--shuffly-text-secondary)]">シャッフリー</p>
-        <h2 class="mb-4 text-5xl md:text-6xl font-bold tracking-[0.01em] text-[var(--shuffly-text)]">Shuffly</h2>
-        <p class="text-lg mb-8 text-[var(--shuffly-text-secondary)]"><span class="rounded-md bg-[rgba(254,240,138,0.82)] px-2 py-1 text-[var(--shuffly-text)] shadow-[inset_0_0_0_1px_rgba(202,138,4,0.12)] font-medium">グループ・順番・役割決め</span>が、簡単かつスピーディに。</p>
+        <p class="lp-kicker mb-2 text-[0.95rem] md:text-base text-[var(--shuffly-text-secondary)]">シャッフリー</p>
+        <h2 class="lp-wordmark mb-5 text-[clamp(3.5rem,10vw,5.75rem)] text-[var(--shuffly-text)]">
+          <span class="lp-wordmark-accent" data-lp-cards-target="wordmark" data-action="mouseenter->lp-cards#activateWordmark mouseleave->lp-cards#deactivateWordmark focus->lp-cards#activateWordmark blur->lp-cards#deactivateWordmark">Shuffly</span>
+        </h2>
+        <p class="lp-lead text-lg mb-5 text-[var(--shuffly-text-secondary)]"><span class="rounded-md bg-[rgba(254,240,138,0.82)] px-2 py-1 text-[var(--shuffly-text)] shadow-[inset_0_0_0_1px_rgba(202,138,4,0.12)] font-medium">グループ分け・順番決め・役割分担</span>を、その場で素早く。</p>
+        <div class="lp-value-strip mb-8 flex flex-wrap items-center justify-center gap-2 text-sm text-[var(--shuffly-text-secondary)]">
+          <span class="lp-value-pill">登録なしですぐ開始</span>
+          <span class="lp-value-pill">ログイン後は保存と再開に対応</span>
+          <span class="lp-value-pill">イベント準備を数分で短縮</span>
+        </div>
 
         <!-- CTAボタングループ -->
-        <div class="max-w-[650px] mx-auto">
+        <div class="lp-cta-panel max-w-[650px] mx-auto">
           <div class="grid grid-cols-1 gap-2 mb-2 w-full sm:place-items-center">
             <!-- すぐに使うボタン -->
             <%= render 'shared/button',
@@ -91,6 +51,10 @@
                   path: new_event_path,
                   variant: 'primary',
                   full_mobile: true,
+                  data: {
+                    lp_cards_hint: '登録なしでそのまま開始。メンバー入力からすぐに試せます。',
+                    action: 'mouseenter->lp-cards#previewCta mouseleave->lp-cards#resetCta focus->lp-cards#previewCta blur->lp-cards#resetCta'
+                  },
                   icon: 'icons/bolt_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                   icon_class: 'inline-block' %>
 
@@ -101,18 +65,28 @@
                     path: mypage_path,
                     variant: 'secondary',
                     full_mobile: true,
+                    data: {
+                      lp_cards_hint: '保存済みのイベントやメンバーリストをまとめて管理できます。',
+                      action: 'mouseenter->lp-cards#previewCta mouseleave->lp-cards#resetCta focus->lp-cards#previewCta blur->lp-cards#resetCta'
+                    },
                     icon: 'icons/account_circle_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                     icon_class: 'inline-block' %>
             <% else %>
               <%= render 'shared/button',
                     button_text: 'ログインして使う',
+                    button_text: '保存しながら使う',
                     path: new_user_session_path,
                     variant: 'secondary',
                     full_mobile: true,
+                    data: {
+                      lp_cards_hint: 'メンバーリスト保存、履歴確認、テーマ変更を使いたい人向けです。',
+                      action: 'mouseenter->lp-cards#previewCta mouseleave->lp-cards#resetCta focus->lp-cards#previewCta blur->lp-cards#resetCta'
+                    },
                     icon: 'icons/login_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                     icon_class: 'inline-block' %>
             <% end %>
           </div>
+          <p class="lp-cta-hint text-sm text-[var(--shuffly-text-muted)]" data-lp-cards-target="ctaHint" aria-hidden="true"></p>
         </div>
       </div>
     </div>
@@ -125,7 +99,7 @@
     <div class="max-w-6xl mx-auto px-6 py-1">
       <!-- セクションタイトル -->
       <h3 class="shuffly-section-title text-2xl md:text-3xl text-center mb-3 font-bold">できること</h3>
-      <p class="shuffly-section-copy mb-8 text-center">Shufflyで、あらゆる「分ける」「決める」を瞬時に解決。</p>
+      <p class="shuffly-section-copy mb-8 text-center">Shufflyで、分ける・決めるをその場でスムーズに。</p>
 
       <!-- 機能カード3枚 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -134,21 +108,36 @@
               icon: 'icons/diversity_3_24dp_1F1F1F.svg',
               title: 'グループ分け',
               description: 'メンバーリストから指定した数のグループを<br>複数回・被りづらく自動で作成します。',
-              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong' %>
+              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong',
+              detail_id: 'grouping',
+              detail_title: 'グループ分け',
+              detail_copy: '人数やグループ数に合わせて、偏りを抑えながら素早く組み分けできます。授業、ワークショップ、イベント準備のたびに表計算で悩む必要がありません。',
+              detail_sample_title: 'サンプル',
+              detail_sample_lines: ['A班: 佐藤 / 鈴木 / 高橋', 'B班: 田中 / 伊藤 / 渡辺', 'C班: 山本 / 中村 / 小林'] %>
 
         <!-- 順番決め -->
         <%= render 'events/feature_card',
               icon: 'icons/format_list_numbered_24dp_1F1F1F.svg',
               title: '順番決め',
               description: '発表や作業の順番を<br>ワンクリックでランダムに決定します。',
-              card_bg: 'shuffly-feature-card--info shuffly-feature-card--info-strong' %>
+              card_bg: 'shuffly-feature-card--info shuffly-feature-card--info-strong',
+              detail_id: 'ordering',
+              detail_title: '順番決め',
+              detail_copy: '発表順、作業順、担当順などをすぐに決定できます。場の空気を止めずに決めたいときに便利です。',
+              detail_sample_title: 'サンプル',
+              detail_sample_lines: ['1番: 佐々木', '2番: 吉田', '3番: 松本'] %>
 
         <!-- 役割分担 -->
         <%= render 'events/feature_card',
               icon: 'icons/badge_24dp_1F1F1F.svg',
               title: '役割分担',
               description: '司会や書記等の役割を公平に振り分けます。',
-              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong' %>
+              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong',
+              detail_id: 'roles',
+              detail_title: '役割分担',
+              detail_copy: '司会、書記、タイムキーパーなどの役割を手早く割り当てられます。準備の最初に迷いがちな役割決めを短時間で終えられます。',
+              detail_sample_title: 'サンプル',
+              detail_sample_lines: ['司会: 山田', '書記: 井上', 'タイムキーパー: 木村'] %>
       </div>
     </div>
   </section>
@@ -160,30 +149,46 @@
     <div class="max-w-6xl mx-auto px-6 py-1">
       <!-- セクションタイトル -->
       <h3 class="shuffly-section-title text-2xl md:text-3xl text-center mb-3 font-bold">ログインするとできること</h3>
-      <p class="shuffly-section-copy mb-8 text-center">アカウントを作成して、さらに便利な機能を活用しましょう。</p>
+      <p class="shuffly-section-copy mb-8 text-center">ログインすると、保存や再開がもっと便利に。</p>
 
       <!-- 機能カード3枚 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- メンバーリストの保存 -->
         <%= render 'events/feature_card',
               icon: 'icons/save_24dp_1F1F1F.svg',
-              title: 'メンバーリストの保存',
+              title: 'よく使うメンバーを保存・呼び出す',
               description: 'よく使うメンバーリストを保存して<br>いつでも呼び出せます。',
-              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong' %>
+              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong shuffly-feature-card--muted',
+              detail_id: 'member-lists',
+              detail_title: 'よく使うメンバーを保存・呼び出す',
+              detail_copy: 'クラス、チーム、運営メンバーなど、何度も使う名前一覧を保存して呼び出せます。毎回の貼り付けや入力を省けます。',
+              detail_sample_title: '保存例',
+              detail_sample_lines: ['3年A組 32名', '新歓運営チーム 14名', '研究会メンバー 11名'] %>
 
         <!-- シャッフル履歴の確認 -->
         <%= render 'events/feature_card',
               icon: 'icons/content_paste_search_24dp_1F1F1F.svg',
-              title: 'シャッフル履歴の確認',
+              title: '前回の結果を見返す・再開する',
               description: '過去のグループ分けや順番決めの結果を<br>保存・確認できます。',
-              card_bg: 'shuffly-feature-card--info shuffly-feature-card--info-strong' %>
+              card_bg: 'shuffly-feature-card--info shuffly-feature-card--info-strong shuffly-feature-card--muted',
+              detail_id: 'history',
+              detail_title: '前回の結果を見返す・再開する',
+              detail_copy: '前回どう分けたか、どの順番だったかを後から見返せます。連続イベントや定例運営で、前回との重なりを避けたいときにも便利です。',
+              detail_sample_title: '履歴例',
+              detail_sample_lines: ['4/08 勉強会班分け', '4/01 発表順決定', '3/28 司会・書記の役割分担'] %>
 
         <!-- 画面スタイルの変更 -->
         <%= render 'events/feature_card',
               icon: 'icons/palette_24dp_1F1F1F.svg',
-              title: '画面スタイルの変更',
+              title: '画面スタイルをTPOに合わせる',
               description: 'テーマや表示スタイルを切り替えられます。',
-              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong' %>
+              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong shuffly-feature-card--muted',
+              detail_id: 'themes',
+              detail_title: '画面スタイルをTPOに合わせる',
+              detail_badge: '準備中',
+              detail_copy: '見やすさや雰囲気に合わせて画面スタイルを切り替えられます。会議、イベント、個人利用など、その場に合った表示で使えます。',
+              detail_sample_title: '切り替え例',
+              detail_sample_lines: ['会議中など落ち着いた表示', 'パーティ中など楽しい表示', '自分好みに整えた表示'] %>
       </div>
     </div>
   </section>
@@ -195,32 +200,62 @@
     <div class="max-w-6xl mx-auto px-6 text-center py-1">
       <!-- セクションタイトル -->
       <h3 class="shuffly-section-title text-2xl md:text-3xl text-center mb-3 font-bold">使い方</h3>
-      <p class="shuffly-section-copy mb-8 text-center">たった3ステップで、面倒な作業はすべて完了。</p>
+      <p class="shuffly-section-copy mb-8 text-center">3ステップで、準備から決定までスムーズに。</p>
 
       <!-- ステップカード3枚 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- ステップ1: メンバーを入力 -->
         <%= render 'events/feature_card',
               number: 1,
-              title: 'メンバーを入力',
+              title: 'メンバーを入力・読み込み',
               description: '名前を一人ずつ入力するか<br>リストを貼り付けます。',
-              card_bg: 'shuffly-feature-card--accent' %>
+              card_bg: 'shuffly-feature-card--accent',
+              detail_id: 'step-members',
+              detail_title: '1. メンバーを入力',
+              detail_copy: 'その場で名前を入力するだけでなく、<strong>テキスト/CSVからの入力</strong>や、保存済みの<strong>メンバーリストからのインポート</strong>にも対応しています。毎回ゼロから打ち直さなくても、手元の名簿や過去のリストをすぐ使えます。',
+              detail_sample_title: '入力例',
+              detail_sample_lines: ['直接入力: 佐藤 / 鈴木 / 高橋', 'テキスト/CSVから入力', 'メンバーリストからインポート'] %>
 
         <!-- ステップ2: 条件を設定 -->
         <%= render 'events/feature_card',
               number: 2,
               title: '条件を設定',
               description: 'グループ数やグループ名<br>順番や役割設定を選びます。',
-              card_bg: 'shuffly-feature-card--info' %>
+              card_bg: 'shuffly-feature-card--info',
+              detail_id: 'step-settings',
+              detail_title: '2. 条件を設定',
+              detail_copy: 'やりたいことに合わせて、<strong>グループ分け</strong>・<strong>順番決め</strong>・<strong>役割分担</strong>の設定を選べます。グループ数やグループ名、役割名などを必要な分だけ決められるので、シンプルにも細かくも使えます。',
+              detail_sample_title: '設定例',
+              detail_sample_lines: ['グループ分け: 3グループ / A班 B班 C班', '順番決め: 発表順をランダム化', '役割分担: 司会 / 書記 / タイムキーパー'] %>
 
         <!-- ステップ3: シャッフル！ -->
         <%= render 'events/feature_card',
               number: 3,
               title: 'シャッフル！',
               description: 'ボタンを押すだけで結果がすぐに表示されます。',
-              card_bg: 'shuffly-feature-card--accent' %>
+              card_bg: 'shuffly-feature-card--accent',
+              detail_id: 'step-result',
+              detail_title: '3. シャッフル！',
+              detail_copy: 'ボタンを押すと、その場で結果が表示されます。必要ならそのまま保存して続きから再開できるので、単発の決定にも、イベント準備の継続利用にも向いています。',
+              detail_sample_title: '結果イメージ',
+              detail_sample_lines: ['A班 / B班 / C班 を即表示', '1番から順番を一覧表示', '役割ごとの担当者をそのまま確認・保存'] %>
       </div>
     </div>
   </section>
+
+  <div class="lp-card-modal hidden fixed inset-0 z-[70] items-center justify-center px-4" data-lp-cards-target="modal">
+    <div class="absolute inset-0 bg-black/35 backdrop-blur-sm" data-action="click->lp-cards#closeModal"></div>
+    <div class="lp-card-modal-panel relative z-10 w-full max-w-xl rounded-[28px] border border-[var(--shuffly-border)] bg-[rgba(255,255,255,0.95)] px-6 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
+      <div class="flex items-start justify-between gap-4">
+        <h3 class="lp-modal-title text-xl font-bold text-[var(--shuffly-text)]" data-lp-cards-target="modalTitle"></h3>
+        <button type="button" class="lp-modal-close" data-action="click->lp-cards#closeModal" aria-label="閉じる">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="mt-5" data-lp-cards-target="modalBody"></div>
+    </div>
+  </div>
 
 </div>

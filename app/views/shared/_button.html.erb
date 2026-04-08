@@ -118,9 +118,9 @@
     <% end %>
   <% else %>
     <% link_opts = { class: classes, role: 'button', id: id, 'aria-disabled' => disabled ? 'true' : nil } %>
-    <% if data_action.present? %>
-      <% link_opts[:data] = { action: data_action } %>
-    <% end %>
+    <% link_data = data.dup %>
+    <% link_data[:action] = data_action if data_action.present? %>
+    <% link_opts[:data] = link_data if link_data.present? %>
     <% link_opts.delete_if { |_, v| v.nil? } %>
     <%# アイコンがある場合はアイコンとテキストの間に全角スペースを1つ挿入する %>
     <% separator = icon_html.present? ? "　" : '' %>
