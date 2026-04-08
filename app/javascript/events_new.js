@@ -157,7 +157,7 @@ const ShufflyApp = (function() {
   function validateUniqueMemberNames({ withToast = false } = {}){
     const duplicateNames = getDuplicateNames(getCurrentMemberNames());
     if(duplicateNames.length > 0 && withToast){
-      showToast(`同じ名前があります: ${duplicateNames.join('、')}`);
+      showToast(`同じ名前があります。1回だけ入力してください: ${duplicateNames.join('、')}`);
     }
 
     return {
@@ -763,7 +763,7 @@ const ShufflyApp = (function() {
 
     // 追加: メンバーが空ならトースト表示のみ行い、グループ表示はクリアして処理を中断する
     if(rawList.length === 0){
-      showToast("メンバーがいません");
+      showToast("メンバーが入力されていません");
       const gOut = document.getElementById('groupOutput');
       const sOut = document.getElementById('statsOutput');
       const gr = document.getElementById('groupRoundHint');
@@ -874,7 +874,7 @@ const ShufflyApp = (function() {
     // 回次表示を更新（履歴を追加した後に確実に更新）
     updateGroupRoundDisplay();
     // 追加: 実行成功時にトースト表示
-    showToast("グループに振り分けました");
+    showToast("グループ分けを実行しました");
     switchResultTab('groups');
   }
 
@@ -893,7 +893,7 @@ const ShufflyApp = (function() {
     if(members.length === 0){
       document.getElementById('orderOutput').value = "";
       if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = "[]";
-      showToast(excludedMembers.length > 0 ? "順番を決める対象メンバーがいません" : "メンバーがいません");
+      showToast(excludedMembers.length > 0 ? "順番を決める対象メンバーがいません" : "メンバーが入力されていません");
       return;
     }
 
@@ -938,7 +938,7 @@ const ShufflyApp = (function() {
       if(invalids.length>0) msgs.push("固定指定の書式が不正な行があります");
       if(invalidNameEntries.length>0) msgs.push("メンバーに存在しない名前の固定指定があります");
       if(invalidExcludedMembers.length>0) msgs.push("メンバーに存在しない除外指定があります");
-      showToast(msgs.join('、') + "（無視されます）");
+      showToast(msgs.join('、') + "。この指定は反映されません");
     }
 
     const pool = members.filter(m=>!assignedFixedNames.has(m));
@@ -976,7 +976,7 @@ const ShufflyApp = (function() {
     // 回次表示を更新（履歴を追加した後に確実に更新）
     updateOrderRoundDisplay();
 
-    showToast("順番を割り当てました");
+    showToast("順番決めを実行しました");
     switchResultTab('order');
   }
 
@@ -992,13 +992,13 @@ const ShufflyApp = (function() {
     const excludedMembers = allMembers.filter((member)=>excludedSet.has(member));
     const invalidExcludedMembers = excludedRaw.filter((member)=>!allMembers.includes(member));
     let members = allMembers.filter((member)=>!excludedSet.has(member));
-    if(members.length===0){ showToast(excludedMembers.length > 0 ? "役割を決める対象メンバーがいません" : "メンバーがいません"); return; }
+    if(members.length===0){ showToast(excludedMembers.length > 0 ? "役割を決める対象メンバーがいません" : "メンバーが入力されていません"); return; }
 
     const roleDefinitions = getRoleDefinitions();
-    if(roleDefinitions.length===0){ showToast("役割が未入力です"); return; }
+    if(roleDefinitions.length===0){ showToast("役割が入力されていません"); return; }
     const totalRoleCount = roleDefinitions.reduce((sum, definition)=>sum + definition.count, 0);
-    if(totalRoleCount > members.length){ showToast("役割の合計人数がメンバー数を超えています"); return; }
-    if(invalidExcludedMembers.length > 0){ showToast("メンバーに存在しない除外指定があります（無視されます）"); }
+    if(totalRoleCount > members.length){ showToast("役割の合計人数が対象メンバー数を超えています"); return; }
+    if(invalidExcludedMembers.length > 0){ showToast("メンバーにいない除外指定があります。この指定は反映されません"); }
 
     function shuffleArray(arr){
       for(let i=arr.length-1;i>0;i--){
@@ -1039,7 +1039,7 @@ const ShufflyApp = (function() {
     // 回次表示を更新（履歴を追加した後に確実に更新）
     updateRolesRoundDisplay();
 
-    showToast("役割を割り当てました");
+    showToast("役割決めを実行しました");
     switchResultTab('roles');
   }
 
@@ -1461,9 +1461,9 @@ const ShufflyApp = (function() {
     updateGroupRoundDisplay();
   }
 
-  function copyGroupOutput(){ navigator.clipboard.writeText(document.getElementById('groupOutput').value).then(()=>showToast("コピーしました！")).catch(()=>showToast("コピーに失敗しました")); }
-  function copyOrderOutput(){ navigator.clipboard.writeText(document.getElementById('orderOutput').value).then(()=>showToast("コピーしました！")).catch(()=>showToast("コピーに失敗しました")); }
-  function copyRolesOutput(){ navigator.clipboard.writeText(document.getElementById('rolesOutput').value).then(()=>showToast("コピーしました！")).catch(()=>showToast("コピーに失敗しました")); }
+  function copyGroupOutput(){ navigator.clipboard.writeText(document.getElementById('groupOutput').value).then(()=>showToast("グループ結果をコピーしました")).catch(()=>showToast("コピーできませんでした")); }
+  function copyOrderOutput(){ navigator.clipboard.writeText(document.getElementById('orderOutput').value).then(()=>showToast("順番結果をコピーしました")).catch(()=>showToast("コピーできませんでした")); }
+  function copyRolesOutput(){ navigator.clipboard.writeText(document.getElementById('rolesOutput').value).then(()=>showToast("役割結果をコピーしました")).catch(()=>showToast("コピーできませんでした")); }
 
   // showToast の位置を常に上から100pxの位置に表示するよう変更
   function showToast(msg){
@@ -1724,7 +1724,7 @@ const ShufflyApp = (function() {
       const merged = (cur?cur + "\n":"") + text.replace(/\r/g,'').trim();
       setRawAndRefreshDisplay(merged);
       updateParticipantCount(); pushToHistory();
-      showToast("ファイルをインポートしました");
+      showToast("ファイルから読み込みました");
     };
     reader.readAsText(file, 'utf-8');
   }
@@ -1736,7 +1736,7 @@ const ShufflyApp = (function() {
       setRawAndRefreshDisplay(merged);
       updateParticipantCount(); pushToHistory();
       showToast("クリップボードから貼り付けました");
-    }).catch(()=>showToast("クリップボードにアクセスできません"));
+    }).catch(()=>showToast("クリップボードを読み取れませんでした"));
   }
 
   /* --- 追加: サンプルデータ挿入機能（15人プール、ランダムで10人選択） --- */
@@ -1846,7 +1846,7 @@ const ShufflyApp = (function() {
     historyData.roles = [];
 
     updateParticipantCount();
-    showToast("全ての履歴をクリアしました");
+    showToast("履歴をすべてクリアしました");
   }
 
   function clearMembers(){
@@ -1896,7 +1896,7 @@ const ShufflyApp = (function() {
     // メンバー数表示を更新
     updateParticipantCount();
 
-    showToast("メンバーリストをクリアしました");
+    showToast("メンバーをクリアしました");
   }
 
   function togglePresentationMode(){
@@ -1914,7 +1914,7 @@ const ShufflyApp = (function() {
       } catch(storageError) {
         if (storageError.name === 'QuotaExceededError') {
           console.warn('localStorage quota exceeded', storageError);
-          showToast('ストレージ容量が不足しています');
+          showToast('保存容量が不足しています');
         } else {
           throw storageError;
         }
@@ -1925,7 +1925,7 @@ const ShufflyApp = (function() {
 
     const presentationPath = '/events/show';
     const w = window.open(presentationPath, '_blank', 'noopener');
-    if(!w) showToast("ポップアップがブロックされました。ポップアップを許可してください");
+    if(!w) showToast("ポップアップがブロックされています。許可してください");
 
     try {
       if (typeof BroadcastChannel !== 'undefined') {
@@ -1960,7 +1960,7 @@ const ShufflyApp = (function() {
     a.href = url; a.download = (document.getElementById('shareEventTitle').value || 'shuffly_result') + '.txt';
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
-    showToast("結果を出力しました");
+    showToast("結果ファイルを出力しました");
   }
 
   function saveResults(){
@@ -1993,7 +1993,7 @@ const ShufflyApp = (function() {
       if(form) {
         form.submit();
       } else {
-        showToast("フォームが見つかりません");
+        showToast("保存フォームが見つかりません");
       }
     } else {
       try {
@@ -2018,7 +2018,7 @@ const ShufflyApp = (function() {
         } catch(storageError) {
           if (storageError.name === 'QuotaExceededError') {
             console.warn('localStorage quota exceeded', storageError);
-            showToast('ストレージ容量が不足しています');
+            showToast('保存容量が不足しています');
             return;
           } else {
             throw storageError;
@@ -2029,7 +2029,7 @@ const ShufflyApp = (function() {
         const loginUrl = new_user_session_path + "?redirect_to=" + encodeURIComponent(window.location.href) + "&pending_event_token=" + encodeURIComponent(token);
         window.location.href = loginUrl;
       } catch(e){
-        showToast("保存処理に失敗しました");
+        showToast("保存できませんでした");
       }
     }
   }
