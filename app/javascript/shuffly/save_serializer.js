@@ -40,6 +40,7 @@ export function serializeEventPayload(historyData, members) {
   const roleRounds = historyData.roles.map((entry, idx) => ({
     round: entry.round || (idx + 1),
     timestamp: entry.timestamp,
+    definitions: entry.data?.definitions || [],
     assignments: (entry.data?.assignments || []).map((assignment) => {
       const member = membersByName.get(assignment.name)
       return member ? {

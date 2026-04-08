@@ -56,6 +56,14 @@ const ShufflyApp = (function() {
   const SAMPLE_SELECT_SIZE = 10;
   const TOAST_DURATION = 1200;
   const TOAST_TOP_POSITION = '35px';
+  const ROLE_PRESET_CATEGORIES = [
+    { id: 'meeting', roles: ['司会', '進行', '書記', 'タイムキーパー'] },
+    { id: 'team', roles: ['リーダー', 'サブリーダー', '連絡係', 'まとめ役'] },
+    { id: 'event', roles: ['受付', '会場案内', '撮影', '誘導'] }
+  ];
+  const ROLE_CATEGORY_BY_NAME = new Map(
+    ROLE_PRESET_CATEGORIES.flatMap((category)=>category.roles.map((role)=>[role, category.id]))
+  );
 
   // --- ユーティリティ ---
   function clampGroupCount(v){
@@ -70,6 +78,197 @@ const ShufflyApp = (function() {
       button.classList.toggle('is-active', isActive);
       button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     });
+  }
+
+  function normalizeRoleDefinitions(definitions){
+    const ordered = [];
+    const byName = new Map();
+
+    (definitions || []).forEach((definition)=>{
+      const name = (definition?.name || '').trim();
+      if(!name) return;
+      const count = Math.max(parseInt(definition.count, 10) || 1, 1);
+      const category = definition.category || ROLE_CATEGORY_BY_NAME.get(name) || null;
+
+      if(byName.has(name)){
+        byName.get(name).count += count;
+        return;
+      }
+
+      const normalized = { name, count, category };
+      byName.set(name, normalized);
+      ordered.push(normalized);
+    });
+
+    return ordered;
+  }
+
+  function parseRoleDefinitions(text){
+    const tokens = (text || '').split(/[\r\n,]+/).map((token)=>token.trim()).filter(Boolean);
+    const parsed = tokens.map((token)=>{
+      const match = token.match(/^(.+?)(?:[:：]\s*(\d+))?$/);
+      if(!match) return null;
+      const name = (match[1] || '').trim();
+      if(!name) return null;
+      const count = Math.max(parseInt(match[2], 10) || 1, 1);
+      return {
+        name,
+        count,
+        category: ROLE_CATEGORY_BY_NAME.get(name) || null
+      };
+    }).filter(Boolean);
+
+    return normalizeRoleDefinitions(parsed);
+  }
+
+  function serializeRoleDefinitions(definitions){
+    return normalizeRoleDefinitions(definitions).map((definition)=>(
+      definition.count > 1 ? `${definition.name}:${definition.count}` : definition.name
+    )).join('\n');
+  }
+
+  function getRoleDefinitions(){
+    const rolesEl = document.getElementById('rolesInput');
+    return parseRoleDefinitions(rolesEl ? rolesEl.value : '');
+  }
+
+  function getRoleNames(){
+    return getRoleDefinitions().map((definition)=>definition.name);
+  }
+
+  function buildRoleOutputLines(assignments){
+    return (assignments || []).map((assignment)=>(
+      assignment.role ? `${assignment.name}: ${assignment.role}` : `${assignment.name}: `
+    ));
+  }
+
+  function escapeHtml(value){
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function readSettingsJson(){
+    const settingsField = document.getElementById('settingsJsonInput');
+    if(!settingsField || !settingsField.value) return {};
+
+    try {
+      const parsed = JSON.parse(settingsField.value);
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch(_e) {
+      return {};
+    }
+  }
+
+  function writeSettingsJson(settings){
+    const settingsField = document.getElementById('settingsJsonInput');
+    if(!settingsField) return;
+
+    const compact = Object.fromEntries(Object.entries(settings || {}).filter(([, value])=>{
+      if(value === null || value === undefined) return false;
+      if(Array.isArray(value)) return value.length > 0;
+      if(typeof value === 'string') return value.trim() !== '';
+      if(typeof value === 'object') return Object.keys(value).length > 0;
+      return true;
+    }));
+
+    settingsField.value = Object.keys(compact).length > 0 ? JSON.stringify(compact) : '';
+  }
+
+  function updateRoleSettings(definitions = getRoleDefinitions()){
+    const settings = readSettingsJson();
+    const normalized = normalizeRoleDefinitions(definitions);
+
+    if(normalized.length > 0){
+      settings.role_definitions = normalized;
+      settings.roles = serializeRoleDefinitions(normalized);
+    } else {
+      delete settings.role_definitions;
+      delete settings.roles;
+    }
+
+    writeSettingsJson(settings);
+  }
+
+  function syncRolePresetButtons(definitions = getRoleDefinitions()){
+    const activeRoles = new Set(normalizeRoleDefinitions(definitions).map((definition)=>definition.name));
+    document.querySelectorAll('[data-role-preset]').forEach((button)=>{
+      const isActive = activeRoles.has(button.dataset.rolePreset);
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+  }
+
+  function renderRoleDefinitions(definitions = getRoleDefinitions()){
+    const normalized = normalizeRoleDefinitions(definitions);
+    const definitionsByName = new Map(normalized.map((definition)=>[definition.name, definition]));
+
+    document.querySelectorAll('[data-role-preset-control]').forEach((control)=>{
+      const roleName = control.dataset.rolePresetControl;
+      const definition = definitionsByName.get(roleName);
+      const stepper = control.querySelector('[data-role-stepper]');
+      const countEl = control.querySelector('[data-role-count]');
+      if(!stepper || !countEl) return;
+
+      if(definition){
+        stepper.classList.remove('is-inactive');
+        countEl.textContent = definition.count;
+      } else {
+        stepper.classList.add('is-inactive');
+        countEl.textContent = '1';
+      }
+    });
+
+    const customContainer = document.getElementById('customRoleDefinitionsList');
+    if(!customContainer) return;
+
+    const customDefinitions = normalized.filter((definition)=>!ROLE_CATEGORY_BY_NAME.has(definition.name));
+    customContainer.innerHTML = customDefinitions.map((definition)=>`
+      <div class="role-custom-item">
+        <span class="text-sm font-medium text-[var(--shuffly-text)]">${escapeHtml(definition.name)}</span>
+        <div class="role-inline-stepper">
+          <button type="button" data-role-adjust="${escapeHtml(definition.name)}" data-role-delta="-1" aria-label="${escapeHtml(definition.name)}の人数を減らす">-</button>
+          <span class="min-w-[2rem] text-center text-xs font-semibold text-[var(--shuffly-text)]">${definition.count}</span>
+          <button type="button" data-role-adjust="${escapeHtml(definition.name)}" data-role-delta="1" aria-label="${escapeHtml(definition.name)}の人数を増やす">+</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function setRoleDefinitions(definitions){
+    const normalized = normalizeRoleDefinitions(definitions);
+    const rolesEl = document.getElementById('rolesInput');
+    if(rolesEl){
+      rolesEl.value = serializeRoleDefinitions(normalized);
+    }
+    syncRolePresetButtons(normalized);
+    renderRoleDefinitions(normalized);
+    updateRoleSettings(normalized);
+  }
+
+  function toggleRolePreset(name, category = null){
+    const definitions = getRoleDefinitions();
+    const index = definitions.findIndex((definition)=>definition.name === name);
+
+    if(index >= 0){
+      definitions.splice(index, 1);
+    } else {
+      definitions.push({ name, count: 1, category: category || ROLE_CATEGORY_BY_NAME.get(name) || null });
+    }
+
+    setRoleDefinitions(definitions);
+  }
+
+  function adjustRoleDefinition(name, delta){
+    const definitions = getRoleDefinitions();
+    const target = definitions.find((definition)=>definition.name === name);
+    if(!target) return;
+
+    target.count = Math.max((target.count || 1) + delta, 0);
+    setRoleDefinitions(definitions.filter((definition)=>definition.count > 0));
   }
 
   function parseEntry(entry){
@@ -325,7 +524,7 @@ const ShufflyApp = (function() {
     }
 
     // 役割がある場合は順番に割当
-    const rolesForGroups = document.getElementById('rolesInput').value.split(/[\r\n,]+/).map(r=>r.trim()).filter(Boolean);
+    const rolesForGroups = getRoleNames();
     if(rolesForGroups.length>0){
       for(const g of groupIds){
         const members=groups[g];
@@ -463,8 +662,10 @@ const ShufflyApp = (function() {
     let members = rawList.map(s=>s.split('#')[0].trim());
     if(members.length===0){ showToast("メンバーがいません"); return; }
 
-    const roles = document.getElementById('rolesInput').value.split(/[\r\n,]+/).map(r=>r.trim()).filter(Boolean);
-    if(roles.length===0){ showToast("役割が未入力です"); return; }
+    const roleDefinitions = getRoleDefinitions();
+    if(roleDefinitions.length===0){ showToast("役割が未入力です"); return; }
+    const totalRoleCount = roleDefinitions.reduce((sum, definition)=>sum + definition.count, 0);
+    if(totalRoleCount > members.length){ showToast("役割の合計人数がメンバー数を超えています"); return; }
 
     function shuffleArray(arr){
       for(let i=arr.length-1;i>0;i--){
@@ -475,39 +676,28 @@ const ShufflyApp = (function() {
 
     const pool = members.slice();
     shuffleArray(pool);
+    const roleSlots = roleDefinitions.flatMap((definition)=>Array.from({length: definition.count}, ()=>definition.name));
 
     const assignments = [];
-    for(let i=0;i<roles.length && i<pool.length;i++){
-      assignments.push({ name: pool[i], role: roles[i] });
+    for(let i=0;i<roleSlots.length && i<pool.length;i++){
+      assignments.push({ name: pool[i], role: roleSlots[i] });
     }
     const assignedNames = new Set(assignments.map(a=>a.name));
     for(const m of members){
       if(!assignedNames.has(m)) assignments.push({ name: m, role: null });
     }
 
-    const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+    const displayLines = buildRoleOutputLines(assignments);
     document.getElementById('rolesOutput').value = displayLines.join("\n");
 
-    try {
-      const settingsField = document.getElementById('settingsJsonInput');
-      let settings = {};
-      if(settingsField && settingsField.value) {
-        try { settings = JSON.parse(settingsField.value); } catch(e){ settings = {}; }
-      }
-      settings.role_assignments = assignments.map(a => ({ name: a.name, role: a.role }));
-      // 役割名も保存（復元用）
-      settings.roles = roles.join('\n');
-      if(settingsField) settingsField.value = JSON.stringify(settings);
-    } catch(e){
-      const settingsField = document.getElementById('settingsJsonInput');
-      if(settingsField) settingsField.value = JSON.stringify({
-        role_assignments: assignments.map(a=>({ name:a.name, role: a.role })),
-        roles: roles.join('\n')
-      });
-    }
+    const settings = readSettingsJson();
+    settings.role_assignments = assignments.map((assignment)=>({ name: assignment.name, role: assignment.role }));
+    settings.role_definitions = roleDefinitions;
+    settings.roles = serializeRoleDefinitions(roleDefinitions);
+    writeSettingsJson(settings);
 
     // 履歴に保存
-    pushToHistory('roles', { assignments: assignments });
+    pushToHistory('roles', { assignments: assignments, definitions: roleDefinitions });
     // 回次表示を更新（履歴を追加した後に確実に更新）
     updateRolesRoundDisplay();
 
@@ -1031,8 +1221,9 @@ const ShufflyApp = (function() {
       switchResultTab('order');
     } else if(activeTab === 'roles') {
       const assignments = entry.data.assignments || [];
-      const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+      const displayLines = buildRoleOutputLines(assignments);
       document.getElementById('rolesOutput').value = displayLines.join("\n");
+      if(entry.data.definitions) setRoleDefinitions(entry.data.definitions);
       updateRolesRoundDisplay();
       switchResultTab('roles');
     }
@@ -1079,8 +1270,9 @@ const ShufflyApp = (function() {
       switchResultTab('order');
     } else if(activeTab === 'roles') {
       const assignments = entry.data.assignments || [];
-      const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+      const displayLines = buildRoleOutputLines(assignments);
       document.getElementById('rolesOutput').value = displayLines.join("\n");
+      if(entry.data.definitions) setRoleDefinitions(entry.data.definitions);
       updateRolesRoundDisplay();
       switchResultTab('roles');
     }
@@ -1535,6 +1727,7 @@ const ShufflyApp = (function() {
     }
     updateParticipantCount();
     syncGroupCountPresetButtons();
+    setRoleDefinitions(getRoleDefinitions());
     // 初期化時には履歴を作成しない（グループ分け実行時のみ履歴を保存）
     // これにより「0回目（未実施）」が履歴として保存される問題を回避
     // if(shufflyHistory.length === 0 && getRawValue().trim() !== "") pushToHistory('groups');
@@ -1637,13 +1830,7 @@ const ShufflyApp = (function() {
     // 入力関連のイベント
     bindIf('groupCount', 'input', ()=>{ updateParticipantCount(); syncGroupCountPresetButtons(); });
     bindIf('customGroupNames', 'input', ()=>{ updateParticipantCount(); });
-    bindIf('rolesInput', 'input', ()=>{
-      const settingsField = document.getElementById('settingsJsonInput');
-      if(settingsField) settingsField.value=JSON.stringify({
-        roles:document.getElementById('rolesInput').value,
-        group_count: buildGroupIdsAndNames().groupCount
-      });
-    });
+    bindIf('rolesInput', 'input', ()=>{ setRoleDefinitions(getRoleDefinitions()); });
 
     // インポート / サンプルデータ / クリア
     bindIf('btn-trigger-import', 'click', (e)=>{ e.preventDefault(); triggerImport(); });
@@ -1666,6 +1853,21 @@ const ShufflyApp = (function() {
         syncGroupCountPresetButtons();
       });
     });
+
+    document.querySelectorAll('[data-role-preset]').forEach((button)=>{
+      button.addEventListener('click', ()=>{
+        toggleRolePreset(button.dataset.rolePreset, button.dataset.roleCategory || null);
+      });
+    });
+
+    const roleSettingsPanel = document.getElementById('panel-settings-roles');
+    if(roleSettingsPanel){
+      roleSettingsPanel.addEventListener('click', (event)=>{
+        const button = event.target.closest('[data-role-adjust]');
+        if(!button) return;
+        adjustRoleDefinition(button.dataset.roleAdjust, parseInt(button.dataset.roleDelta, 10) || 0);
+      });
+    }
 
     // タブ操作
     bindIf('tab-settings-groups', 'click', ()=>switchSettingsTab('groups'));
@@ -1877,11 +2079,12 @@ const ShufflyApp = (function() {
           } else if (latestEntry.type === 'roles' && latestEntry.data && latestEntry.data.assignments) {
             // 役割分担が最新の場合
             const assignments = latestEntry.data.assignments;
-            const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+            const displayLines = buildRoleOutputLines(assignments);
             const outputEl = document.getElementById('rolesOutput');
             if (outputEl) {
               outputEl.value = displayLines.join("\n");
             }
+            if(latestEntry.data.definitions) setRoleDefinitions(latestEntry.data.definitions);
             switchResultTab('roles');
           }
         }
@@ -1941,11 +2144,12 @@ const ShufflyApp = (function() {
             } else if (latestEntry.type === 'roles' && latestEntry.data && latestEntry.data.assignments) {
               // 役割分担が最新の場合
               const assignments = latestEntry.data.assignments;
-              const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+              const displayLines = buildRoleOutputLines(assignments);
               const outputEl = document.getElementById('rolesOutput');
               if (outputEl) {
                 outputEl.value = displayLines.join("\n");
               }
+              if(latestEntry.data.definitions) setRoleDefinitions(latestEntry.data.definitions);
               switchResultTab('roles');
             }
           }
@@ -2009,7 +2213,17 @@ const ShufflyApp = (function() {
   // 設定データをUIに復元する関数
   function restoreSettingsUI() {
     const settingsField = document.getElementById('settingsJsonInput');
-    if (!settingsField || !settingsField.value) return;
+    if (!settingsField || !settingsField.value) {
+      if(historyData.roles.length > 0){
+        const latestRoleEntry = historyData.roles[historyData.roles.length - 1];
+        if(latestRoleEntry?.data?.definitions){
+          setRoleDefinitions(latestRoleEntry.data.definitions);
+          return;
+        }
+      }
+      setRoleDefinitions(getRoleDefinitions());
+      return;
+    }
 
     try {
       const settings = JSON.parse(settingsField.value);
@@ -2031,21 +2245,23 @@ const ShufflyApp = (function() {
         }
       }
 
-      // 役割名を復元（settings.rolesがある場合のみ）
-      if (settings.roles && typeof settings.roles === 'string' && settings.roles.trim()) {
-        const rolesEl = document.getElementById('rolesInput');
-        if (rolesEl && !rolesEl.value) {
-          // 既に値がない場合のみ設定（既存の設定を上書きしない）
-          rolesEl.value = settings.roles;
-        }
+      if (Array.isArray(settings.role_definitions) && settings.role_definitions.length > 0) {
+        setRoleDefinitions(settings.role_definitions);
+      } else if (settings.roles && typeof settings.roles === 'string' && settings.roles.trim()) {
+        setRoleDefinitions(parseRoleDefinitions(settings.roles));
+      } else {
+        setRoleDefinitions(getRoleDefinitions());
       }
 
-      // settingsJsonInputを整理（role_assignmentsとrolesを保持）
+      // settingsJsonInputを整理
       const cleanedSettings = {};
       if (settings.role_assignments) {
         cleanedSettings.role_assignments = settings.role_assignments;
       }
-      if (settings.roles && typeof settings.roles === 'string' && settings.roles.trim()) {
+      if (settings.role_definitions && Array.isArray(settings.role_definitions) && settings.role_definitions.length > 0) {
+        cleanedSettings.role_definitions = normalizeRoleDefinitions(settings.role_definitions);
+        cleanedSettings.roles = serializeRoleDefinitions(cleanedSettings.role_definitions);
+      } else if (settings.roles && typeof settings.roles === 'string' && settings.roles.trim()) {
         cleanedSettings.roles = settings.roles.trim();
       }
       if (settings.group_count) {
@@ -2063,6 +2279,7 @@ const ShufflyApp = (function() {
       }
     } catch(e) {
       console.error('Failed to restore settings UI:', e);
+      setRoleDefinitions(getRoleDefinitions());
     }
   }
 
@@ -2266,13 +2483,21 @@ document.addEventListener('DOMContentLoaded', () => {
                       name: a.name || `メンバー${a.member_id}`,
                       role: a.role || ''
                     }));
+                    const groupedDefinitions = Array.isArray(round.definitions) && round.definitions.length > 0
+                      ? normalizeRoleDefinitions(round.definitions)
+                      : normalizeRoleDefinitions(
+                          roleAssignments
+                            .filter((assignment)=>assignment.role)
+                            .map((assignment)=>({ name: assignment.role, count: 1, category: ROLE_CATEGORY_BY_NAME.get(assignment.role) || null }))
+                        );
 
                     reconstructedHistory.push({
                       type: 'roles',
                       round: round.round,
                       timestamp: round.timestamp || Date.now(),
                       data: {
-                        assignments: roleAssignments
+                        assignments: roleAssignments,
+                        definitions: groupedDefinitions
                       }
                     });
                   }
@@ -2327,9 +2552,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (settings && settings.role_assignments && Array.isArray(settings.role_assignments)) {
                   const rolesOutputEl = document.getElementById('rolesOutput');
                   if (rolesOutputEl) {
-                    const displayLines = settings.role_assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+                    const displayLines = buildRoleOutputLines(settings.role_assignments);
                     rolesOutputEl.value = displayLines.join('\n');
                   }
+                }
+                if (settings && Array.isArray(settings.role_definitions)) {
+                  setRoleDefinitions(settings.role_definitions);
+                } else if (settings && typeof settings.roles === 'string') {
+                  setRoleDefinitions(parseRoleDefinitions(settings.roles));
                 }
               }
             }

@@ -1,5 +1,5 @@
 <!-- ============================================ -->
-<!-- 新規シャッフルイベントページ                -->
+<!-- シャッフル作成ページ                        -->
 <!-- メンバー入力、設定、結果表示、保存機能      -->
 <!-- ============================================ -->
 
@@ -43,7 +43,7 @@
           class: "block",
           alt: "シャッフルアイコン" %>
     <span class="leading-none relative bottom-0.5">
-      <%= @event.title.presence || (@update_mode ? @event.title : "新規シャッフルイベント") %>
+      <%= @event.title.presence || (@update_mode ? @event.title : "シャッフルを作成") %>
     </span>
     <% if @update_mode && @load_event_data && @load_event_data[:created_at] %>
       <span class="ml-0 mt-1 text-sm font-normal text-[var(--shuffly-text-muted)] sm:ml-2 sm:mt-0">

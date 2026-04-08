@@ -259,6 +259,28 @@ body.shuffly-app {
   color: #166534;
 }
 
+.shuffly-setting-card {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.shuffly-setting-card-primary {
+  background: linear-gradient(180deg, rgba(124, 92, 255, 0.08), rgba(255, 255, 255, 0.88));
+}
+
+.shuffly-setting-card-optional {
+  border-color: rgba(226, 232, 240, 0.92);
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.04), rgba(255, 255, 255, 0.74));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62);
+}
+
+.shuffly-setting-card .shuffly-input,
+.shuffly-setting-card .shuffly-textarea,
+.shuffly-setting-card .shuffly-select {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(203, 213, 225, 0.9);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
 .shuffly-indicator--warning {
   border-color: rgba(22, 163, 74, 0.24);
   background: rgba(236, 253, 245, 0.84);
@@ -322,6 +344,84 @@ body.shuffly-app {
   border-color: var(--shuffly-accent);
   background: var(--shuffly-accent);
   box-shadow: 0 6px 14px rgba(124, 92, 255, 0.18);
+}
+
+.role-preset-button.is-active {
+  color: #ffffff;
+  border-color: var(--shuffly-accent);
+  background: var(--shuffly-accent);
+  box-shadow: 0 6px 14px rgba(124, 92, 255, 0.16);
+}
+
+.role-preset-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.role-definition-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 999px;
+  padding: 0.25rem 0.35rem;
+  background: #ffffff;
+}
+
+.role-inline-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 5.6rem;
+  border: 1px solid rgba(203, 213, 225, 0.88);
+  border-radius: 999px;
+  padding: 0.18rem 0.3rem;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.role-inline-stepper.is-inactive {
+  opacity: 0.38;
+}
+
+.role-inline-stepper.is-inactive button {
+  pointer-events: none;
+}
+
+.role-definition-stepper button {
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
+  color: var(--shuffly-text-secondary);
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.role-inline-stepper button {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  color: var(--shuffly-text-secondary);
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.role-definition-stepper button:hover {
+  background: rgba(241, 245, 249, 0.95);
+  color: var(--shuffly-text);
+}
+
+.role-inline-stepper button:hover {
+  background: rgba(241, 245, 249, 0.95);
+  color: var(--shuffly-text);
+}
+
+.role-custom-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.4rem 0.35rem 0.75rem;
+  border: 1px solid rgba(226, 232, 240, 0.92);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .shuffly-section-surface {

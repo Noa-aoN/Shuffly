@@ -72,6 +72,8 @@
   <!-- ========================================== -->
   <!-- イベント保存フォーム（非表示）             -->
   <!-- ========================================== -->
+  <input id="settingsJsonInput" type="hidden" value="">
+
   <!-- JavaScriptから送信されるhiddenフォーム -->
   <%= form_with(model: event, local: true, html: { id: 'saveForm', style: 'display:none' }) do |f| %>
     <%= hidden_field_tag :original_id, event.id, id: 'originalEventIdInput' %>
