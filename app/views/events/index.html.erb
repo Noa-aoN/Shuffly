@@ -14,10 +14,10 @@
     <div class="lp-card-field">
       <span class="lp-card lp-card--1"></span>
       <span class="lp-card lp-card--2"></span>
-      <span class="lp-card lp-card--3"></span>
+      <span class="lp-card lp-card--3 lp-card--abstract"></span>
       <span class="lp-card lp-card--4"></span>
       <span class="lp-card lp-card--5"></span>
-      <span class="lp-card lp-card--6"></span>
+      <span class="lp-card lp-card--6 lp-card--abstract"></span>
       <span class="lp-card lp-card--7"></span>
       <span class="lp-card lp-card--8"></span>
     </div>
@@ -122,21 +122,21 @@
               icon: 'icons/save_24dp_1F1F1F.svg',
               title: 'メンバーリストの保存',
               description: 'よく使うメンバーリストを保存して<br>いつでも呼び出せます。',
-              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong' %>
+              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong shuffly-feature-card--muted' %>
 
         <!-- シャッフル履歴の確認 -->
         <%= render 'events/feature_card',
               icon: 'icons/content_paste_search_24dp_1F1F1F.svg',
               title: 'シャッフル履歴の確認',
               description: '過去のグループ分けや順番決めの結果を<br>保存・確認できます。',
-              card_bg: 'shuffly-feature-card--info shuffly-feature-card--info-strong' %>
+              card_bg: 'shuffly-feature-card--info shuffly-feature-card--info-strong shuffly-feature-card--muted' %>
 
         <!-- 画面スタイルの変更 -->
         <%= render 'events/feature_card',
               icon: 'icons/palette_24dp_1F1F1F.svg',
               title: '画面スタイルの変更',
               description: 'テーマや表示スタイルを切り替えられます。',
-              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong' %>
+              card_bg: 'shuffly-feature-card--accent shuffly-feature-card--accent-strong shuffly-feature-card--muted' %>
       </div>
     </div>
   </section>

@@ -344,6 +344,10 @@ body.shuffly-app {
   background: linear-gradient(180deg, rgba(59, 130, 246, 0.09), rgba(255, 255, 255, 0.93));
 }
 
+.shuffly-feature-card--muted {
+  opacity: 0.96;
+}
+
 .shuffly-event-detail-page {
   container-type: inline-size;
 }
@@ -599,37 +603,86 @@ body.shuffly-app {
 .lp-card {
   position: absolute;
   display: block;
-  width: 11rem;
-  height: 7rem;
-  border-radius: 1.8rem;
+  width: 8.8rem;
+  height: 12.4rem;
+  border-radius: 1.2rem;
   border: 1px solid rgba(255, 255, 255, 0.78);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.24));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), 0 18px 32px rgba(148, 163, 184, 0.11);
-  opacity: 0.72;
+  opacity: 0.76;
   will-change: transform;
+}
+
+.lp-card--abstract {
+  width: 11rem;
+  height: 7.2rem;
+  border-radius: 1.7rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.2));
+  opacity: 0.68;
+}
+
+.lp-card::selection {
+  background: transparent;
 }
 
 .lp-card::before,
 .lp-card::after {
   content: "";
   position: absolute;
-  left: 1.1rem;
-  right: 1.1rem;
+}
+
+.lp-card::before,
+.lp-card::after {
+  width: 0.72rem;
+  height: 0.72rem;
   border-radius: 9999px;
+  background: rgba(124, 92, 255, 0.32);
+  box-shadow: 0 1.5rem 0 rgba(56, 189, 248, 0.28);
 }
 
 .lp-card::before {
-  top: 1.2rem;
-  height: 0.72rem;
-  width: 42%;
-  background: rgba(124, 92, 255, 0.2);
+  top: 0.95rem;
+  left: 0.95rem;
 }
 
 .lp-card::after {
-  top: 2.55rem;
-  height: 0.5rem;
-  right: 2.4rem;
-  background: rgba(56, 189, 248, 0.2);
+  right: 1.15rem;
+  bottom: 2.3rem;
+}
+
+.lp-card-field .lp-card:nth-child(odd) {
+  transform-origin: 30% 50%;
+}
+
+.lp-card-field .lp-card:nth-child(even) {
+  transform-origin: 70% 50%;
+}
+
+.lp-card--abstract::before,
+.lp-card--abstract::after {
+  width: auto;
+  height: auto;
+  border-radius: 9999px;
+}
+
+.lp-card--abstract::before {
+  top: 1.15rem;
+  left: 1.1rem;
+  width: 44%;
+  height: 0.82rem;
+  background: rgba(124, 92, 255, 0.18);
+  box-shadow: none;
+}
+
+.lp-card--abstract::after {
+  top: 2.65rem;
+  left: 1.1rem;
+  right: 2.2rem;
+  bottom: auto;
+  width: auto;
+  height: 0.56rem;
+  background: rgba(56, 189, 248, 0.16);
+  box-shadow: none;
 }
 
 .lp-card--1 {
@@ -772,21 +825,41 @@ body.shuffly-app {
 
 @media (max-width: 767px) {
   .lp-card {
-    width: 8rem;
-    height: 5.2rem;
-    border-radius: 1.3rem;
+    width: 6.7rem;
+    height: 9.4rem;
+    border-radius: 1rem;
+    opacity: 0.64;
+  }
+
+  .lp-card--abstract {
+    width: 8.2rem;
+    height: 5.4rem;
+    border-radius: 1.2rem;
     opacity: 0.58;
   }
 
   .lp-card::before {
-    top: 0.9rem;
-    left: 0.8rem;
+    top: 0.72rem;
+    left: 0.72rem;
   }
 
   .lp-card::after {
-    top: 2rem;
-    left: 0.8rem;
-    right: 1.5rem;
+    right: 0.88rem;
+    bottom: 1.95rem;
+  }
+
+  .lp-card--abstract::before {
+    top: 0.85rem;
+    left: 0.85rem;
+    height: 0.68rem;
+  }
+
+  .lp-card--abstract::after {
+    top: 1.95rem;
+    left: 0.85rem;
+    right: 1.6rem;
+    height: 0.46rem;
+    bottom: auto;
   }
 
   .lp-ambient--violet,
