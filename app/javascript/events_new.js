@@ -1954,12 +1954,12 @@ const ShufflyApp = (function() {
     if(sc && btn && textSpan && icon){
       if(statsCollapsed){
         sc.classList.add('hidden');
-        textSpan.textContent = '統計のメモ';
+        textSpan.textContent = '組み合わせの傾向';
         btn.setAttribute('aria-expanded', 'false');
         icon.src = ICON_EXPAND;
       } else {
         sc.classList.remove('hidden');
-        textSpan.textContent = '統計のメモ';
+        textSpan.textContent = '組み合わせの傾向';
         btn.setAttribute('aria-expanded', 'true');
         icon.src = ICON_COLLAPSE;
       }
@@ -2143,7 +2143,7 @@ const ShufflyApp = (function() {
       sc.classList.toggle('hidden');
       const expanded = !sc.classList.contains('hidden');
       statsCollapsed = sc.classList.contains('hidden');
-      textSpan.textContent = '統計のメモ';
+      textSpan.textContent = '組み合わせの傾向';
       btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       icon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
       if(!statsCollapsed) showStats();

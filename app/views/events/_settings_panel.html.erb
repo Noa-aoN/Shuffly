@@ -53,11 +53,11 @@
           <p class="shuffly-hint text-sm mt-2 mb-1">↑ 数字入力に加えて、よく使う数はボタンでも選べます。26グループが最大です。</p>
         </div>
 
-        <!-- オプション: グループ名 -->
+        <!-- オプション: グループの名前 -->
         <div class="shuffly-setting-card shuffly-setting-card-optional rounded-2xl border border-[var(--shuffly-border)] px-4 py-3" data-optional-card data-summary-source="customGroupNames" data-summary-kind="list" data-expanded="false">
           <button type="button" class="shuffly-optional-header mb-0 flex w-full items-center justify-between gap-3 text-left" data-optional-toggle aria-expanded="false">
             <div class="flex items-center gap-2">
-              <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">グループ名</label>
+              <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">グループの名前</label>
               <span class="shuffly-badge shuffly-badge-neutral">任意</span>
             </div>
             <div class="flex items-center gap-2">
@@ -67,15 +67,15 @@
           </button>
           <div data-optional-content>
             <textarea id="customGroupNames" rows="2" class="shuffly-textarea shuffly-textarea-compact mt-1 px-3 py-2" placeholder="例：グループA, グループB, ..."></textarea>
-            <p class="shuffly-hint text-sm mb-1">↑ 入力すると、グループ数よりこちらの名前の数が優先されます。</p>
+            <p class="shuffly-hint text-sm mb-1">↑ 入力すると、ここで入れた名前がグループ名になります。グループ数よりこちらが優先されます。</p>
           </div>
         </div>
 
-        <!-- オプション: 分散固定メンバー -->
+        <!-- オプション: 別々のグループにしたいメンバー -->
         <div class="shuffly-setting-card shuffly-setting-card-optional rounded-2xl border border-[var(--shuffly-border)] px-4 py-3" data-optional-card data-summary-source="fixedMembersInput" data-summary-kind="list" data-expanded="false">
           <button type="button" class="shuffly-optional-header mb-0 flex w-full items-center justify-between gap-3 text-left" data-optional-toggle aria-expanded="false">
             <div class="flex items-center gap-2">
-              <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">分散固定メンバー</label>
+              <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">別々のグループにしたいメンバー</label>
               <span class="shuffly-badge shuffly-badge-neutral">任意</span>
             </div>
             <div class="flex items-center gap-2">
@@ -85,14 +85,14 @@
           </button>
           <div data-optional-content>
             <textarea id="fixedMembersInput" rows="2" class="shuffly-textarea shuffly-textarea-compact mt-1 px-3 py-2" placeholder="例：メンバー3, メンバー5, ..."></textarea>
-            <p class="shuffly-hint text-sm mt-1">↑ 入力したメンバーは、できるだけ別々のグループに入るよう固定します。</p>
+            <p class="shuffly-hint text-sm mt-1">↑ 入力したメンバーは、できるだけ別々のグループに分かれます。</p>
           </div>
         </div>
 
         <div class="shuffly-setting-card shuffly-setting-card-optional rounded-2xl border border-[var(--shuffly-border)] px-4 py-3" data-optional-card data-summary-source="togetherMembersInput" data-summary-kind="group-list" data-expanded="false">
           <button type="button" class="shuffly-optional-header mb-0 flex w-full items-center justify-between gap-3 text-left" data-optional-toggle aria-expanded="false">
             <div class="flex items-center gap-2">
-              <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">同じグループにしたいメンバー</label>
+              <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">一緒のグループにしたいメンバー</label>
               <span class="shuffly-badge shuffly-badge-neutral">任意</span>
             </div>
             <div class="flex items-center gap-2">
@@ -102,13 +102,13 @@
           </button>
           <div data-optional-content>
             <textarea id="togetherMembersInput" rows="2" class="shuffly-textarea shuffly-textarea-compact mt-1 px-3 py-2" placeholder="例：田中, 鈴木&#10;佐藤, 高橋"></textarea>
-            <p class="shuffly-hint text-sm mt-1">↑ 同じ行のメンバーは、できるだけ同じグループになるようにまとめます。</p>
+            <p class="shuffly-hint text-sm mt-1">↑ 同じ行に書いたメンバーは、できるだけ同じグループになります。</p>
           </div>
         </div>
       </div>
 
       <!-- グループサイズ表示インジケーター -->
-      <div id="groupSizeHint" class="shuffly-indicator shuffly-indicator--warning text-base mt-1 mb-5 rounded-xl px-4 py-2">
+      <div id="groupSizeHint" class="shuffly-indicator shuffly-indicator--warning text-base mt-2 mb-6 rounded-xl px-4 py-2">
         現在の1グループあたり：<span class="font-bold">未計算</span>
       </div>
 
@@ -125,11 +125,11 @@
       <label class="shuffly-section-heading block mb-2"><span class="shuffly-bullet">●</span> 順番の設定</label>
 
       <div class="flex flex-col gap-3">
-        <!-- オプション: 順番固定メンバー -->
+        <!-- オプション: 順番を固定したいメンバー -->
         <div class="shuffly-setting-card shuffly-setting-card-optional rounded-2xl border border-[var(--shuffly-border)] px-4 py-3" data-optional-card data-summary-source="fixedOrderInput" data-summary-kind="list" data-expanded="false">
           <button type="button" class="shuffly-optional-header mb-0 flex w-full items-center justify-between gap-3 text-left" data-optional-toggle aria-expanded="false">
             <div class="flex items-center gap-2">
-              <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">順番固定メンバー</label>
+              <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">順番を固定したいメンバー</label>
               <span class="shuffly-badge shuffly-badge-neutral">任意</span>
             </div>
             <div class="flex items-center gap-2">
@@ -146,7 +146,7 @@
         <div class="shuffly-setting-card shuffly-setting-card-optional rounded-2xl border border-[var(--shuffly-border)] px-4 py-3" data-optional-card data-summary-source="excludedOrderInput" data-summary-kind="list" data-expanded="false">
           <button type="button" class="shuffly-optional-header mb-0 flex w-full items-center justify-between gap-3 text-left" data-optional-toggle aria-expanded="false">
             <div class="flex items-center gap-2">
-              <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">除外メンバー</label>
+              <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">順番決めから外すメンバー</label>
               <span class="shuffly-badge shuffly-badge-neutral">任意</span>
             </div>
             <div class="flex items-center gap-2">
@@ -156,7 +156,7 @@
           </button>
           <div data-optional-content>
             <textarea id="excludedOrderInput" rows="2" class="shuffly-textarea shuffly-textarea-compact mt-1 px-3 py-2" placeholder="例：メンバー2, メンバー7"></textarea>
-            <p class="shuffly-hint text-sm mt-1">↑ 入力したメンバーは、その回の順番決めから外します。</p>
+            <p class="shuffly-hint text-sm mt-1">↑ 入力したメンバーは、今回の順番決めに入れません。</p>
           </div>
         </div>
       </div>
@@ -171,23 +171,23 @@
       <label class="shuffly-section-heading block mb-2"><span class="shuffly-bullet">●</span> 役割の設定</label>
 
       <div class="flex flex-col gap-3">
-        <!-- オプション: 役割名 -->
+        <!-- オプション: 決めたい役割 -->
         <div class="shuffly-setting-card shuffly-setting-card-primary rounded-2xl border border-[var(--shuffly-border)] px-4 py-4">
           <div class="mb-2 flex items-center gap-2">
-            <label class="text-sm font-semibold text-[var(--shuffly-text)]">役割名</label>
+            <label class="text-sm font-semibold text-[var(--shuffly-text)]">決めたい役割</label>
             <span class="shuffly-badge shuffly-badge-accent">必須</span>
           </div>
           <div class="space-y-3">
             <div>
-              <textarea id="rolesInput" rows="4" class="shuffly-textarea px-3 py-2" placeholder="例：司会&#10;書記:2&#10;受付"></textarea>
-              <p class="shuffly-hint text-sm mt-1 mb-4">↑ 人数を増やすときは「役割名:人数」と入力できます。</p>
+              <textarea id="rolesInput" rows="3" class="shuffly-textarea px-3 py-2" placeholder="例：司会&#10;書記:2&#10;受付"></textarea>
+              <p class="shuffly-hint text-sm mt-1 mb-4">↑ 人数を増やしたいときは「役割名:人数」と入力できます。</p>
             </div>
 
             <div class="space-y-3">
               <div>
                 <p class="text-xs font-medium text-[var(--shuffly-text-muted)]">会議・打ち合わせ</p>
                 <div class="mt-2 flex flex-wrap gap-2">
-                  <% ["司会", "進行", "書記", "タイムキーパー"].each do |role_name| %>
+                  <% ["司会", "発表者", "書記", "タイムキーパー"].each do |role_name| %>
                     <div class="role-preset-control" data-role-preset-control="<%= role_name %>">
                       <button type="button"
                               class="role-preset-button rounded-full border border-[var(--shuffly-border)] bg-white px-3 py-1.5 text-sm font-medium text-[var(--shuffly-text-secondary)] transition hover:border-[var(--shuffly-border-strong)] hover:text-[var(--shuffly-text)]"
@@ -256,7 +256,7 @@
         <div class="shuffly-setting-card shuffly-setting-card-optional rounded-2xl border border-[var(--shuffly-border)] px-4 py-3" data-optional-card data-summary-source="excludedRolesInput" data-summary-kind="list" data-expanded="false">
           <button type="button" class="shuffly-optional-header mb-0 flex w-full items-center justify-between gap-3 text-left" data-optional-toggle aria-expanded="false">
             <div class="flex items-center gap-2">
-              <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">除外メンバー</label>
+              <label class="text-sm font-medium text-[var(--shuffly-text-secondary)]">役割決めから外すメンバー</label>
               <span class="shuffly-badge shuffly-badge-neutral">任意</span>
             </div>
             <div class="flex items-center gap-2">
@@ -266,11 +266,11 @@
           </button>
           <div data-optional-content>
             <textarea id="excludedRolesInput" rows="2" class="shuffly-textarea shuffly-textarea-compact mt-1 px-3 py-2" placeholder="例：メンバー2, メンバー7"></textarea>
-            <p class="shuffly-hint text-sm mt-1">↑ 入力したメンバーは、その回の役割決めから外します。</p>
+            <p class="shuffly-hint text-sm mt-1">↑ 入力したメンバーは、今回の役割決めに入れません。</p>
           </div>
         </div>
 
-        <div id="rolesCountHint" class="shuffly-indicator shuffly-indicator--warning text-base mt-1 rounded-xl px-4 py-2">
+        <div id="rolesCountHint" class="shuffly-indicator shuffly-indicator--warning text-base mt-2 rounded-xl px-4 py-2">
           役割の合計人数：<span class="font-bold">未設定</span>
         </div>
       </div>
@@ -300,7 +300,7 @@
   </div>
 
   <!-- 順番決め実行ボタン -->
-  <div id="settings-action-order" class="mt-4 hidden">
+  <div id="settings-action-order" class="mt-7 hidden">
     <div class="mx-auto mb-3 grid max-w-[320px] grid-cols-1 gap-2">
       <%= render 'shared/button',
         f: nil,
@@ -318,7 +318,7 @@
   </div>
 
   <!-- 役割決め実行ボタン -->
-  <div id="settings-action-roles" class="mt-4 hidden">
+  <div id="settings-action-roles" class="mt-7 hidden">
     <div class="mx-auto mb-3 grid max-w-[320px] grid-cols-1 gap-2">
       <%= render 'shared/button',
         f: nil,
