@@ -80,13 +80,59 @@ docker compose up
 
 起動後、`http://localhost:3002` を開きます。
 
-### よく使うコマンド
+### Docker での確認コマンド
 
 ```bash
 docker compose exec web bundle exec rspec
 docker compose exec web bundle exec rubocop
 docker compose exec web bundle exec brakeman
 ```
+
+### ローカル実行で起動
+
+ローカルで `bin/dev` を使う場合は、少なくとも以下が必要です。
+
+- Ruby `3.3.11`（`.ruby-version` に合わせる）
+- Bundler `2.7.2`（`Gemfile.lock` に合わせる）
+- Node.js / Yarn
+- PostgreSQL
+
+Homebrew の `ruby@3.3` を使う場合は、先に PATH を通しておくと確実です。
+
+```bash
+export PATH="/opt/homebrew/opt/ruby@3.3/bin:$PATH"
+```
+
+Docker の Postgres を流用してローカル Rails を起動する場合は、`DB_HOST=localhost` を付けます。
+
+セットアップ例:
+
+```bash
+export PATH="/opt/homebrew/opt/ruby@3.3/bin:$PATH"
+bundle install
+yarn install
+DB_HOST=localhost bin/rails db:prepare
+DB_HOST=localhost bin/dev
+```
+
+起動後、`http://localhost:3002` を開きます。
+
+ホスト側の Ruby が要件を満たしていない場合は、まず Ruby バージョンを合わせてください。
+このリポジトリでは Docker 起動もサポートしているため、ローカル Ruby 環境が未整備なら
+`docker compose up` を優先して問題ありません。
+
+### ローカル実行での確認コマンド
+
+```bash
+bundle exec rspec
+bundle exec rubocop
+bundle exec brakeman
+```
+
+## 開発運用メモ
+
+- Git 運用は [docs/decisons/git-workflow.md](docs/decisons/git-workflow.md) を参照
+- 個人開発中は `develop` を実質的な開発ブランチとして扱い、PR は `main` 向けに作成
 
 ## ディレクトリ構成
 
