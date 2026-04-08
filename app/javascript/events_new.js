@@ -57,7 +57,7 @@ const ShufflyApp = (function() {
   const TOAST_DURATION = 1200;
   const TOAST_TOP_POSITION = '35px';
   const ROLE_PRESET_CATEGORIES = [
-    { id: 'meeting', roles: ['司会', '進行', '書記', 'タイムキーパー'] },
+    { id: 'meeting', roles: ['司会', '発表者', '書記', 'タイムキーパー'] },
     { id: 'team', roles: ['リーダー', 'サブリーダー', '連絡係', 'まとめ役'] },
     { id: 'event', roles: ['受付', '会場案内', '撮影', '誘導'] }
   ];
@@ -140,6 +140,77 @@ const ShufflyApp = (function() {
     return (text || '').split(/[\r\n,、]+/).map((token)=>token.trim()).filter(Boolean);
   }
 
+  function getCurrentMemberNames(){
+    const raw = getRawValue().trim();
+    if(!raw) return [];
+    return raw.split(/[\r\n,]+/).map((token)=>token.trim()).filter(Boolean).map((token)=>token.split('#')[0].trim()).filter(Boolean);
+  }
+
+  function getDuplicateNames(names){
+    const counts = new Map();
+    (names || []).forEach((name)=>{
+      counts.set(name, (counts.get(name) || 0) + 1);
+    });
+    return Array.from(counts.entries()).filter(([, count])=>count > 1).map(([name])=>name);
+  }
+
+  function validateUniqueMemberNames({ withToast = false } = {}){
+    const duplicateNames = getDuplicateNames(getCurrentMemberNames());
+    if(duplicateNames.length > 0 && withToast){
+      showToast(`同じ名前があります: ${duplicateNames.join('、')}`);
+    }
+
+    return {
+      valid: duplicateNames.length === 0,
+      duplicateNames
+    };
+  }
+
+  function parseFixedOrderEntries(text){
+    const fixedMap = {};
+    const invalidFormats = [];
+    const duplicatePositions = [];
+    const duplicateNames = [];
+    const seenPositions = new Set();
+    const seenNames = new Set();
+
+    parseCommaSeparatedList(text).forEach((line)=>{
+      if(!line) return;
+      const match = line.match(/^(\d+)\s*[:=]\s*(.+)$/) || line.match(/^(\d+)\s+(.+)$/);
+      if(!match){
+        invalidFormats.push(line);
+        return;
+      }
+
+      const pos = parseInt(match[1], 10);
+      const name = match[2].trim();
+      if(!name){
+        invalidFormats.push(line);
+        return;
+      }
+
+      if(seenPositions.has(pos)){
+        duplicatePositions.push(pos);
+        return;
+      }
+      if(seenNames.has(name)){
+        duplicateNames.push(name);
+        return;
+      }
+
+      seenPositions.add(pos);
+      seenNames.add(name);
+      fixedMap[pos] = name;
+    });
+
+    return {
+      fixedMap,
+      invalidFormats,
+      duplicatePositions: Array.from(new Set(duplicatePositions)).sort((a, b)=>a - b),
+      duplicateNames: Array.from(new Set(duplicateNames))
+    };
+  }
+
   function parseTogetherMemberGroups(text){
     const mergedGroups = [];
 
@@ -167,7 +238,7 @@ const ShufflyApp = (function() {
     const entryByName = new Map(entries.map((entry)=>[entry.name, entry]));
     const claimedNames = new Set();
     const ignoredNames = new Set();
-    const ignoredGroups = [];
+    const prioritizedTogetherNames = new Set();
 
     const togetherUnits = togetherGroups.map((group)=>group.filter((name)=>{
       if(entryByName.has(name)) return true;
@@ -176,10 +247,13 @@ const ShufflyApp = (function() {
     })).filter((group)=>group.length > 1).map((group)=>{
       group.forEach((name)=>claimedNames.add(name));
       const members = group.map((name)=>entryByName.get(name)).filter(Boolean);
+      members.forEach((member)=>{
+        if(fixedSet.has(member.name)) prioritizedTogetherNames.add(member.name);
+      });
       return {
         key: group.join('|'),
         members,
-        fixedMembers: members.filter((member)=>fixedSet.has(member.name))
+        fixedMembers: []
       };
     });
 
@@ -193,16 +267,10 @@ const ShufflyApp = (function() {
         }))
     );
 
-    units.forEach((unit)=>{
-      if(unit.fixedMembers.length > 1){
-        ignoredGroups.push(unit.members.map((member)=>member.name));
-      }
-    });
-
     return {
-      units: units.filter((unit)=>unit.fixedMembers.length <= 1),
+      units,
       ignoredNames: Array.from(ignoredNames),
-      ignoredGroups
+      prioritizedTogetherNames: Array.from(prioritizedTogetherNames)
     };
   }
 
@@ -368,11 +436,18 @@ const ShufflyApp = (function() {
 
     if(kind === 'group-list'){
       const groups = parseTogetherMemberGroups(rawValue);
-      return groups.length > 0 ? `${groups.length}組入力` : '未入力';
+      if(groups.length === 0) return '未入力';
+      const preview = groups.slice(0, 2).map((group)=>{
+        if(group.length <= 2) return group.join('・');
+        return `${group.slice(0, 2).join('・')}ほか`;
+      }).join(' / ');
+      return groups.length > 2 ? `${preview} ほか${groups.length - 2}組` : preview;
     }
 
     const items = parseCommaSeparatedList(rawValue);
-    return items.length > 0 ? `${items.length}件入力` : '未入力';
+    if(items.length === 0) return '未入力';
+    const preview = items.slice(0, 2).join('、');
+    return items.length > 2 ? `${preview} ほか${items.length - 2}件` : preview;
   }
 
   function syncOptionalCardState(card){
@@ -405,6 +480,45 @@ const ShufflyApp = (function() {
     document.querySelectorAll('[data-optional-card]').forEach((card)=>{
       syncOptionalCardState(card);
     });
+  }
+
+  function updateFixedOrderWarning(){
+    const warningEl = document.getElementById('fixedOrderWarning');
+    if(!warningEl) return;
+
+    const { invalidFormats, duplicatePositions, duplicateNames, fixedMap } = parseFixedOrderEntries(document.getElementById('fixedOrderInput')?.value || '');
+    const memberNames = new Set(getCurrentMemberNames());
+    const missingNames = Object.values(fixedMap).filter((name)=>!memberNames.has(name));
+    const messages = [];
+
+    if(invalidFormats.length > 0) messages.push('書式が不正な指定があります');
+    if(duplicatePositions.length > 0) messages.push(`同じ番号があります: ${duplicatePositions.join('、')}`);
+    if(duplicateNames.length > 0) messages.push(`同じ名前があります: ${duplicateNames.join('、')}`);
+    if(missingNames.length > 0) messages.push(`メンバーにいない名前があります: ${Array.from(new Set(missingNames)).join('、')}`);
+
+    warningEl.textContent = messages.join(' / ');
+    warningEl.classList.toggle('hidden', messages.length === 0);
+  }
+
+  function updateGroupConflictWarning(){
+    const warningEl = document.getElementById('groupConflictWarning');
+    if(!warningEl) return;
+
+    const fixedNames = new Set(parseCommaSeparatedList(document.getElementById('fixedMembersInput')?.value || ''));
+    const togetherNames = new Set(parseCommaSeparatedList(document.getElementById('togetherMembersInput')?.value || ''));
+    const conflictedNames = new Set();
+
+    togetherNames.forEach((name)=>{
+      if(fixedNames.has(name)) conflictedNames.add(name);
+    });
+
+    if(conflictedNames.size > 0){
+      warningEl.textContent = `競合する指定があります。「一緒のグループにしたいメンバー」を優先します: ${Array.from(conflictedNames).join('、')}`;
+      warningEl.classList.remove('hidden');
+    } else {
+      warningEl.textContent = '';
+      warningEl.classList.add('hidden');
+    }
   }
 
   function syncRolePresetButtons(definitions = getRoleDefinitions()){
@@ -637,6 +751,9 @@ const ShufflyApp = (function() {
 
   // --- コア処理: グループ / 順番 / 役割 ---
   function assignGroups(){
+    const memberValidation = validateUniqueMemberNames({ withToast: true });
+    if(!memberValidation.valid) return;
+
     let raw = getRawValue().trim();
     let rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
 
@@ -664,7 +781,7 @@ const ShufflyApp = (function() {
     const togetherRawText = document.getElementById('togetherMembersInput')?.value || "";
     const togetherGroups = parseTogetherMemberGroups(togetherRawText);
     const fixedSet = new Set(fixedRaw);
-    const { units, ignoredNames, ignoredGroups } = buildGroupUnits(entries, fixedSet, togetherGroups);
+    const { units, ignoredNames, prioritizedTogetherNames } = buildGroupUnits(entries, fixedSet, togetherGroups);
     const fixedUnits = units
       .filter((unit)=>unit.fixedMembers.length === 1)
       .sort((left, right)=>right.members.length - left.members.length);
@@ -674,11 +791,13 @@ const ShufflyApp = (function() {
 
     function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
-    if(ignoredNames.length > 0 || ignoredGroups.length > 0){
+    if(ignoredNames.length > 0 || prioritizedTogetherNames.length > 0){
       const messages = [];
-      if(ignoredNames.length > 0) messages.push('存在しない名前の同グループ指定があります');
-      if(ignoredGroups.length > 0) messages.push('分散固定メンバーと競合する同グループ指定があります');
-      showToast(messages.join('、') + '（無視されます）');
+      if(ignoredNames.length > 0) messages.push('存在しない名前の同グループ指定は無視されます');
+      if(prioritizedTogetherNames.length > 0){
+        messages.push(`競合する指定があったため、「一緒のグループにしたいメンバー」を優先しました: ${prioritizedTogetherNames.join('、')}`);
+      }
+      showToast(messages.join('、'));
     }
 
     // 変更点：分散固定メンバーは初回はランダムに各グループへ割当てるが、
@@ -756,6 +875,9 @@ const ShufflyApp = (function() {
   }
 
   function assignOrder(){
+    const memberValidation = validateUniqueMemberNames({ withToast: true });
+    if(!memberValidation.valid) return;
+
     const raw = getRawValue().trim();
     const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
     const allMembers = rawList.map(s=>s.split('#')[0].trim());
@@ -771,24 +893,24 @@ const ShufflyApp = (function() {
       return;
     }
 
-    const fixedRaw = parseCommaSeparatedList(document.getElementById('fixedOrderInput')?.value || "");
-    const fixedMap = {};
-    const invalids = [];
-    for(const line of fixedRaw){
-      if(!line) continue;
-      const m = line.match(/^(\d+)\s*[:=]\s*(.+)$/) || line.match(/^(\d+)\s+(.+)$/);
-      if(m){
-        const pos = parseInt(m[1],10);
-        const name = m[2].trim();
-        if(pos >= 1 && pos <= members.length){
-          fixedMap[pos] = name;
-        } else {
-          invalids.push(line);
-        }
-      } else {
-        invalids.push(line);
-      }
+    const fixedRaw = document.getElementById('fixedOrderInput')?.value || "";
+    const parsedFixedEntries = parseFixedOrderEntries(fixedRaw);
+    const fixedMap = { ...parsedFixedEntries.fixedMap };
+    const invalids = [...parsedFixedEntries.invalidFormats];
+    if(parsedFixedEntries.duplicatePositions.length > 0 || parsedFixedEntries.duplicateNames.length > 0){
+      const messages = [];
+      if(parsedFixedEntries.duplicatePositions.length > 0) messages.push(`同じ番号があります: ${parsedFixedEntries.duplicatePositions.join('、')}`);
+      if(parsedFixedEntries.duplicateNames.length > 0) messages.push(`同じ名前があります: ${parsedFixedEntries.duplicateNames.join('、')}`);
+      showToast(messages.join(' / '));
+      return;
     }
+    Object.keys(fixedMap).forEach((posStr)=>{
+      const pos = parseInt(posStr, 10);
+      if(!(pos >= 1 && pos <= members.length)){
+        invalids.push(`${pos}:${fixedMap[pos]}`);
+        delete fixedMap[pos];
+      }
+    });
 
     const namesSet = new Set(members);
     const assignedFixedNames = new Set();
@@ -842,7 +964,7 @@ const ShufflyApp = (function() {
 
     const orderSettings = {
       excluded_members: excludedMembers,
-      fixed_order: fixedRaw
+      fixed_order: parseCommaSeparatedList(fixedRaw)
     };
 
     // 履歴に保存
@@ -855,6 +977,9 @@ const ShufflyApp = (function() {
   }
 
   function assignRoles(){
+    const memberValidation = validateUniqueMemberNames({ withToast: true });
+    if(!memberValidation.valid) return;
+
     const raw = getRawValue().trim();
     const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
     const allMembers = rawList.map(s=>s.split('#')[0].trim());
@@ -1132,9 +1257,9 @@ const ShufflyApp = (function() {
 
     // 出力の構築
     if(groupOverlapRates.length > 0){
-      output.push('⚠ 被りがあったグループ：');
+      output.push('今回、重なりが多かったグループ：');
       for(const g of groupOverlapRates){
-        output.push(`  ${g.label}（メンバー被り率${g.rate.toFixed(2)}）`);
+        output.push(`  ${g.label}（平均 ${g.rate.toFixed(2)} 回）`);
       }
     }
 
@@ -1142,23 +1267,22 @@ const ShufflyApp = (function() {
     const sortedCounts = Object.keys(memberOverlapGroups).map(Number).sort((a, b) => b - a);
     if(sortedCounts.length > 0){
       if(groupOverlapRates.length > 0) output.push('');
-      output.push('⚠ 被りがあったメンバー：');
+      output.push('よく一緒になっているメンバー：');
       for(const count of sortedCounts){
         const members = Array.from(memberOverlapGroups[count]);
-        members.sort(); // メンバー名をソート
-        output.push(`  ${members.join(' & ')}（メンバー被り${count}回目）`);
+        members.sort();
+        output.push(`  ${members.join(' / ')}（最大 ${count} 回）`);
       }
     }
 
     if(newCombinationMembers.length > 0){
       if(groupOverlapRates.length > 0 || sortedCounts.length > 0) output.push('');
-      output.push('✓ 全員が新しい組み合わせのメンバー：');
+      output.push('新しい組み合わせになったメンバー：');
       output.push(`  ${newCombinationMembers.join(', ')}`);
     }
 
-    // 「全員が新しい組み合わせのメンバー：」が表示されていない場合のみ表示
     if(groupOverlapRates.length === 0 && sortedCounts.length === 0 && newCombinationMembers.length === 0){
-      output.push('未実施');
+      output.push('まだ比較できる情報はありません');
     }
 
     document.getElementById('statsOutput').value = output.join('\n');
@@ -1274,10 +1398,12 @@ const ShufflyApp = (function() {
   }
 
   function updateParticipantCount(){
-    const raw = getRawValue().trim();
-    const count = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean).length : 0;
+    const memberNames = getCurrentMemberNames();
+    const duplicateNames = getDuplicateNames(memberNames);
+    const count = memberNames.length;
     const span=document.getElementById('groupSizeHint');
     const memberSpan=document.getElementById('memberCountHint');
+    const memberWarning=document.getElementById('memberInputWarning');
 
     const customNamesEl = document.getElementById('customGroupNames');
     let groupCount;
@@ -1291,10 +1417,22 @@ const ShufflyApp = (function() {
     }
 
     if(memberSpan){
+      memberSpan.classList.remove('shuffly-indicator--warning', 'shuffly-indicator--danger');
       if(count){
         memberSpan.innerHTML = `現在のメンバー数：<span class="font-bold">${count}人</span>`;
       } else {
         memberSpan.innerHTML = '現在のメンバー数：<span class="font-bold">未入力</span>';
+      }
+      memberSpan.classList.add(duplicateNames.length > 0 ? 'shuffly-indicator--danger' : 'shuffly-indicator--warning');
+    }
+
+    if(memberWarning){
+      if(duplicateNames.length > 0){
+        memberWarning.textContent = `同じ名前があります: ${duplicateNames.join('、')}`;
+        memberWarning.classList.remove('hidden');
+      } else {
+        memberWarning.textContent = '';
+        memberWarning.classList.add('hidden');
       }
     }
 
@@ -1312,6 +1450,8 @@ const ShufflyApp = (function() {
     }
 
     updateRoleCountHint();
+    updateFixedOrderWarning();
+    updateGroupConflictWarning();
 
     // 回次表示を更新（メンバーや履歴が変わったときに反映）
     updateGroupRoundDisplay();
@@ -1954,12 +2094,12 @@ const ShufflyApp = (function() {
     if(sc && btn && textSpan && icon){
       if(statsCollapsed){
         sc.classList.add('hidden');
-        textSpan.textContent = '組み合わせの傾向';
+        textSpan.textContent = '統計のメモ';
         btn.setAttribute('aria-expanded', 'false');
         icon.src = ICON_EXPAND;
       } else {
         sc.classList.remove('hidden');
-        textSpan.textContent = '組み合わせの傾向';
+        textSpan.textContent = '統計のメモ';
         btn.setAttribute('aria-expanded', 'true');
         icon.src = ICON_COLLAPSE;
       }
@@ -2042,9 +2182,9 @@ const ShufflyApp = (function() {
     // 入力関連のイベント
     bindIf('groupCount', 'input', ()=>{ updateParticipantCount(); syncGroupCountPresetButtons(); syncAuxiliarySettings(); });
     bindIf('customGroupNames', 'input', ()=>{ updateParticipantCount(); syncAuxiliarySettings(); });
-    bindIf('fixedMembersInput', 'input', ()=>{ syncAuxiliarySettings(); });
-    bindIf('togetherMembersInput', 'input', ()=>{ syncAuxiliarySettings(); });
-    bindIf('fixedOrderInput', 'input', ()=>{ syncAuxiliarySettings(); });
+    bindIf('fixedMembersInput', 'input', ()=>{ syncAuxiliarySettings(); updateGroupConflictWarning(); syncOptionalCardSummaries(); });
+    bindIf('togetherMembersInput', 'input', ()=>{ syncAuxiliarySettings(); updateGroupConflictWarning(); syncOptionalCardSummaries(); });
+    bindIf('fixedOrderInput', 'input', ()=>{ syncAuxiliarySettings(); updateFixedOrderWarning(); });
     bindIf('excludedOrderInput', 'input', ()=>{ syncAuxiliarySettings(); });
     bindIf('excludedRolesInput', 'input', ()=>{ syncAuxiliarySettings(); updateRoleCountHint(); });
     bindIf('rolesInput', 'input', ()=>{ setRoleDefinitions(getRoleDefinitions()); });
@@ -2143,7 +2283,7 @@ const ShufflyApp = (function() {
       sc.classList.toggle('hidden');
       const expanded = !sc.classList.contains('hidden');
       statsCollapsed = sc.classList.contains('hidden');
-      textSpan.textContent = '組み合わせの傾向';
+      textSpan.textContent = '統計のメモ';
       btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       icon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
       if(!statsCollapsed) showStats();

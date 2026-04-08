@@ -85,7 +85,7 @@
           </button>
           <div data-optional-content>
             <textarea id="fixedMembersInput" rows="2" class="shuffly-textarea shuffly-textarea-compact mt-1 px-3 py-2" placeholder="例：メンバー3, メンバー5, ..."></textarea>
-            <p class="shuffly-hint text-sm mt-1">↑ 入力したメンバーは、できるだけ別々のグループに分かれます。</p>
+            <p class="shuffly-hint text-sm mt-1">↑ 入力したメンバーは、できるだけ別々のグループに分かれます。「一緒のグループにしたいメンバー」と重なった場合は、そちらを優先します。</p>
           </div>
         </div>
 
@@ -111,6 +111,7 @@
       <div id="groupSizeHint" class="shuffly-indicator shuffly-indicator--warning text-base mt-2 mb-6 rounded-xl px-4 py-2">
         現在の1グループあたり：<span class="font-bold">未計算</span>
       </div>
+      <p id="groupConflictWarning" class="hidden text-sm text-[var(--shuffly-danger)] -mt-4 mb-6"></p>
 
       <!-- 注意事項 -->
       <p class="shuffly-hint text-sm">※<span class="underline decoration-dashed">グループ分けは複数回実行可能です。ボタンを押すたびに被りが最小限になるように振り分け、履歴も保持されます。</span></p>
@@ -140,6 +141,7 @@
           <div data-optional-content>
             <textarea id="fixedOrderInput" rows="2" class="shuffly-textarea shuffly-textarea-compact px-3 py-2 mt-1" placeholder="例：1:田中, 5:鈴木"></textarea>
             <p class="shuffly-hint text-sm mt-1">↑ 「番号:名前」で入力すると、その位置に固定します。改行でもカンマ区切りでも入力できます。</p>
+            <p id="fixedOrderWarning" class="hidden text-sm text-[var(--shuffly-danger)] mt-2"></p>
           </div>
         </div>
 
