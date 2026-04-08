@@ -505,15 +505,19 @@ const ShufflyApp = (function() {
     if(!warningEl) return;
 
     const fixedNames = new Set(parseCommaSeparatedList(document.getElementById('fixedMembersInput')?.value || ''));
-    const togetherNames = new Set(parseCommaSeparatedList(document.getElementById('togetherMembersInput')?.value || ''));
-    const conflictedNames = new Set();
+    const togetherGroups = parseTogetherMemberGroups(document.getElementById('togetherMembersInput')?.value || '');
+    const conflictedGroups = [];
 
-    togetherNames.forEach((name)=>{
-      if(fixedNames.has(name)) conflictedNames.add(name);
+    togetherGroups.forEach((group)=>{
+      const overlappingNames = group.filter((name)=>fixedNames.has(name));
+      if(overlappingNames.length > 1){
+        conflictedGroups.push(overlappingNames);
+      }
     });
 
-    if(conflictedNames.size > 0){
-      warningEl.textContent = `競合する指定があります。「一緒のグループにしたいメンバー」を優先します: ${Array.from(conflictedNames).join('、')}`;
+    if(conflictedGroups.length > 0){
+      const summaries = conflictedGroups.map((group)=>group.join('、'));
+      warningEl.textContent = `競合する指定があります。「一緒のグループにしたいメンバー」を優先します: ${summaries.join(' / ')}`;
       warningEl.classList.remove('hidden');
     } else {
       warningEl.textContent = '';
