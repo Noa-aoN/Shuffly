@@ -586,7 +586,58 @@ body.shuffly-app {
   line-height: 1.8;
 }
 
+.lp-value-strip {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
+.lp-value-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(196, 181, 253, 0.44);
+  background: rgba(255, 255, 255, 0.76);
+  border-radius: 9999px;
+  padding: 0.45rem 0.8rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.lp-cta-panel {
+  position: relative;
+}
+
+.lp-cta-hint {
+  position: absolute;
+  top: calc(100% + 1.05rem);
+  left: 50%;
+  z-index: 3;
+  width: max-content;
+  max-width: min(100%, 32rem);
+  padding: 0.5rem 0.85rem;
+  border: 1px solid rgba(196, 181, 253, 0.44);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -0.2rem);
+  transition: color 160ms ease, opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
+  pointer-events: none;
+}
+
+.lp-cta-hint-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
 @media (max-width: 767px) {
+  .lp-cta-hint {
+    width: calc(100% - 1rem);
+    max-width: none;
+    border-radius: 1rem;
+    text-align: center;
+  }
+
   .lp-wordmark {
     letter-spacing: -0.04em;
     line-height: 0.96;
@@ -597,7 +648,7 @@ body.shuffly-app {
   z-index: 0;
 }
 
-.events-index-page > :not(.lp-background) {
+.events-index-page > section {
   position: relative;
   z-index: 1;
 }
@@ -888,6 +939,44 @@ body.shuffly-app {
   will-change: transform;
 }
 
+.lp-feature-card-button {
+  width: 100%;
+  cursor: pointer;
+  text-align: inherit;
+}
+
+.lp-feature-card-button:hover {
+  border-color: rgba(124, 92, 255, 0.22);
+}
+
+.lp-feature-card-hint {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(124, 92, 255, 0.16);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--shuffly-accent);
+  border-radius: 9999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+  opacity: 0.88;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, opacity 160ms ease;
+}
+
+.lp-feature-card-button:hover .lp-feature-card-hint,
+.lp-feature-card-button:focus-visible .lp-feature-card-hint {
+  transform: translateY(-1px);
+  background: rgba(124, 92, 255, 0.1);
+  border-color: rgba(124, 92, 255, 0.24);
+  opacity: 1;
+}
+
 .events-index-page .index-feature-card:hover {
   transform: translateY(-6px) rotate(-0.6deg);
   box-shadow: 0 12px 28px rgba(10, 25, 47, 0.08);
@@ -896,6 +985,35 @@ body.shuffly-app {
 .events-index-page .index-feature-card:active {
   transform: translateY(-2px) rotate(-0.2deg);
   transition-duration: 80ms;
+}
+
+.lp-modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  border: 1px solid var(--shuffly-border);
+  color: var(--shuffly-text-secondary);
+  background: rgba(255, 255, 255, 0.84);
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.lp-modal-close:hover {
+  background: rgba(124, 92, 255, 0.08);
+  border-color: rgba(124, 92, 255, 0.2);
+  color: var(--shuffly-text);
+}
+
+.lp-card-modal {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.lp-card-modal-panel {
+  max-height: min(80vh, 42rem);
+  overflow-y: auto;
 }
 
 @media (max-width: 767px) {
@@ -941,6 +1059,26 @@ body.shuffly-app {
   .lp-ambient--sky,
   .lp-ambient--amber {
     filter: blur(54px);
+  }
+
+  .lp-feature-card-hint {
+    top: 0.85rem;
+    right: 0.85rem;
+    padding: 0.18rem 0.48rem;
+    font-size: 0.64rem;
+  }
+
+  .lp-card-modal {
+    align-items: end;
+    padding: 0;
+  }
+
+  .lp-card-modal-panel {
+    max-width: 100%;
+    max-height: min(82vh, 42rem);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    padding-bottom: 2rem;
   }
 
   .shuffly-fab-item[data-fab-position="top-left"] {
