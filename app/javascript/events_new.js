@@ -56,6 +56,14 @@ const ShufflyApp = (function() {
   const SAMPLE_SELECT_SIZE = 10;
   const TOAST_DURATION = 1200;
   const TOAST_TOP_POSITION = '35px';
+  const ROLE_PRESET_CATEGORIES = [
+    { id: 'meeting', roles: ['司会', '発表者', '書記', 'タイムキーパー'] },
+    { id: 'team', roles: ['リーダー', 'サブリーダー', '連絡係', 'まとめ役'] },
+    { id: 'event', roles: ['受付', '会場案内', '撮影', '誘導'] }
+  ];
+  const ROLE_CATEGORY_BY_NAME = new Map(
+    ROLE_PRESET_CATEGORIES.flatMap((category)=>category.roles.map((role)=>[role, category.id]))
+  );
 
   // --- ユーティリティ ---
   function clampGroupCount(v){
@@ -70,6 +78,530 @@ const ShufflyApp = (function() {
       button.classList.toggle('is-active', isActive);
       button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     });
+  }
+
+  function normalizeRoleDefinitions(definitions){
+    const ordered = [];
+    const byName = new Map();
+
+    (definitions || []).forEach((definition)=>{
+      const name = (definition?.name || '').trim();
+      if(!name) return;
+      const count = Math.max(parseInt(definition.count, 10) || 1, 1);
+      const category = definition.category || ROLE_CATEGORY_BY_NAME.get(name) || null;
+
+      if(byName.has(name)){
+        byName.get(name).count += count;
+        return;
+      }
+
+      const normalized = { name, count, category };
+      byName.set(name, normalized);
+      ordered.push(normalized);
+    });
+
+    return ordered;
+  }
+
+  function parseRoleDefinitions(text){
+    const tokens = (text || '').split(/[\r\n,]+/).map((token)=>token.trim()).filter(Boolean);
+    const parsed = tokens.map((token)=>{
+      const match = token.match(/^(.+?)(?:[:：]\s*(\d+))?$/);
+      if(!match) return null;
+      const name = (match[1] || '').trim();
+      if(!name) return null;
+      const count = Math.max(parseInt(match[2], 10) || 1, 1);
+      return {
+        name,
+        count,
+        category: ROLE_CATEGORY_BY_NAME.get(name) || null
+      };
+    }).filter(Boolean);
+
+    return normalizeRoleDefinitions(parsed);
+  }
+
+  function serializeRoleDefinitions(definitions){
+    return normalizeRoleDefinitions(definitions).map((definition)=>(
+      definition.count > 1 ? `${definition.name}:${definition.count}` : definition.name
+    )).join('\n');
+  }
+
+  function getRoleDefinitions(){
+    const rolesEl = document.getElementById('rolesInput');
+    return parseRoleDefinitions(rolesEl ? rolesEl.value : '');
+  }
+
+  function getRoleNames(){
+    return getRoleDefinitions().map((definition)=>definition.name);
+  }
+
+  function parseCommaSeparatedList(text){
+    return (text || '').split(/[\r\n,、]+/).map((token)=>token.trim()).filter(Boolean);
+  }
+
+  function getCurrentMemberNames(){
+    const raw = getRawValue().trim();
+    if(!raw) return [];
+    return raw.split(/[\r\n,]+/).map((token)=>token.trim()).filter(Boolean).map((token)=>token.split('#')[0].trim()).filter(Boolean);
+  }
+
+  function getDuplicateNames(names){
+    const counts = new Map();
+    (names || []).forEach((name)=>{
+      counts.set(name, (counts.get(name) || 0) + 1);
+    });
+    return Array.from(counts.entries()).filter(([, count])=>count > 1).map(([name])=>name);
+  }
+
+  function validateUniqueMemberNames({ withToast = false } = {}){
+    const duplicateNames = getDuplicateNames(getCurrentMemberNames());
+    if(duplicateNames.length > 0 && withToast){
+      showToast(`同じ名前があります。1回だけ入力してください: ${duplicateNames.join('、')}`);
+    }
+
+    return {
+      valid: duplicateNames.length === 0,
+      duplicateNames
+    };
+  }
+
+  function parseFixedOrderEntries(text){
+    const fixedMap = {};
+    const invalidFormats = [];
+    const duplicatePositions = [];
+    const duplicateNames = [];
+    const seenPositions = new Set();
+    const seenNames = new Set();
+
+    parseCommaSeparatedList(text).forEach((line)=>{
+      if(!line) return;
+      const match = line.match(/^(\d+)\s*[:=]\s*(.+)$/) || line.match(/^(\d+)\s+(.+)$/);
+      if(!match){
+        invalidFormats.push(line);
+        return;
+      }
+
+      const pos = parseInt(match[1], 10);
+      const name = match[2].trim();
+      if(!name){
+        invalidFormats.push(line);
+        return;
+      }
+
+      if(seenPositions.has(pos)){
+        duplicatePositions.push(pos);
+        return;
+      }
+      if(seenNames.has(name)){
+        duplicateNames.push(name);
+        return;
+      }
+
+      seenPositions.add(pos);
+      seenNames.add(name);
+      fixedMap[pos] = name;
+    });
+
+    return {
+      fixedMap,
+      invalidFormats,
+      duplicatePositions: Array.from(new Set(duplicatePositions)).sort((a, b)=>a - b),
+      duplicateNames: Array.from(new Set(duplicateNames))
+    };
+  }
+
+  function parseTogetherMemberGroups(text){
+    const mergedGroups = [];
+
+    (text || '').split(/\r?\n/).map((line)=>line.trim()).filter(Boolean).forEach((line)=>{
+      const names = Array.from(new Set(line.split(/[,、]+/).map((token)=>token.trim()).filter(Boolean)));
+      if(names.length < 2) return;
+
+      let current = new Set(names);
+      for(let index = mergedGroups.length - 1; index >= 0; index -= 1){
+        const existing = mergedGroups[index];
+        const overlaps = [...existing].some((name)=>current.has(name));
+        if(!overlaps) continue;
+
+        existing.forEach((name)=>current.add(name));
+        mergedGroups.splice(index, 1);
+      }
+
+      mergedGroups.push(current);
+    });
+
+    return mergedGroups.map((group)=>Array.from(group));
+  }
+
+  function buildGroupUnits(entries, fixedSet, togetherGroups){
+    const entryByName = new Map(entries.map((entry)=>[entry.name, entry]));
+    const claimedNames = new Set();
+    const ignoredNames = new Set();
+    const prioritizedTogetherNames = new Set();
+
+    const togetherUnits = togetherGroups.map((group)=>group.filter((name)=>{
+      if(entryByName.has(name)) return true;
+      ignoredNames.add(name);
+      return false;
+    })).filter((group)=>group.length > 1).map((group)=>{
+      group.forEach((name)=>claimedNames.add(name));
+      const members = group.map((name)=>entryByName.get(name)).filter(Boolean);
+      members.forEach((member)=>{
+        if(fixedSet.has(member.name)) prioritizedTogetherNames.add(member.name);
+      });
+      return {
+        key: group.join('|'),
+        members,
+        fixedMembers: []
+      };
+    });
+
+    const units = togetherUnits.concat(
+      entries
+        .filter((entry)=>!claimedNames.has(entry.name))
+        .map((entry)=>({
+          key: entry.name,
+          members: [entry],
+          fixedMembers: fixedSet.has(entry.name) ? [entry] : []
+        }))
+    );
+
+    return {
+      units,
+      ignoredNames: Array.from(ignoredNames),
+      prioritizedTogetherNames: Array.from(prioritizedTogetherNames)
+    };
+  }
+
+  function calculateUnitCoScore(unitMembers, groupMembers, coMap){
+    return unitMembers.reduce((total, unitMember)=>(
+      total + groupMembers.reduce((groupTotal, groupMember)=>(
+        groupTotal + ((coMap[unitMember.name] && coMap[unitMember.name][groupMember.name]) || 0)
+      ), 0)
+    ), 0);
+  }
+
+  function pickBestGroupForUnit(unit, groupIds, groups, coMap, preferredGroup = null){
+    function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+    const projections = groupIds.map((groupId)=>({
+      groupId,
+      projectedSize: groups[groupId].length + unit.members.length,
+      coScore: calculateUnitCoScore(unit.members, groups[groupId], coMap)
+    }));
+
+    const minProjectedSize = Math.min(...projections.map((projection)=>projection.projectedSize));
+    if(preferredGroup){
+      const preferredProjection = projections.find((projection)=>projection.groupId === preferredGroup);
+      if(preferredProjection && preferredProjection.projectedSize <= minProjectedSize + 1){
+        return preferredGroup;
+      }
+    }
+
+    const sizeCandidates = projections.filter((projection)=>projection.projectedSize === minProjectedSize);
+    const minCoScore = Math.min(...sizeCandidates.map((projection)=>projection.coScore));
+    const tied = sizeCandidates.filter((projection)=>projection.coScore === minCoScore).map((projection)=>projection.groupId);
+    return pickRandom(tied);
+  }
+
+  function buildRoleOutputLines(assignments){
+    return (assignments || []).map((assignment)=>(
+      assignment.role ? `${assignment.name}: ${assignment.role}` : `${assignment.name}: `
+    ));
+  }
+
+  function updateRoleCountHint(definitions = getRoleDefinitions()){
+    const hint = document.getElementById('rolesCountHint');
+    if(!hint) return;
+
+    const allMembers = getRawValue().trim()
+      ? getRawValue().trim().split(/[\r\n,]+/).map((token)=>token.trim()).filter(Boolean).map((token)=>token.split('#')[0].trim())
+      : [];
+    const excludedMembers = parseCommaSeparatedList(document.getElementById('excludedRolesInput')?.value || '')
+      .filter((member, index, array)=>array.indexOf(member) === index && allMembers.includes(member));
+    const memberCount = allMembers.length;
+    const availableMemberCount = Math.max(memberCount - excludedMembers.length, 0);
+    const totalRoleCount = normalizeRoleDefinitions(definitions).reduce((sum, definition)=>sum + definition.count, 0);
+
+    hint.classList.remove('shuffly-indicator--warning', 'shuffly-indicator--danger');
+    if(totalRoleCount === 0){
+      hint.classList.add('shuffly-indicator--warning');
+      hint.innerHTML = '役割の合計人数：<span class="font-bold">未設定</span>';
+      return;
+    }
+
+    if(availableMemberCount > 0 && totalRoleCount > availableMemberCount){
+      hint.classList.add('shuffly-indicator--danger');
+      hint.innerHTML = `役割の合計人数：<span class="font-bold">${totalRoleCount}人</span> / 対象メンバー <span class="font-bold">${availableMemberCount}人</span>`;
+      return;
+    }
+
+    hint.classList.add('shuffly-indicator--warning');
+    if(availableMemberCount > 0){
+      hint.innerHTML = `役割の合計人数：<span class="font-bold">${totalRoleCount}人</span> / 対象メンバー <span class="font-bold">${availableMemberCount}人</span>`;
+    } else {
+      hint.innerHTML = `役割の合計人数：<span class="font-bold">${totalRoleCount}人</span>`;
+    }
+  }
+
+  function escapeHtml(value){
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function readSettingsJson(){
+    const settingsField = document.getElementById('settingsJsonInput');
+    if(!settingsField || !settingsField.value) return {};
+
+    try {
+      const parsed = JSON.parse(settingsField.value);
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch(_e) {
+      return {};
+    }
+  }
+
+  function writeSettingsJson(settings){
+    const settingsField = document.getElementById('settingsJsonInput');
+    if(!settingsField) return;
+
+    const compact = Object.fromEntries(Object.entries(settings || {}).filter(([, value])=>{
+      if(value === null || value === undefined) return false;
+      if(Array.isArray(value)) return value.length > 0;
+      if(typeof value === 'string') return value.trim() !== '';
+      if(typeof value === 'object') return Object.keys(value).length > 0;
+      return true;
+    }));
+
+    settingsField.value = Object.keys(compact).length > 0 ? JSON.stringify(compact) : '';
+  }
+
+  function updateRoleSettings(definitions = getRoleDefinitions()){
+    const settings = readSettingsJson();
+    const normalized = normalizeRoleDefinitions(definitions);
+
+    if(normalized.length > 0){
+      settings.role_definitions = normalized;
+      settings.roles = serializeRoleDefinitions(normalized);
+    } else {
+      delete settings.role_definitions;
+      delete settings.roles;
+    }
+
+    writeSettingsJson(settings);
+  }
+
+  function syncAuxiliarySettings(){
+    const settings = readSettingsJson();
+    const customGroupNames = parseCommaSeparatedList(document.getElementById('customGroupNames')?.value || '');
+    const togetherMembers = parseTogetherMemberGroups(document.getElementById('togetherMembersInput')?.value || '');
+    const fixedMembers = parseCommaSeparatedList(document.getElementById('fixedMembersInput')?.value || '');
+    const excludedMembers = parseCommaSeparatedList(document.getElementById('excludedOrderInput')?.value || '');
+    const fixedOrder = parseCommaSeparatedList(document.getElementById('fixedOrderInput')?.value || '');
+    const groupCountInput = document.getElementById('groupCount');
+    settings.group_count = clampGroupCount(groupCountInput?.value || MIN_GROUPS);
+
+    if(customGroupNames.length > 0) settings.custom_group_names = customGroupNames;
+    else delete settings.custom_group_names;
+
+    if(togetherMembers.length > 0) settings.together_members = togetherMembers;
+    else delete settings.together_members;
+
+    if(fixedMembers.length > 0) settings.fixed_members = fixedMembers;
+    else delete settings.fixed_members;
+
+    if(excludedMembers.length > 0) settings.order_excluded_members = excludedMembers;
+    else delete settings.order_excluded_members;
+
+    const excludedRoleMembers = parseCommaSeparatedList(document.getElementById('excludedRolesInput')?.value || '');
+    if(excludedRoleMembers.length > 0) settings.role_excluded_members = excludedRoleMembers;
+    else delete settings.role_excluded_members;
+
+    if(fixedOrder.length > 0) settings.fixed_order = fixedOrder;
+    else delete settings.fixed_order;
+
+    writeSettingsJson(settings);
+  }
+
+  function buildOptionalCardSummary(card){
+    const sourceId = card?.dataset.summarySource;
+    const kind = card?.dataset.summaryKind || 'list';
+    const source = sourceId ? document.getElementById(sourceId) : null;
+    const rawValue = source?.value || '';
+
+    if(kind === 'group-list'){
+      const groups = parseTogetherMemberGroups(rawValue);
+      if(groups.length === 0) return '未入力';
+      const preview = groups.slice(0, 2).map((group)=>{
+        if(group.length <= 2) return group.join('・');
+        return `${group.slice(0, 2).join('・')}ほか`;
+      }).join(' / ');
+      return groups.length > 2 ? `${preview} ほか${groups.length - 2}組` : preview;
+    }
+
+    const items = parseCommaSeparatedList(rawValue);
+    if(items.length === 0) return '未入力';
+    const preview = items.slice(0, 2).join('、');
+    return items.length > 2 ? `${preview} ほか${items.length - 2}件` : preview;
+  }
+
+  function syncOptionalCardState(card){
+    if(!card) return;
+    const expanded = card.dataset.expanded !== 'false';
+    const content = card.querySelector('[data-optional-content]');
+    const summary = card.querySelector('[data-optional-summary]');
+    const toggle = card.querySelector('[data-optional-toggle]');
+    const toggleIcon = card.querySelector('[data-optional-toggle-icon]');
+
+    if(content) content.classList.toggle('hidden', !expanded);
+    if(summary){
+      summary.textContent = buildOptionalCardSummary(card);
+      summary.classList.toggle('hidden', expanded);
+    }
+    if(toggle) toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    if(toggleIcon){
+      toggleIcon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
+      toggleIcon.alt = expanded ? '折りたたみアイコン' : '展開アイコン';
+    }
+  }
+
+  function setOptionalCardExpanded(card, expanded){
+    if(!card) return;
+    card.dataset.expanded = expanded ? 'true' : 'false';
+    syncOptionalCardState(card);
+  }
+
+  function syncOptionalCardSummaries(){
+    document.querySelectorAll('[data-optional-card]').forEach((card)=>{
+      syncOptionalCardState(card);
+    });
+  }
+
+  function updateFixedOrderWarning(){
+    const warningEl = document.getElementById('fixedOrderWarning');
+    if(!warningEl) return;
+
+    const { invalidFormats, duplicatePositions, duplicateNames, fixedMap } = parseFixedOrderEntries(document.getElementById('fixedOrderInput')?.value || '');
+    const memberNames = new Set(getCurrentMemberNames());
+    const missingNames = Object.values(fixedMap).filter((name)=>!memberNames.has(name));
+    const messages = [];
+
+    if(invalidFormats.length > 0) messages.push('書式が不正な指定があります');
+    if(duplicatePositions.length > 0) messages.push(`同じ番号があります: ${duplicatePositions.join('、')}`);
+    if(duplicateNames.length > 0) messages.push(`同じ名前があります: ${duplicateNames.join('、')}`);
+    if(missingNames.length > 0) messages.push(`メンバーにいない名前があります: ${Array.from(new Set(missingNames)).join('、')}`);
+
+    warningEl.textContent = messages.join(' / ');
+    warningEl.classList.toggle('hidden', messages.length === 0);
+  }
+
+  function updateGroupConflictWarning(){
+    const warningEl = document.getElementById('groupConflictWarning');
+    if(!warningEl) return;
+
+    const fixedNames = new Set(parseCommaSeparatedList(document.getElementById('fixedMembersInput')?.value || ''));
+    const togetherGroups = parseTogetherMemberGroups(document.getElementById('togetherMembersInput')?.value || '');
+    const conflictedGroups = [];
+
+    togetherGroups.forEach((group)=>{
+      const overlappingNames = group.filter((name)=>fixedNames.has(name));
+      if(overlappingNames.length > 1){
+        conflictedGroups.push(overlappingNames);
+      }
+    });
+
+    if(conflictedGroups.length > 0){
+      const summaries = conflictedGroups.map((group)=>group.join('、'));
+      warningEl.textContent = `競合する指定があります。「一緒のグループにしたいメンバー」を優先します: ${summaries.join(' / ')}`;
+      warningEl.classList.remove('hidden');
+    } else {
+      warningEl.textContent = '';
+      warningEl.classList.add('hidden');
+    }
+  }
+
+  function syncRolePresetButtons(definitions = getRoleDefinitions()){
+    const activeRoles = new Set(normalizeRoleDefinitions(definitions).map((definition)=>definition.name));
+    document.querySelectorAll('[data-role-preset]').forEach((button)=>{
+      const isActive = activeRoles.has(button.dataset.rolePreset);
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+  }
+
+  function renderRoleDefinitions(definitions = getRoleDefinitions()){
+    const normalized = normalizeRoleDefinitions(definitions);
+    const definitionsByName = new Map(normalized.map((definition)=>[definition.name, definition]));
+
+    document.querySelectorAll('[data-role-preset-control]').forEach((control)=>{
+      const roleName = control.dataset.rolePresetControl;
+      const definition = definitionsByName.get(roleName);
+      const stepper = control.querySelector('[data-role-stepper]');
+      const countEl = control.querySelector('[data-role-count]');
+      if(!stepper || !countEl) return;
+
+      if(definition){
+        stepper.classList.remove('is-inactive');
+        countEl.textContent = definition.count;
+      } else {
+        stepper.classList.add('is-inactive');
+        countEl.textContent = '1';
+      }
+    });
+
+    const customContainer = document.getElementById('customRoleDefinitionsList');
+    if(!customContainer) return;
+
+    const customDefinitions = normalized.filter((definition)=>!ROLE_CATEGORY_BY_NAME.has(definition.name));
+    customContainer.innerHTML = customDefinitions.map((definition)=>`
+      <div class="role-custom-item">
+        <span class="text-sm font-medium text-[var(--shuffly-text)]">${escapeHtml(definition.name)}</span>
+        <div class="role-inline-stepper">
+          <button type="button" data-role-adjust="${escapeHtml(definition.name)}" data-role-delta="-1" aria-label="${escapeHtml(definition.name)}の人数を減らす">-</button>
+          <span class="min-w-[2rem] text-center text-xs font-semibold text-[var(--shuffly-text)]">${definition.count}</span>
+          <button type="button" data-role-adjust="${escapeHtml(definition.name)}" data-role-delta="1" aria-label="${escapeHtml(definition.name)}の人数を増やす">+</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function setRoleDefinitions(definitions){
+    const normalized = normalizeRoleDefinitions(definitions);
+    const rolesEl = document.getElementById('rolesInput');
+    if(rolesEl){
+      rolesEl.value = serializeRoleDefinitions(normalized);
+    }
+    syncRolePresetButtons(normalized);
+    renderRoleDefinitions(normalized);
+    updateRoleCountHint(normalized);
+    updateRoleSettings(normalized);
+  }
+
+  function toggleRolePreset(name, category = null){
+    const definitions = getRoleDefinitions();
+    const index = definitions.findIndex((definition)=>definition.name === name);
+
+    if(index >= 0){
+      definitions.splice(index, 1);
+    } else {
+      definitions.push({ name, count: 1, category: category || ROLE_CATEGORY_BY_NAME.get(name) || null });
+    }
+
+    setRoleDefinitions(definitions);
+  }
+
+  function adjustRoleDefinition(name, delta){
+    const definitions = getRoleDefinitions();
+    const target = definitions.find((definition)=>definition.name === name);
+    if(!target) return;
+
+    target.count = Math.max((target.count || 1) + delta, 0);
+    setRoleDefinitions(definitions.filter((definition)=>definition.count > 0));
   }
 
   function parseEntry(entry){
@@ -100,11 +632,12 @@ const ShufflyApp = (function() {
     return getGroupRound(entries, true) || 1;
   }
 
-  function collectGroupSettings(groupCount, displayNames, fixedMembers){
+  function collectGroupSettings(groupCount, displayNames, fixedMembers, togetherMembers){
     return {
       group_count: groupCount,
       group_names: displayNames,
-      fixed_members: fixedMembers
+      fixed_members: fixedMembers,
+      together_members: togetherMembers
     };
   }
 
@@ -222,12 +755,15 @@ const ShufflyApp = (function() {
 
   // --- コア処理: グループ / 順番 / 役割 ---
   function assignGroups(){
+    const memberValidation = validateUniqueMemberNames({ withToast: true });
+    if(!memberValidation.valid) return;
+
     let raw = getRawValue().trim();
     let rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
 
     // 追加: メンバーが空ならトースト表示のみ行い、グループ表示はクリアして処理を中断する
     if(rawList.length === 0){
-      showToast("メンバーがいません");
+      showToast("メンバーが入力されていません");
       const gOut = document.getElementById('groupOutput');
       const sOut = document.getElementById('statsOutput');
       const gr = document.getElementById('groupRoundHint');
@@ -245,87 +781,57 @@ const ShufflyApp = (function() {
     const groups=Object.fromEntries(groupIds.map(g=>[g,[]]));
     const coMap=getCoOccurrenceMap(entries);
 
-    const fixedRaw = (document.getElementById('fixedMembersInput').value || "").split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
+    const fixedRaw = parseCommaSeparatedList(document.getElementById('fixedMembersInput')?.value || "");
+    const togetherRawText = document.getElementById('togetherMembersInput')?.value || "";
+    const togetherGroups = parseTogetherMemberGroups(togetherRawText);
     const fixedSet = new Set(fixedRaw);
-    const fixedEntries = entries.filter(e=>fixedSet.has(e.name));
-    const otherEntries = entries.filter(e=>!fixedSet.has(e.name));
+    const { units, ignoredNames, prioritizedTogetherNames } = buildGroupUnits(entries, fixedSet, togetherGroups);
+    const fixedUnits = units
+      .filter((unit)=>unit.fixedMembers.length === 1)
+      .sort((left, right)=>right.members.length - left.members.length);
+    const otherUnits = units
+      .filter((unit)=>unit.fixedMembers.length === 0)
+      .sort((left, right)=>right.members.length - left.members.length);
 
     function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+    if(ignoredNames.length > 0 || prioritizedTogetherNames.length > 0){
+      const messages = [];
+      if(ignoredNames.length > 0) messages.push('存在しない名前の同グループ指定は無視されます');
+      if(prioritizedTogetherNames.length > 0){
+        messages.push(`競合する指定があったため、「一緒のグループにしたいメンバー」を優先しました: ${prioritizedTogetherNames.join('、')}`);
+      }
+      showToast(messages.join('、'));
+    }
 
     // 変更点：分散固定メンバーは初回はランダムに各グループへ割当てるが、
     // 2回目以降はできるかぎり直前の割当（履歴の最後のグループ）に固定する。
     // ただしバランスが大きく崩れる場合は空きグループや最小グループへ割当てる。
-    for(const p of fixedEntries){
-      const emptyGroups = groupIds.filter(g=>groups[g].length===0);
-      let chosen = null;
+    for(const unit of fixedUnits){
+      const pivot = unit.fixedMembers[0];
 
       // 最後の履歴から直前のグループを取得
-      const last = p.history.at(-1);
+      const last = pivot.history.at(-1);
       const m = last ? last.match(/#\d+([A-Z])$/) : null;
       const preferred = m ? m[1] : null;
+      const chosen = pickBestGroupForUnit(unit, groupIds, groups, coMap, preferred && groupIds.includes(preferred) ? preferred : null);
 
-      if(preferred && groupIds.includes(preferred)){
-        // 現在の最小グループサイズを取得
-        const minSize = Math.min(...groupIds.map(g=>groups[g].length));
-        // できるだけ同じグループに戻す：ただしそのグループが最小サイズよりも大きすぎるときは避ける
-        // （バランスを保つために minSize + 1 を許容上限とする）
-        if(groups[preferred].length <= minSize + 1){
-          chosen = preferred;
-        } else if(emptyGroups.length > 0){
-          chosen = pickRandom(emptyGroups);
-        } else {
-          const candidates = groupIds.filter(g=>groups[g].length===minSize);
-          chosen = pickRandom(candidates);
-        }
-      } else {
-        // preferred が無い（初回）または無効な場合は既存のルールに従う
-        if(emptyGroups.length>0){
-          chosen = pickRandom(emptyGroups);
-        } else {
-          const minSize = Math.min(...groupIds.map(g=>groups[g].length));
-          const candidates = groupIds.filter(g=>groups[g].length===minSize);
-          chosen = pickRandom(candidates);
-        }
-      }
-
-      if(!chosen){
-        // 最終手段：最小グループに入れる
-        const minSize = Math.min(...groupIds.map(g=>groups[g].length));
-        const candidates = groupIds.filter(g=>groups[g].length===minSize);
-        chosen = pickRandom(candidates);
-      }
-
-      groups[chosen].push(p);
-      p.assignedGroup = chosen;
+      unit.members.forEach((member)=>{
+        groups[chosen].push(member);
+        member.assignedGroup = chosen;
+      });
     }
 
-    for(const p of otherEntries){
-      const emptyGroups = groupIds.filter(g=>groups[g].length===0);
-      if(emptyGroups.length>0){
-        const chosen = pickRandom(emptyGroups);
-        groups[chosen].push(p);
-        p.assignedGroup = chosen;
-        continue;
-      }
-
-      const minSize=Math.min(...groupIds.map(g=>groups[g].length));
-      const candidates=groupIds.filter(g=>groups[g].length===minSize);
-
-      let minMK=Infinity;
-      const scores=[];
-      for(const g of candidates){
-        const mk=groups[g].reduce((acc,q)=>acc+(coMap[p.name][q.name]||0),0);
-        scores.push({g, mk});
-        if(mk<minMK) minMK=mk;
-      }
-      const tied = scores.filter(s=>s.mk===minMK).map(s=>s.g);
-      const selected = pickRandom(tied);
-      groups[selected].push(p);
-      p.assignedGroup = selected;
+    for(const unit of otherUnits){
+      const selected = pickBestGroupForUnit(unit, groupIds, groups, coMap);
+      unit.members.forEach((member)=>{
+        groups[selected].push(member);
+        member.assignedGroup = selected;
+      });
     }
 
     // 役割がある場合は順番に割当
-    const rolesForGroups = document.getElementById('rolesInput').value.split(/[\r\n,]+/).map(r=>r.trim()).filter(Boolean);
+    const rolesForGroups = getRoleNames();
     if(rolesForGroups.length>0){
       for(const g of groupIds){
         const members=groups[g];
@@ -358,7 +864,7 @@ const ShufflyApp = (function() {
         name: member.name
       }))
     }));
-    const groupSettings = collectGroupSettings(groupCount, displayNames, fixedRaw);
+    const groupSettings = collectGroupSettings(groupCount, displayNames, fixedRaw, togetherGroups);
 
     updateParticipantCount(); showGroups(); showStats(); pushToHistory('groups', {
       membersRaw: updatedRaw,
@@ -368,39 +874,47 @@ const ShufflyApp = (function() {
     // 回次表示を更新（履歴を追加した後に確実に更新）
     updateGroupRoundDisplay();
     // 追加: 実行成功時にトースト表示
-    showToast("グループに振り分けました");
+    showToast("グループ分けを実行しました");
     switchResultTab('groups');
   }
 
   function assignOrder(){
+    const memberValidation = validateUniqueMemberNames({ withToast: true });
+    if(!memberValidation.valid) return;
+
     const raw = getRawValue().trim();
     const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
-    let members = rawList.map(s=>s.split('#')[0].trim());
+    const allMembers = rawList.map(s=>s.split('#')[0].trim());
+    const excludedRaw = parseCommaSeparatedList(document.getElementById('excludedOrderInput')?.value || "");
+    const excludedSet = new Set(excludedRaw);
+    const excludedMembers = allMembers.filter((member)=>excludedSet.has(member));
+    const invalidExcludedMembers = excludedRaw.filter((member)=>!allMembers.includes(member));
+    let members = allMembers.filter((member)=>!excludedSet.has(member));
     if(members.length === 0){
       document.getElementById('orderOutput').value = "";
       if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = "[]";
-      showToast("メンバーがいません");
+      showToast(excludedMembers.length > 0 ? "順番を決める対象メンバーがいません" : "メンバーが入力されていません");
       return;
     }
 
-    const fixedRaw = (document.getElementById('fixedOrderInput')?.value || "").split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean);
-    const fixedMap = {};
-    const invalids = [];
-    for(const line of fixedRaw){
-      if(!line) continue;
-      const m = line.match(/^(\d+)\s*[:=]\s*(.+)$/) || line.match(/^(\d+)\s+(.+)$/);
-      if(m){
-        const pos = parseInt(m[1],10);
-        const name = m[2].trim();
-        if(pos >= 1 && pos <= members.length){
-          fixedMap[pos] = name;
-        } else {
-          invalids.push(line);
-        }
-      } else {
-        invalids.push(line);
-      }
+    const fixedRaw = document.getElementById('fixedOrderInput')?.value || "";
+    const parsedFixedEntries = parseFixedOrderEntries(fixedRaw);
+    const fixedMap = { ...parsedFixedEntries.fixedMap };
+    const invalids = [...parsedFixedEntries.invalidFormats];
+    if(parsedFixedEntries.duplicatePositions.length > 0 || parsedFixedEntries.duplicateNames.length > 0){
+      const messages = [];
+      if(parsedFixedEntries.duplicatePositions.length > 0) messages.push(`同じ番号があります: ${parsedFixedEntries.duplicatePositions.join('、')}`);
+      if(parsedFixedEntries.duplicateNames.length > 0) messages.push(`同じ名前があります: ${parsedFixedEntries.duplicateNames.join('、')}`);
+      showToast(messages.join(' / '));
+      return;
     }
+    Object.keys(fixedMap).forEach((posStr)=>{
+      const pos = parseInt(posStr, 10);
+      if(!(pos >= 1 && pos <= members.length)){
+        invalids.push(`${pos}:${fixedMap[pos]}`);
+        delete fixedMap[pos];
+      }
+    });
 
     const namesSet = new Set(members);
     const assignedFixedNames = new Set();
@@ -408,7 +922,10 @@ const ShufflyApp = (function() {
     for(const posStr in fixedMap){
       const pos = parseInt(posStr,10);
       const name = fixedMap[pos];
-      if(!namesSet.has(name)){
+      if(excludedSet.has(name)){
+        invalidNameEntries.push(`${pos}: ${name}`);
+        delete fixedMap[pos];
+      } else if(!namesSet.has(name)){
         invalidNameEntries.push(`${pos}: ${name}`);
         delete fixedMap[pos];
       } else {
@@ -416,11 +933,12 @@ const ShufflyApp = (function() {
       }
     }
 
-    if(invalids.length>0 || invalidNameEntries.length>0){
+    if(invalids.length>0 || invalidNameEntries.length>0 || invalidExcludedMembers.length > 0){
       const msgs = [];
       if(invalids.length>0) msgs.push("固定指定の書式が不正な行があります");
       if(invalidNameEntries.length>0) msgs.push("メンバーに存在しない名前の固定指定があります");
-      showToast(msgs.join('、') + "（無視されます）");
+      if(invalidExcludedMembers.length>0) msgs.push("メンバーに存在しない除外指定があります");
+      showToast(msgs.join('、') + "。この指定は反映されません");
     }
 
     const pool = members.filter(m=>!assignedFixedNames.has(m));
@@ -448,23 +966,39 @@ const ShufflyApp = (function() {
     const orderJson = result.map((name, idx) => ({ name, order: idx+1 }));
     if(document.getElementById('orderJsonInput')) document.getElementById('orderJsonInput').value = JSON.stringify(orderJson);
 
+    const orderSettings = {
+      excluded_members: excludedMembers,
+      fixed_order: parseCommaSeparatedList(fixedRaw)
+    };
+
     // 履歴に保存
-    pushToHistory('order', { result: result });
+    pushToHistory('order', { result: result, settings: orderSettings });
     // 回次表示を更新（履歴を追加した後に確実に更新）
     updateOrderRoundDisplay();
 
-    showToast("順番を割り当てました");
+    showToast("順番決めを実行しました");
     switchResultTab('order');
   }
 
   function assignRoles(){
+    const memberValidation = validateUniqueMemberNames({ withToast: true });
+    if(!memberValidation.valid) return;
+
     const raw = getRawValue().trim();
     const rawList = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean) : [];
-    let members = rawList.map(s=>s.split('#')[0].trim());
-    if(members.length===0){ showToast("メンバーがいません"); return; }
+    const allMembers = rawList.map(s=>s.split('#')[0].trim());
+    const excludedRaw = parseCommaSeparatedList(document.getElementById('excludedRolesInput')?.value || "");
+    const excludedSet = new Set(excludedRaw);
+    const excludedMembers = allMembers.filter((member)=>excludedSet.has(member));
+    const invalidExcludedMembers = excludedRaw.filter((member)=>!allMembers.includes(member));
+    let members = allMembers.filter((member)=>!excludedSet.has(member));
+    if(members.length===0){ showToast(excludedMembers.length > 0 ? "役割を決める対象メンバーがいません" : "メンバーが入力されていません"); return; }
 
-    const roles = document.getElementById('rolesInput').value.split(/[\r\n,]+/).map(r=>r.trim()).filter(Boolean);
-    if(roles.length===0){ showToast("役割が未入力です"); return; }
+    const roleDefinitions = getRoleDefinitions();
+    if(roleDefinitions.length===0){ showToast("役割が入力されていません"); return; }
+    const totalRoleCount = roleDefinitions.reduce((sum, definition)=>sum + definition.count, 0);
+    if(totalRoleCount > members.length){ showToast("役割の合計人数が対象メンバー数を超えています"); return; }
+    if(invalidExcludedMembers.length > 0){ showToast("メンバーにいない除外指定があります。この指定は反映されません"); }
 
     function shuffleArray(arr){
       for(let i=arr.length-1;i>0;i--){
@@ -475,43 +1009,37 @@ const ShufflyApp = (function() {
 
     const pool = members.slice();
     shuffleArray(pool);
+    const roleSlots = roleDefinitions.flatMap((definition)=>Array.from({length: definition.count}, ()=>definition.name));
 
     const assignments = [];
-    for(let i=0;i<roles.length && i<pool.length;i++){
-      assignments.push({ name: pool[i], role: roles[i] });
+    for(let i=0;i<roleSlots.length && i<pool.length;i++){
+      assignments.push({ name: pool[i], role: roleSlots[i] });
     }
     const assignedNames = new Set(assignments.map(a=>a.name));
     for(const m of members){
       if(!assignedNames.has(m)) assignments.push({ name: m, role: null });
     }
 
-    const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+    const displayLines = buildRoleOutputLines(assignments);
     document.getElementById('rolesOutput').value = displayLines.join("\n");
 
-    try {
-      const settingsField = document.getElementById('settingsJsonInput');
-      let settings = {};
-      if(settingsField && settingsField.value) {
-        try { settings = JSON.parse(settingsField.value); } catch(e){ settings = {}; }
-      }
-      settings.role_assignments = assignments.map(a => ({ name: a.name, role: a.role }));
-      // 役割名も保存（復元用）
-      settings.roles = roles.join('\n');
-      if(settingsField) settingsField.value = JSON.stringify(settings);
-    } catch(e){
-      const settingsField = document.getElementById('settingsJsonInput');
-      if(settingsField) settingsField.value = JSON.stringify({
-        role_assignments: assignments.map(a=>({ name:a.name, role: a.role })),
-        roles: roles.join('\n')
-      });
-    }
+    const settings = readSettingsJson();
+    settings.role_assignments = assignments.map((assignment)=>({ name: assignment.name, role: assignment.role }));
+    settings.role_definitions = roleDefinitions;
+    settings.roles = serializeRoleDefinitions(roleDefinitions);
+    settings.role_excluded_members = excludedMembers;
+    writeSettingsJson(settings);
 
     // 履歴に保存
-    pushToHistory('roles', { assignments: assignments });
+    pushToHistory('roles', {
+      assignments: assignments,
+      definitions: roleDefinitions,
+      settings: { excluded_members: excludedMembers }
+    });
     // 回次表示を更新（履歴を追加した後に確実に更新）
     updateRolesRoundDisplay();
 
-    showToast("役割を割り当てました");
+    showToast("役割決めを実行しました");
     switchResultTab('roles');
   }
 
@@ -733,9 +1261,9 @@ const ShufflyApp = (function() {
 
     // 出力の構築
     if(groupOverlapRates.length > 0){
-      output.push('⚠ 被りがあったグループ：');
+      output.push('今回、重なりが多かったグループ：');
       for(const g of groupOverlapRates){
-        output.push(`  ${g.label}（メンバー被り率${g.rate.toFixed(2)}）`);
+        output.push(`  ${g.label}（平均 ${g.rate.toFixed(2)} 回）`);
       }
     }
 
@@ -743,23 +1271,22 @@ const ShufflyApp = (function() {
     const sortedCounts = Object.keys(memberOverlapGroups).map(Number).sort((a, b) => b - a);
     if(sortedCounts.length > 0){
       if(groupOverlapRates.length > 0) output.push('');
-      output.push('⚠ 被りがあったメンバー：');
+      output.push('よく一緒になっているメンバー：');
       for(const count of sortedCounts){
         const members = Array.from(memberOverlapGroups[count]);
-        members.sort(); // メンバー名をソート
-        output.push(`  ${members.join(' & ')}（メンバー被り${count}回目）`);
+        members.sort();
+        output.push(`  ${members.join(' / ')}（最大 ${count} 回）`);
       }
     }
 
     if(newCombinationMembers.length > 0){
       if(groupOverlapRates.length > 0 || sortedCounts.length > 0) output.push('');
-      output.push('✓ 全員が新しい組み合わせのメンバー：');
+      output.push('新しい組み合わせになったメンバー：');
       output.push(`  ${newCombinationMembers.join(', ')}`);
     }
 
-    // 「全員が新しい組み合わせのメンバー：」が表示されていない場合のみ表示
     if(groupOverlapRates.length === 0 && sortedCounts.length === 0 && newCombinationMembers.length === 0){
-      output.push('未実施');
+      output.push('まだ比較できる情報はありません');
     }
 
     document.getElementById('statsOutput').value = output.join('\n');
@@ -875,10 +1402,12 @@ const ShufflyApp = (function() {
   }
 
   function updateParticipantCount(){
-    const raw = getRawValue().trim();
-    const count = raw ? raw.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean).length : 0;
+    const memberNames = getCurrentMemberNames();
+    const duplicateNames = getDuplicateNames(memberNames);
+    const count = memberNames.length;
     const span=document.getElementById('groupSizeHint');
     const memberSpan=document.getElementById('memberCountHint');
+    const memberWarning=document.getElementById('memberInputWarning');
 
     const customNamesEl = document.getElementById('customGroupNames');
     let groupCount;
@@ -892,10 +1421,22 @@ const ShufflyApp = (function() {
     }
 
     if(memberSpan){
+      memberSpan.classList.remove('shuffly-indicator--warning', 'shuffly-indicator--danger');
       if(count){
         memberSpan.innerHTML = `現在のメンバー数：<span class="font-bold">${count}人</span>`;
       } else {
         memberSpan.innerHTML = '現在のメンバー数：<span class="font-bold">未入力</span>';
+      }
+      memberSpan.classList.add(duplicateNames.length > 0 ? 'shuffly-indicator--danger' : 'shuffly-indicator--warning');
+    }
+
+    if(memberWarning){
+      if(duplicateNames.length > 0){
+        memberWarning.textContent = `同じ名前があります: ${duplicateNames.join('、')}`;
+        memberWarning.classList.remove('hidden');
+      } else {
+        memberWarning.textContent = '';
+        memberWarning.classList.add('hidden');
       }
     }
 
@@ -912,13 +1453,17 @@ const ShufflyApp = (function() {
       }
     }
 
+    updateRoleCountHint();
+    updateFixedOrderWarning();
+    updateGroupConflictWarning();
+
     // 回次表示を更新（メンバーや履歴が変わったときに反映）
     updateGroupRoundDisplay();
   }
 
-  function copyGroupOutput(){ navigator.clipboard.writeText(document.getElementById('groupOutput').value).then(()=>showToast("コピーしました！")).catch(()=>showToast("コピーに失敗しました")); }
-  function copyOrderOutput(){ navigator.clipboard.writeText(document.getElementById('orderOutput').value).then(()=>showToast("コピーしました！")).catch(()=>showToast("コピーに失敗しました")); }
-  function copyRolesOutput(){ navigator.clipboard.writeText(document.getElementById('rolesOutput').value).then(()=>showToast("コピーしました！")).catch(()=>showToast("コピーに失敗しました")); }
+  function copyGroupOutput(){ navigator.clipboard.writeText(document.getElementById('groupOutput').value).then(()=>showToast("グループ結果をコピーしました")).catch(()=>showToast("コピーできませんでした")); }
+  function copyOrderOutput(){ navigator.clipboard.writeText(document.getElementById('orderOutput').value).then(()=>showToast("順番結果をコピーしました")).catch(()=>showToast("コピーできませんでした")); }
+  function copyRolesOutput(){ navigator.clipboard.writeText(document.getElementById('rolesOutput').value).then(()=>showToast("役割結果をコピーしました")).catch(()=>showToast("コピーできませんでした")); }
 
   // showToast の位置を常に上から100pxの位置に表示するよう変更
   function showToast(msg){
@@ -1031,8 +1576,9 @@ const ShufflyApp = (function() {
       switchResultTab('order');
     } else if(activeTab === 'roles') {
       const assignments = entry.data.assignments || [];
-      const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+      const displayLines = buildRoleOutputLines(assignments);
       document.getElementById('rolesOutput').value = displayLines.join("\n");
+      if(entry.data.definitions) setRoleDefinitions(entry.data.definitions);
       updateRolesRoundDisplay();
       switchResultTab('roles');
     }
@@ -1079,8 +1625,9 @@ const ShufflyApp = (function() {
       switchResultTab('order');
     } else if(activeTab === 'roles') {
       const assignments = entry.data.assignments || [];
-      const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+      const displayLines = buildRoleOutputLines(assignments);
       document.getElementById('rolesOutput').value = displayLines.join("\n");
+      if(entry.data.definitions) setRoleDefinitions(entry.data.definitions);
       updateRolesRoundDisplay();
       switchResultTab('roles');
     }
@@ -1177,7 +1724,7 @@ const ShufflyApp = (function() {
       const merged = (cur?cur + "\n":"") + text.replace(/\r/g,'').trim();
       setRawAndRefreshDisplay(merged);
       updateParticipantCount(); pushToHistory();
-      showToast("ファイルをインポートしました");
+      showToast("ファイルから読み込みました");
     };
     reader.readAsText(file, 'utf-8');
   }
@@ -1189,7 +1736,7 @@ const ShufflyApp = (function() {
       setRawAndRefreshDisplay(merged);
       updateParticipantCount(); pushToHistory();
       showToast("クリップボードから貼り付けました");
-    }).catch(()=>showToast("クリップボードにアクセスできません"));
+    }).catch(()=>showToast("クリップボードを読み取れませんでした"));
   }
 
   /* --- 追加: サンプルデータ挿入機能（15人プール、ランダムで10人選択） --- */
@@ -1299,7 +1846,7 @@ const ShufflyApp = (function() {
     historyData.roles = [];
 
     updateParticipantCount();
-    showToast("全ての履歴をクリアしました");
+    showToast("履歴をすべてクリアしました");
   }
 
   function clearMembers(){
@@ -1349,7 +1896,7 @@ const ShufflyApp = (function() {
     // メンバー数表示を更新
     updateParticipantCount();
 
-    showToast("メンバーリストをクリアしました");
+    showToast("メンバーをクリアしました");
   }
 
   function togglePresentationMode(){
@@ -1367,7 +1914,7 @@ const ShufflyApp = (function() {
       } catch(storageError) {
         if (storageError.name === 'QuotaExceededError') {
           console.warn('localStorage quota exceeded', storageError);
-          showToast('ストレージ容量が不足しています');
+          showToast('保存容量が不足しています');
         } else {
           throw storageError;
         }
@@ -1378,7 +1925,7 @@ const ShufflyApp = (function() {
 
     const presentationPath = '/events/show';
     const w = window.open(presentationPath, '_blank', 'noopener');
-    if(!w) showToast("ポップアップがブロックされました。ポップアップを許可してください");
+    if(!w) showToast("ポップアップがブロックされています。許可してください");
 
     try {
       if (typeof BroadcastChannel !== 'undefined') {
@@ -1413,7 +1960,7 @@ const ShufflyApp = (function() {
     a.href = url; a.download = (document.getElementById('shareEventTitle').value || 'shuffly_result') + '.txt';
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
-    showToast("結果を出力しました");
+    showToast("結果ファイルを出力しました");
   }
 
   function saveResults(){
@@ -1446,7 +1993,7 @@ const ShufflyApp = (function() {
       if(form) {
         form.submit();
       } else {
-        showToast("フォームが見つかりません");
+        showToast("保存フォームが見つかりません");
       }
     } else {
       try {
@@ -1471,7 +2018,7 @@ const ShufflyApp = (function() {
         } catch(storageError) {
           if (storageError.name === 'QuotaExceededError') {
             console.warn('localStorage quota exceeded', storageError);
-            showToast('ストレージ容量が不足しています');
+            showToast('保存容量が不足しています');
             return;
           } else {
             throw storageError;
@@ -1482,7 +2029,7 @@ const ShufflyApp = (function() {
         const loginUrl = new_user_session_path + "?redirect_to=" + encodeURIComponent(window.location.href) + "&pending_event_token=" + encodeURIComponent(token);
         window.location.href = loginUrl;
       } catch(e){
-        showToast("保存処理に失敗しました");
+        showToast("保存できませんでした");
       }
     }
   }
@@ -1535,6 +2082,9 @@ const ShufflyApp = (function() {
     }
     updateParticipantCount();
     syncGroupCountPresetButtons();
+    setRoleDefinitions(getRoleDefinitions());
+    syncAuxiliarySettings();
+    syncOptionalCardSummaries();
     // 初期化時には履歴を作成しない（グループ分け実行時のみ履歴を保存）
     // これにより「0回目（未実施）」が履歴として保存される問題を回避
     // if(shufflyHistory.length === 0 && getRawValue().trim() !== "") pushToHistory('groups');
@@ -1548,12 +2098,12 @@ const ShufflyApp = (function() {
     if(sc && btn && textSpan && icon){
       if(statsCollapsed){
         sc.classList.add('hidden');
-        textSpan.innerHTML = '<span class="text-sm text-blue-500">●</span> 統計情報';
+        textSpan.textContent = '統計のメモ';
         btn.setAttribute('aria-expanded', 'false');
         icon.src = ICON_EXPAND;
       } else {
         sc.classList.remove('hidden');
-        textSpan.innerHTML = '<span class="text-sm text-blue-500">●</span> 統計情報';
+        textSpan.textContent = '統計のメモ';
         btn.setAttribute('aria-expanded', 'true');
         icon.src = ICON_COLLAPSE;
       }
@@ -1563,16 +2113,15 @@ const ShufflyApp = (function() {
     const obtn = document.getElementById('btn-toggle-options');
     const otext = document.getElementById('btn-toggle-options-text');
     const oicon = document.getElementById('btn-toggle-options-icon');
-    if(oc && obtn && otext && oicon){
+      if(oc && obtn && otext && oicon){
       if(optionsCollapsed){
         oc.classList.add('hidden');
-        // preserve dot styling by setting innerHTML so the dot keeps text-blue-500
-        otext.innerHTML = '<span class="text-sm text-blue-500">●</span> グループ表示オプション';
+        otext.textContent = '表示の調整';
         obtn.setAttribute('aria-expanded', 'false');
         oicon.src = ICON_EXPAND;
       } else {
         oc.classList.remove('hidden');
-        otext.innerHTML = '<span class="text-sm text-blue-500">●</span> グループ表示オプション';
+        otext.textContent = '表示の調整';
         obtn.setAttribute('aria-expanded', 'true');
         oicon.src = ICON_COLLAPSE;
       }
@@ -1635,15 +2184,14 @@ const ShufflyApp = (function() {
     });
 
     // 入力関連のイベント
-    bindIf('groupCount', 'input', ()=>{ updateParticipantCount(); syncGroupCountPresetButtons(); });
-    bindIf('customGroupNames', 'input', ()=>{ updateParticipantCount(); });
-    bindIf('rolesInput', 'input', ()=>{
-      const settingsField = document.getElementById('settingsJsonInput');
-      if(settingsField) settingsField.value=JSON.stringify({
-        roles:document.getElementById('rolesInput').value,
-        group_count: buildGroupIdsAndNames().groupCount
-      });
-    });
+    bindIf('groupCount', 'input', ()=>{ updateParticipantCount(); syncGroupCountPresetButtons(); syncAuxiliarySettings(); });
+    bindIf('customGroupNames', 'input', ()=>{ updateParticipantCount(); syncAuxiliarySettings(); });
+    bindIf('fixedMembersInput', 'input', ()=>{ syncAuxiliarySettings(); updateGroupConflictWarning(); syncOptionalCardSummaries(); });
+    bindIf('togetherMembersInput', 'input', ()=>{ syncAuxiliarySettings(); updateGroupConflictWarning(); syncOptionalCardSummaries(); });
+    bindIf('fixedOrderInput', 'input', ()=>{ syncAuxiliarySettings(); updateFixedOrderWarning(); });
+    bindIf('excludedOrderInput', 'input', ()=>{ syncAuxiliarySettings(); });
+    bindIf('excludedRolesInput', 'input', ()=>{ syncAuxiliarySettings(); updateRoleCountHint(); });
+    bindIf('rolesInput', 'input', ()=>{ setRoleDefinitions(getRoleDefinitions()); });
 
     // インポート / サンプルデータ / クリア
     bindIf('btn-trigger-import', 'click', (e)=>{ e.preventDefault(); triggerImport(); });
@@ -1666,6 +2214,39 @@ const ShufflyApp = (function() {
         syncGroupCountPresetButtons();
       });
     });
+
+    document.querySelectorAll('[data-role-preset]').forEach((button)=>{
+      button.addEventListener('click', ()=>{
+        toggleRolePreset(button.dataset.rolePreset, button.dataset.roleCategory || null);
+      });
+    });
+
+    document.querySelectorAll('[data-optional-toggle]').forEach((button)=>{
+      button.addEventListener('click', ()=>{
+        const card = button.closest('[data-optional-card]');
+        if(!card) return;
+        setOptionalCardExpanded(card, card.dataset.expanded === 'false');
+      });
+    });
+
+    document.querySelectorAll('[data-optional-card]').forEach((card)=>{
+      const sourceId = card.dataset.summarySource;
+      const source = sourceId ? document.getElementById(sourceId) : null;
+      if(source){
+        source.addEventListener('input', ()=>{
+          syncOptionalCardState(card);
+        });
+      }
+    });
+
+    const roleSettingsPanel = document.getElementById('panel-settings-roles');
+    if(roleSettingsPanel){
+      roleSettingsPanel.addEventListener('click', (event)=>{
+        const button = event.target.closest('[data-role-adjust]');
+        if(!button) return;
+        adjustRoleDefinition(button.dataset.roleAdjust, parseInt(button.dataset.roleDelta, 10) || 0);
+      });
+    }
 
     // タブ操作
     bindIf('tab-settings-groups', 'click', ()=>switchSettingsTab('groups'));
@@ -1706,7 +2287,7 @@ const ShufflyApp = (function() {
       sc.classList.toggle('hidden');
       const expanded = !sc.classList.contains('hidden');
       statsCollapsed = sc.classList.contains('hidden');
-      textSpan.innerHTML = '<span class="text-sm text-blue-500">●</span> 統計情報';
+      textSpan.textContent = '統計のメモ';
       btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       icon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
       if(!statsCollapsed) showStats();
@@ -1723,8 +2304,7 @@ const ShufflyApp = (function() {
       oc.classList.toggle('hidden');
       const expanded = !oc.classList.contains('hidden');
       optionsCollapsed = oc.classList.contains('hidden');
-      // preserve dot styling by setting innerHTML so the dot keeps text-blue-500
-      textSpan.innerHTML = '<span class="text-sm text-blue-500">●</span> グループ表示オプション';
+      textSpan.textContent = '表示の調整';
       btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       icon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
       // 変更点：グループ分け実行が行われていない限り、開閉時に groupOutput を更新しない
@@ -1877,11 +2457,12 @@ const ShufflyApp = (function() {
           } else if (latestEntry.type === 'roles' && latestEntry.data && latestEntry.data.assignments) {
             // 役割分担が最新の場合
             const assignments = latestEntry.data.assignments;
-            const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+            const displayLines = buildRoleOutputLines(assignments);
             const outputEl = document.getElementById('rolesOutput');
             if (outputEl) {
               outputEl.value = displayLines.join("\n");
             }
+            if(latestEntry.data.definitions) setRoleDefinitions(latestEntry.data.definitions);
             switchResultTab('roles');
           }
         }
@@ -1941,11 +2522,12 @@ const ShufflyApp = (function() {
             } else if (latestEntry.type === 'roles' && latestEntry.data && latestEntry.data.assignments) {
               // 役割分担が最新の場合
               const assignments = latestEntry.data.assignments;
-              const displayLines = assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+              const displayLines = buildRoleOutputLines(assignments);
               const outputEl = document.getElementById('rolesOutput');
               if (outputEl) {
                 outputEl.value = displayLines.join("\n");
               }
+              if(latestEntry.data.definitions) setRoleDefinitions(latestEntry.data.definitions);
               switchResultTab('roles');
             }
           }
@@ -2009,10 +2591,43 @@ const ShufflyApp = (function() {
   // 設定データをUIに復元する関数
   function restoreSettingsUI() {
     const settingsField = document.getElementById('settingsJsonInput');
-    if (!settingsField || !settingsField.value) return;
+    const latestGroupSettings = historyData.groups.at(-1)?.data?.settings || {};
+    const latestOrderSettings = historyData.order.at(-1)?.data?.settings || {};
+    const latestRoleDefinitions = historyData.roles.at(-1)?.data?.definitions || [];
+    const latestRoleSettings = historyData.roles.at(-1)?.data?.settings || {};
+    if (!settingsField || !settingsField.value) {
+      const groupCountEl = document.getElementById('groupCount');
+      const customNamesEl = document.getElementById('customGroupNames');
+      const togetherMembersEl = document.getElementById('togetherMembersInput');
+      const excludedOrderEl = document.getElementById('excludedOrderInput');
+      const excludedRolesEl = document.getElementById('excludedRolesInput');
+
+      if(groupCountEl && latestGroupSettings.group_count) groupCountEl.value = latestGroupSettings.group_count;
+      if(customNamesEl && Array.isArray(latestGroupSettings.group_names) && latestGroupSettings.group_names.length > 0) customNamesEl.value = latestGroupSettings.group_names.join('\n');
+      const fixedMembersEl = document.getElementById('fixedMembersInput');
+      if(fixedMembersEl && Array.isArray(latestGroupSettings.fixed_members) && latestGroupSettings.fixed_members.length > 0) fixedMembersEl.value = latestGroupSettings.fixed_members.join('\n');
+      if(togetherMembersEl && Array.isArray(latestGroupSettings.together_members) && latestGroupSettings.together_members.length > 0) {
+        togetherMembersEl.value = latestGroupSettings.together_members.map((group)=>Array.isArray(group) ? group.join(', ') : group).join('\n');
+      }
+      if(excludedOrderEl && Array.isArray(latestOrderSettings.excluded_members) && latestOrderSettings.excluded_members.length > 0) {
+        excludedOrderEl.value = latestOrderSettings.excluded_members.join('\n');
+      }
+      if(excludedRolesEl && Array.isArray(latestRoleSettings.excluded_members) && latestRoleSettings.excluded_members.length > 0) {
+        excludedRolesEl.value = latestRoleSettings.excluded_members.join('\n');
+      }
+      const fixedOrderEl = document.getElementById('fixedOrderInput');
+      if(fixedOrderEl && Array.isArray(latestOrderSettings.fixed_order) && latestOrderSettings.fixed_order.length > 0) fixedOrderEl.value = latestOrderSettings.fixed_order.join('\n');
+      setRoleDefinitions(latestRoleDefinitions.length > 0 ? latestRoleDefinitions : getRoleDefinitions());
+      return;
+    }
 
     try {
-      const settings = JSON.parse(settingsField.value);
+      const settings = {
+        ...latestGroupSettings,
+        ...latestOrderSettings,
+        role_excluded_members: latestRoleSettings.excluded_members || [],
+        ...(JSON.parse(settingsField.value) || {})
+      };
       if (!settings) return;
 
       // グループ数を復元
@@ -2031,21 +2646,67 @@ const ShufflyApp = (function() {
         }
       }
 
-      // 役割名を復元（settings.rolesがある場合のみ）
-      if (settings.roles && typeof settings.roles === 'string' && settings.roles.trim()) {
-        const rolesEl = document.getElementById('rolesInput');
-        if (rolesEl && !rolesEl.value) {
-          // 既に値がない場合のみ設定（既存の設定を上書きしない）
-          rolesEl.value = settings.roles;
+      if (settings.together_members && Array.isArray(settings.together_members) && settings.together_members.length > 0) {
+        const togetherMembersEl = document.getElementById('togetherMembersInput');
+        if (togetherMembersEl) {
+          togetherMembersEl.value = settings.together_members.map((group)=>Array.isArray(group) ? group.join(', ') : group).join('\n');
         }
       }
 
-      // settingsJsonInputを整理（role_assignmentsとrolesを保持）
+      if (settings.fixed_members && Array.isArray(settings.fixed_members) && settings.fixed_members.length > 0) {
+        const fixedMembersEl = document.getElementById('fixedMembersInput');
+        if (fixedMembersEl) {
+          fixedMembersEl.value = settings.fixed_members.join('\n');
+        }
+      }
+
+      if (settings.excluded_members && Array.isArray(settings.excluded_members) && settings.excluded_members.length > 0) {
+        const excludedOrderEl = document.getElementById('excludedOrderInput');
+        if (excludedOrderEl) {
+          excludedOrderEl.value = settings.excluded_members.join('\n');
+        }
+      }
+
+      if (settings.order_excluded_members && Array.isArray(settings.order_excluded_members) && settings.order_excluded_members.length > 0) {
+        const excludedOrderEl = document.getElementById('excludedOrderInput');
+        if (excludedOrderEl) {
+          excludedOrderEl.value = settings.order_excluded_members.join('\n');
+        }
+      }
+
+      if (settings.role_excluded_members && Array.isArray(settings.role_excluded_members) && settings.role_excluded_members.length > 0) {
+        const excludedRolesEl = document.getElementById('excludedRolesInput');
+        if (excludedRolesEl) {
+          excludedRolesEl.value = settings.role_excluded_members.join('\n');
+        }
+      }
+
+      if (settings.fixed_order && Array.isArray(settings.fixed_order) && settings.fixed_order.length > 0) {
+        const fixedOrderEl = document.getElementById('fixedOrderInput');
+        if (fixedOrderEl) {
+          fixedOrderEl.value = settings.fixed_order.join('\n');
+        }
+      }
+
+      if (Array.isArray(settings.role_definitions) && settings.role_definitions.length > 0) {
+        setRoleDefinitions(settings.role_definitions);
+      } else if (settings.roles && typeof settings.roles === 'string' && settings.roles.trim()) {
+        setRoleDefinitions(parseRoleDefinitions(settings.roles));
+      } else if (latestRoleDefinitions.length > 0) {
+        setRoleDefinitions(latestRoleDefinitions);
+      } else {
+        setRoleDefinitions(getRoleDefinitions());
+      }
+
+      // settingsJsonInputを整理
       const cleanedSettings = {};
       if (settings.role_assignments) {
         cleanedSettings.role_assignments = settings.role_assignments;
       }
-      if (settings.roles && typeof settings.roles === 'string' && settings.roles.trim()) {
+      if (settings.role_definitions && Array.isArray(settings.role_definitions) && settings.role_definitions.length > 0) {
+        cleanedSettings.role_definitions = normalizeRoleDefinitions(settings.role_definitions);
+        cleanedSettings.roles = serializeRoleDefinitions(cleanedSettings.role_definitions);
+      } else if (settings.roles && typeof settings.roles === 'string' && settings.roles.trim()) {
         cleanedSettings.roles = settings.roles.trim();
       }
       if (settings.group_count) {
@@ -2053,6 +2714,24 @@ const ShufflyApp = (function() {
       }
       if (settings.custom_group_names && Array.isArray(settings.custom_group_names) && settings.custom_group_names.length > 0) {
         cleanedSettings.custom_group_names = settings.custom_group_names;
+      }
+      if (settings.together_members && Array.isArray(settings.together_members) && settings.together_members.length > 0) {
+        cleanedSettings.together_members = settings.together_members;
+      }
+      if (settings.fixed_members && Array.isArray(settings.fixed_members) && settings.fixed_members.length > 0) {
+        cleanedSettings.fixed_members = settings.fixed_members;
+      }
+      if (settings.excluded_members && Array.isArray(settings.excluded_members) && settings.excluded_members.length > 0) {
+        cleanedSettings.excluded_members = settings.excluded_members;
+      }
+      if (settings.order_excluded_members && Array.isArray(settings.order_excluded_members) && settings.order_excluded_members.length > 0) {
+        cleanedSettings.order_excluded_members = settings.order_excluded_members;
+      }
+      if (settings.role_excluded_members && Array.isArray(settings.role_excluded_members) && settings.role_excluded_members.length > 0) {
+        cleanedSettings.role_excluded_members = settings.role_excluded_members;
+      }
+      if (settings.fixed_order && Array.isArray(settings.fixed_order) && settings.fixed_order.length > 0) {
+        cleanedSettings.fixed_order = settings.fixed_order;
       }
 
       // 設定がある場合のみ保存
@@ -2063,6 +2742,7 @@ const ShufflyApp = (function() {
       }
     } catch(e) {
       console.error('Failed to restore settings UI:', e);
+      setRoleDefinitions(getRoleDefinitions());
     }
   }
 
@@ -2251,7 +2931,8 @@ document.addEventListener('DOMContentLoaded', () => {
                       round: round.round,
                       timestamp: round.timestamp || Date.now(),
                       data: {
-                        result: orderResult
+                        result: orderResult,
+                        settings: round.settings || {}
                       }
                     });
                   }
@@ -2266,13 +2947,22 @@ document.addEventListener('DOMContentLoaded', () => {
                       name: a.name || `メンバー${a.member_id}`,
                       role: a.role || ''
                     }));
+                    const groupedDefinitions = Array.isArray(round.definitions) && round.definitions.length > 0
+                      ? normalizeRoleDefinitions(round.definitions)
+                      : normalizeRoleDefinitions(
+                          roleAssignments
+                            .filter((assignment)=>assignment.role)
+                            .map((assignment)=>({ name: assignment.role, count: 1, category: ROLE_CATEGORY_BY_NAME.get(assignment.role) || null }))
+                        );
 
                     reconstructedHistory.push({
                       type: 'roles',
                       round: round.round,
                       timestamp: round.timestamp || Date.now(),
                       data: {
-                        assignments: roleAssignments
+                        assignments: roleAssignments,
+                        definitions: groupedDefinitions,
+                        settings: round.settings || {}
                       }
                     });
                   }
@@ -2327,9 +3017,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (settings && settings.role_assignments && Array.isArray(settings.role_assignments)) {
                   const rolesOutputEl = document.getElementById('rolesOutput');
                   if (rolesOutputEl) {
-                    const displayLines = settings.role_assignments.map(a => a.role ? `${a.name}: ${a.role}` : `${a.name}: `);
+                    const displayLines = buildRoleOutputLines(settings.role_assignments);
                     rolesOutputEl.value = displayLines.join('\n');
                   }
+                }
+                if (settings && Array.isArray(settings.role_definitions)) {
+                  setRoleDefinitions(settings.role_definitions);
+                } else if (settings && typeof settings.roles === 'string') {
+                  setRoleDefinitions(parseRoleDefinitions(settings.roles));
                 }
               }
             }

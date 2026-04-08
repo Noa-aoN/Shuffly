@@ -12,39 +12,44 @@
       <h2 class="mb-4 text-xl md:text-2xl font-semibold text-[var(--shuffly-text)]">メンバーを入力する</h2>
     </div>
     <div id="member-actions-fab" class="shuffly-fab">
+      <span class="shuffly-fab-hint">入力方法</span>
       <button id="btn-member-actions-fab" type="button" class="shuffly-fab-main flex items-center justify-center" aria-label="入力メニューを開く" aria-expanded="false" title="入力メニュー">
-        <%= image_tag 'icons/add_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 20, height: 20, alt: "" %>
+        <span class="shuffly-fab-main-bars" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
       </button>
       <div class="shuffly-fab-menu">
-        <div class="shuffly-fab-item" data-fab-position="top-left">
-          <span class="shuffly-fab-label">サンプルデータを入力</span>
-          <button id="btn-fab-sample" type="button" class="shuffly-fab-action flex items-center justify-center" aria-label="サンプルデータを入力">
+        <div class="shuffly-fab-item">
+          <button id="btn-fab-sample" type="button" class="shuffly-fab-action flex items-center" aria-label="サンプルデータを入力">
             <%= image_tag 'icons/experiment_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 18, height: 18, alt: "" %>
+            <span>サンプルデータを入力</span>
           </button>
         </div>
-        <div class="shuffly-fab-item" data-fab-position="mid-left">
-          <span class="shuffly-fab-label">テキスト/CSVから入力</span>
-          <button id="btn-fab-import-file" type="button" class="shuffly-fab-action flex items-center justify-center" aria-label="テキストまたはCSVから入力">
+        <div class="shuffly-fab-item">
+          <button id="btn-fab-import-file" type="button" class="shuffly-fab-action flex items-center" aria-label="テキストまたはCSVから入力">
             <%= image_tag 'icons/upload_file_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 18, height: 18, alt: "" %>
+            <span>テキスト/CSVから入力</span>
           </button>
         </div>
-        <div class="shuffly-fab-item" data-fab-position="bottom-left">
-          <span class="shuffly-fab-label">メンバーリストから入力</span>
-          <button id="btn-fab-import-list" type="button" class="shuffly-fab-action flex items-center justify-center" aria-label="メンバーリストから入力">
+        <div class="shuffly-fab-item">
+          <button id="btn-fab-import-list" type="button" class="shuffly-fab-action flex items-center" aria-label="メンバーリストから入力">
             <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 18, height: 18, alt: "" %>
+            <span>メンバーリストから入力</span>
           </button>
         </div>
-        <div class="shuffly-fab-item" data-fab-position="down">
-          <span class="shuffly-fab-label">メンバーをクリア</span>
-          <button id="btn-fab-clear-members" type="button" class="shuffly-fab-action flex items-center justify-center" aria-label="メンバーをクリア">
+        <div class="shuffly-fab-item">
+          <button id="btn-fab-clear-members" type="button" class="shuffly-fab-action flex items-center" aria-label="メンバーをクリア">
             <%= image_tag 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 18, height: 18, alt: "" %>
+            <span>メンバーをクリア</span>
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <label class="shuffly-label block mb-2 font-semibold"><span class="shuffly-bullet text-sm">●</span> メンバーリスト</label>
+  <label class="shuffly-section-heading block mb-2 font-semibold"><span class="shuffly-bullet">●</span> メンバーリスト</label>
 
   <!-- ========================================== -->
   <!-- 内部データ保持エリア（hidden）             -->
@@ -63,15 +68,16 @@
   <!-- ユーザー入力エリア                         -->
   <!-- ========================================== -->
   <!-- ユーザーが編集可能なテキストエリア。membersRawと自動同期 -->
-  <textarea id="membersInput" rows="10" class="shuffly-textarea px-3 py-2" placeholder="例：メンバー1, メンバー2, ..."></textarea>
+  <textarea id="membersInput" rows="10" class="shuffly-textarea px-3 py-2" placeholder="例：田中, 鈴木, 佐藤"></textarea>
 
   <!-- 入力ヒント -->
-  <p class="shuffly-hint text-sm mb-5">↑ 改行またはカンマ区切りで、同じ名前が重ならないように入力してください。</p>
+  <p class="shuffly-hint text-sm mb-5">↑ 改行またはカンマ区切りで、同じ名前は1回だけ入力してください。</p>
 
   <!-- メンバー数表示インジケーター -->
   <div id="memberCountHint" class="shuffly-indicator shuffly-indicator--warning text-base mt-1 mb-7 rounded-xl px-4 py-2">
     現在のメンバー数：<span class="font-bold">未入力</span>
   </div>
+  <p id="memberInputWarning" class="hidden text-sm text-[var(--shuffly-danger)] -mt-4 mb-6"></p>
 
   <input id="importFile" type="file" accept=".txt,.csv" class="hidden">
   <button id="btn-import-member-list" type="button" class="hidden" data-action="click->member-list-import#openModal">メンバーリストから入力</button>

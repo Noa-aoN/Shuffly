@@ -8,7 +8,7 @@
   <div class="flex items-start justify-between mb-3">
     <div class="flex items-center gap-3">
       <div class="shuffly-step-badge w-8 h-8 mb-4 rounded-full flex items-center justify-center font-bold">3</div>
-      <h2 class="mb-3 text-xl md:text-2xl font-semibold tracking-[0.01em] text-[var(--shuffly-text)]">シャッフル結果をみる</h2>
+      <h2 class="mb-3 text-xl md:text-2xl font-semibold tracking-[0.01em] text-[var(--shuffly-text)]">結果を確認する</h2>
     </div>
     <%# 履歴クリアボタン（右上に配置） %>
     <%= render 'shared/icon_button',
@@ -36,76 +36,70 @@
   <!-- グループ分けパネル                         -->
   <!-- ========================================== -->
   <div id="panel-groups" class="result-panel">
-    <h3 class="shuffly-label mb-2 font-semibold"><span class="shuffly-bullet text-sm">●</span> グループ表示</h3>
+    <h3 class="shuffly-section-heading mb-2 font-semibold"><span class="shuffly-bullet">●</span> グループの結果</h3>
 
     <!-- 結果出力エリア -->
-    <textarea id="groupOutput" rows="10" readonly class="shuffly-output rounded-xl px-3 py-2 w-full mb-4 text-lg"></textarea>
+    <textarea id="groupOutput" rows="10" readonly class="shuffly-output rounded-xl px-3 py-2 w-full mb-3 text-lg"></textarea>
 
-    <!-- グループ表示オプション（折りたたみ可能） -->
-    <div class="mb-6">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="font-semibold">
-          <a href="#" id="btn-toggle-options" class="inline-flex items-center gap-2 hover:underline" aria-expanded="false">
-            <span id="btn-toggle-options-text" class="text-[var(--shuffly-text-secondary)]"><span class="shuffly-bullet text-sm">●</span> グループ表示オプション</span>
-            <%= image_tag "icons/expand_more_24dp_1F1F1F.svg", width: 20, height: 20, id: "btn-toggle-options-icon", class: "inline-block", alt: "展開アイコン" %>
-          </a>
-        </h3>
-      </div>
+    <div class="mb-6 flex flex-col gap-3">
+      <!-- グループ表示オプション（折りたたみ可能） -->
+      <div class="shuffly-setting-card shuffly-setting-card-optional rounded-2xl border border-[var(--shuffly-border)] px-4 py-3">
+        <button type="button" id="btn-toggle-options" class="shuffly-disclosure shuffly-disclosure-inline" aria-expanded="false">
+          <span id="btn-toggle-options-text" class="shuffly-disclosure-text">表示の調整</span>
+          <%= image_tag "icons/expand_more_24dp_1F1F1F.svg", width: 20, height: 20, id: "btn-toggle-options-icon", class: "inline-block", alt: "展開アイコン" %>
+        </button>
 
-      <div id="optionsContainer" class="hidden">
-        <h3 class="mb-2 font-semibold sr-only">グループ表示オプション（詳細）</h3>
+        <div id="optionsContainer" class="hidden pt-2">
+          <h3 class="mb-2 font-semibold sr-only">表示の調整（詳細）</h3>
 
-        <div class="flex flex-col gap-3">
-          <!-- オプション: 表示内容 -->
-          <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
-            <label class="text-sm text-[var(--shuffly-text-secondary)] mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-[120px] sm:min-w-[140px]">表示内容：</label>
-            <select id="displayFormatSelect" class="shuffly-input px-3 py-2 w-full sm:w-auto min-w-[240px]">
-              <option value="name">グループ名</option>
-              <option value="name_break">グループ名 ※改行あり</option>
-              <option value="name_count">グループ名＋人数</option>
-              <option value="name_count_break" selected>グループ名＋人数 ※改行あり</option>
-              <option value="none">なし</option>
-            </select>
-          </div>
+          <div class="flex flex-col gap-3">
+            <!-- オプション: 表示内容 -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
+              <label class="text-sm text-[var(--shuffly-text-secondary)] mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-[120px] sm:min-w-[140px]">見出しの出し方</label>
+              <select id="displayFormatSelect" class="shuffly-input px-3 py-2 w-full sm:w-auto min-w-[240px]">
+                <option value="name">グループ名</option>
+                <option value="name_break">グループ名 ※改行あり</option>
+                <option value="name_count">グループ名＋人数</option>
+                <option value="name_count_break" selected>グループ名＋人数 ※改行あり</option>
+                <option value="none">なし</option>
+              </select>
+            </div>
 
-          <!-- オプション: メンバーの区切り方 -->
-          <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
-            <label class="text-sm text-[var(--shuffly-text-secondary)] mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-[120px] sm:min-w-[140px]">メンバーの区切り方：</label>
-            <select id="separatorSelect" class="shuffly-input px-3 py-2 w-full sm:w-auto min-w-[240px]">
-              <option value="," selected>カンマ</option>
-              <option value=" ">スペース</option>
-              <option value="  ">ダブルスペース</option>
-              <option value="\\t">タブ</option>
-              <option value="\\n">改行</option>
-            </select>
-          </div>
+            <!-- オプション: メンバーの区切り方 -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
+              <label class="text-sm text-[var(--shuffly-text-secondary)] mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-[120px] sm:min-w-[140px]">メンバーの区切り方</label>
+              <select id="separatorSelect" class="shuffly-input px-3 py-2 w-full sm:w-auto min-w-[240px]">
+                <option value="," selected>カンマ</option>
+                <option value=" ">スペース</option>
+                <option value="  ">ダブルスペース</option>
+                <option value="\\t">タブ</option>
+                <option value="\\n">改行</option>
+              </select>
+            </div>
 
-          <!-- オプション: グループの区切り方 -->
-          <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
-            <label class="text-sm text-[var(--shuffly-text-secondary)] mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-[120px] sm:min-w-[140px]">グループの区切り方：</label>
-            <select id="groupSeparatorSelect" class="shuffly-input px-3 py-2 w-full sm:w-auto min-w-[240px]">
-              <option value="none" selected>なし</option>
-              <option value="space">空行</option>
-              <option value="line">線</option>
-              <option value="wave">波線</option>
-            </select>
+            <!-- オプション: グループの区切り方 -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1 w-full">
+              <label class="text-sm text-[var(--shuffly-text-secondary)] mr-0 sm:mr-2 mb-1 sm:mb-0 min-w-[120px] sm:min-w-[140px]">グループ同士の区切り方</label>
+              <select id="groupSeparatorSelect" class="shuffly-input px-3 py-2 w-full sm:w-auto min-w-[240px]">
+                <option value="none" selected>なし</option>
+                <option value="space">空行</option>
+                <option value="line">線</option>
+                <option value="wave">波線</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- 統計情報（折りたたみ可能） -->
-    <div class="mb-5">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="font-semibold">
-          <a href="#" id="btn-toggle-stats" class="inline-flex items-center gap-2 hover:underline" aria-expanded="false">
-            <span id="btn-toggle-stats-text" class="text-[var(--shuffly-text-secondary)]"><span class="shuffly-bullet text-sm">●</span> 統計情報</span>
-            <%= image_tag "icons/expand_more_24dp_1F1F1F.svg", width: 20, height: 20, id: "btn-toggle-stats-icon", class: "inline-block", alt: "展開アイコン" %>
-          </a>
-        </h3>
-      </div>
-      <div id="statsContainer" class="hidden">
-        <textarea id="statsOutput" rows="10" readonly class="shuffly-output rounded-xl px-3 py-2 w-full text-sm mb-2"></textarea>
+      <!-- 統計情報（折りたたみ可能） -->
+      <div class="shuffly-setting-card shuffly-setting-card-optional rounded-2xl border border-[var(--shuffly-border)] px-4 py-3">
+        <button type="button" id="btn-toggle-stats" class="shuffly-disclosure shuffly-disclosure-inline" aria-expanded="false">
+          <span id="btn-toggle-stats-text" class="shuffly-disclosure-text">統計のメモ</span>
+          <%= image_tag "icons/expand_more_24dp_1F1F1F.svg", width: 20, height: 20, id: "btn-toggle-stats-icon", class: "inline-block", alt: "展開アイコン" %>
+        </button>
+        <div id="statsContainer" class="hidden pt-3">
+          <textarea id="statsOutput" rows="10" readonly class="shuffly-output rounded-xl px-3 py-2 w-full text-sm mb-0"></textarea>
+        </div>
       </div>
     </div>
 
@@ -170,7 +164,7 @@
   <!-- 順番決めパネル                             -->
   <!-- ========================================== -->
   <div id="panel-order" class="result-panel hidden">
-    <h3 class="shuffly-label mb-2 font-semibold"><span class="shuffly-bullet text-sm">●</span> 順番表示</h3>
+    <h3 class="shuffly-section-heading mb-2 font-semibold"><span class="shuffly-bullet">●</span> 順番の結果</h3>
 
     <!-- 結果出力エリア -->
     <textarea id="orderOutput" rows="10" readonly class="shuffly-output rounded-xl px-3 py-2 w-full text-lg mb-4"></textarea>
@@ -236,7 +230,7 @@
   <!-- 役割分担パネル                             -->
   <!-- ========================================== -->
   <div id="panel-roles" class="result-panel hidden">
-    <h3 class="shuffly-label mb-2 font-semibold"><span class="shuffly-bullet text-sm">●</span> 役割表示</h3>
+    <h3 class="shuffly-section-heading mb-2 font-semibold"><span class="shuffly-bullet">●</span> 役割の結果</h3>
 
     <!-- 結果出力エリア -->
     <textarea id="rolesOutput" rows="10" readonly class="shuffly-output rounded-xl px-3 py-2 w-full text-lg mb-4"></textarea>
