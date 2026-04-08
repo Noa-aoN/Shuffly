@@ -381,7 +381,7 @@ const ShufflyApp = (function() {
     const content = card.querySelector('[data-optional-content]');
     const summary = card.querySelector('[data-optional-summary]');
     const toggle = card.querySelector('[data-optional-toggle]');
-    const label = card.querySelector('[data-optional-toggle-label]');
+    const toggleIcon = card.querySelector('[data-optional-toggle-icon]');
 
     if(content) content.classList.toggle('hidden', !expanded);
     if(summary){
@@ -389,7 +389,10 @@ const ShufflyApp = (function() {
       summary.classList.toggle('hidden', expanded);
     }
     if(toggle) toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    if(label) label.textContent = expanded ? '-' : '+';
+    if(toggleIcon){
+      toggleIcon.src = expanded ? ICON_COLLAPSE : ICON_EXPAND;
+      toggleIcon.alt = expanded ? '折りたたみアイコン' : '展開アイコン';
+    }
   }
 
   function setOptionalCardExpanded(card, expanded){

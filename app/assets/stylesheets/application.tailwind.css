@@ -392,26 +392,16 @@ body.shuffly-app {
 }
 
 .shuffly-optional-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 999px;
-  border: 1px solid rgba(203, 213, 225, 0.92);
-  padding: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--shuffly-text-secondary);
-  background: rgba(255, 255, 255, 0.82);
-  transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease;
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  opacity: 0.72;
+  transition: opacity 160ms ease, transform 160ms ease;
   flex-shrink: 0;
 }
 
-.shuffly-optional-toggle:hover {
-  border-color: var(--shuffly-border-strong);
-  color: var(--shuffly-text);
-  background: rgba(255, 255, 255, 0.96);
+.shuffly-optional-header:hover .shuffly-optional-toggle {
+  opacity: 1;
 }
 
 .shuffly-collapsed-summary {
