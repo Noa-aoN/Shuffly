@@ -62,6 +62,16 @@ const ShufflyApp = (function() {
     return Math.min(Math.max(parseInt(v) || MIN_GROUPS, MIN_GROUPS), MAX_GROUPS);
   }
 
+  function syncGroupCountPresetButtons(){
+    const activeCount = clampGroupCount(document.getElementById('groupCount')?.value || MIN_GROUPS);
+    document.querySelectorAll('[data-group-count-preset]').forEach((button)=>{
+      const presetCount = clampGroupCount(button.dataset.groupCountPreset);
+      const isActive = presetCount === activeCount;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+  }
+
   function parseEntry(entry){
     const name = entry.split('#')[0].trim();
     const hist = entry.match(/#\d+[A-Z]/g) || [];
@@ -1220,6 +1230,7 @@ const ShufflyApp = (function() {
 
     setRawAndRefreshDisplay(sample);
     updateParticipantCount();
+    syncGroupCountPresetButtons();
     pushToHistory();
     try{
       const entries = sample.split(/[\r\n,]+/).map(s=>parseEntry(s.trim()));
@@ -1523,6 +1534,7 @@ const ShufflyApp = (function() {
       updateDisplayFromRaw();
     }
     updateParticipantCount();
+    syncGroupCountPresetButtons();
     // 初期化時には履歴を作成しない（グループ分け実行時のみ履歴を保存）
     // これにより「0回目（未実施）」が履歴として保存される問題を回避
     // if(shufflyHistory.length === 0 && getRawValue().trim() !== "") pushToHistory('groups');
@@ -1623,7 +1635,7 @@ const ShufflyApp = (function() {
     });
 
     // 入力関連のイベント
-    bindIf('groupCount', 'input', ()=>{ updateParticipantCount(); });
+    bindIf('groupCount', 'input', ()=>{ updateParticipantCount(); syncGroupCountPresetButtons(); });
     bindIf('customGroupNames', 'input', ()=>{ updateParticipantCount(); });
     bindIf('rolesInput', 'input', ()=>{
       const settingsField = document.getElementById('settingsJsonInput');
@@ -1644,6 +1656,16 @@ const ShufflyApp = (function() {
     bindIf('btn-fab-import-file', 'click', (e)=>{ if(e) e.preventDefault(); toggleMemberActionsFab(false); triggerImport(); });
     bindIf('btn-fab-import-list', 'click', (e)=>{ if(e) e.preventDefault(); toggleMemberActionsFab(false); const btn = document.getElementById('btn-import-member-list'); if(btn) btn.click(); });
     bindIf('btn-fab-clear-members', 'click', (e)=>{ if(e) e.preventDefault(); toggleMemberActionsFab(false); clearMembers(); });
+
+    document.querySelectorAll('[data-group-count-preset]').forEach((button)=>{
+      button.addEventListener('click', ()=>{
+        const groupCountInput = document.getElementById('groupCount');
+        if(!groupCountInput) return;
+        groupCountInput.value = clampGroupCount(button.dataset.groupCountPreset);
+        updateParticipantCount();
+        syncGroupCountPresetButtons();
+      });
+    });
 
     // タブ操作
     bindIf('tab-settings-groups', 'click', ()=>switchSettingsTab('groups'));
@@ -1871,6 +1893,7 @@ const ShufflyApp = (function() {
   function refreshDisplayFromLoadedData() {
     // メンバー数表示を更新
     updateParticipantCount();
+    syncGroupCountPresetButtons();
 
     // 履歴があれば最新の履歴を表示
     const histField = document.getElementById('historyJsonInput');

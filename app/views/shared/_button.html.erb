@@ -52,13 +52,11 @@
 <% classes = [base, size_class, var_class, responsive_class, web_text_adjust, extra_class].join(' ').squeeze(' ').strip %>
 
 <%# icon_html が未指定かつ icon が渡されている場合に生成する。
-    アイコンの色はボタンの文字色に合わせるため mask(-image) を使い background-color:currentColor を適用する。
-    これにより white/black/blue 等の文字色に合わせてアイコンが着色される（モダンブラウザで動作）。 %>
+    CSS mask は本番配信やブラウザ差分で欠けやすいため、通常の img で描画する。 %>
 <% if icon_html.blank? && icon.present? %>
   <% src = (begin; asset_path(icon) rescue icon; end) %>
-  <% mask_style = "background-color: currentColor; width:20px; height:20px; display:inline-block; -webkit-mask: url('#{src}') no-repeat center; -webkit-mask-size: contain; mask: url('#{src}') no-repeat center; mask-size: contain;" %>
-  <%# alt は span の title 属性に使用（img の alt 相当） %>
-  <% icon_html = content_tag(:span, '', class: icon_class, style: mask_style, title: (icon_alt.present? ? icon_alt : '')) %>
+  <% icon_tint_class = %w[primary danger].include?(variant) ? 'brightness-0 invert' : '' %>
+  <% icon_html = image_tag(src, width: 20, height: 20, class: [icon_class, 'shrink-0', icon_tint_class].join(' ').squeeze(' ').strip, alt: (icon_alt.presence || '')) %>
 <% end %>
 
 <%# 新規: icon_class に 'icon_right' が含まれる場合はアイコンを右側に配置する %>
