@@ -533,7 +533,268 @@ body.shuffly-app {
   right: 0.15rem;
 }
 
+.events-index-page {
+  position: relative;
+  isolation: isolate;
+}
+
+.lp-background {
+  z-index: 0;
+}
+
+.events-index-page > :not(.lp-background) {
+  position: relative;
+  z-index: 1;
+}
+
+.lp-ambient,
+.lp-card-field,
+.lp-glow {
+  position: absolute;
+  inset: 0;
+}
+
+.lp-ambient {
+  inset: auto;
+  border-radius: 9999px;
+  filter: blur(70px);
+  opacity: 0.5;
+  will-change: transform;
+}
+
+.lp-ambient--violet {
+  top: 5%;
+  left: -6%;
+  width: 22rem;
+  height: 22rem;
+  background: radial-gradient(circle, rgba(124, 92, 255, 0.3) 0%, rgba(124, 92, 255, 0) 72%);
+  animation: lpFloatViolet 18s ease-in-out infinite alternate;
+}
+
+.lp-ambient--sky {
+  top: 28%;
+  right: -8%;
+  width: 26rem;
+  height: 26rem;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.24) 0%, rgba(56, 189, 248, 0) 70%);
+  animation: lpFloatSky 22s ease-in-out infinite alternate;
+}
+
+.lp-ambient--amber {
+  bottom: -8%;
+  left: 26%;
+  width: 18rem;
+  height: 18rem;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.18) 0%, rgba(251, 191, 36, 0) 72%);
+  animation: lpFloatAmber 20s ease-in-out infinite alternate;
+}
+
+.lp-card-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(245, 247, 251, 0), rgba(245, 247, 251, 0.58) 82%, rgba(245, 247, 251, 0.86) 100%);
+}
+
+.lp-card {
+  position: absolute;
+  display: block;
+  width: 11rem;
+  height: 7rem;
+  border-radius: 1.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.24));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), 0 18px 32px rgba(148, 163, 184, 0.11);
+  opacity: 0.72;
+  will-change: transform;
+}
+
+.lp-card::before,
+.lp-card::after {
+  content: "";
+  position: absolute;
+  left: 1.1rem;
+  right: 1.1rem;
+  border-radius: 9999px;
+}
+
+.lp-card::before {
+  top: 1.2rem;
+  height: 0.72rem;
+  width: 42%;
+  background: rgba(124, 92, 255, 0.2);
+}
+
+.lp-card::after {
+  top: 2.55rem;
+  height: 0.5rem;
+  right: 2.4rem;
+  background: rgba(56, 189, 248, 0.2);
+}
+
+.lp-card--1 {
+  top: 9%;
+  left: 6%;
+  animation: lpCardShuffleA 24s ease-in-out infinite;
+}
+
+.lp-card--2 {
+  top: 20%;
+  left: 22%;
+  animation: lpCardShuffleB 28s ease-in-out infinite;
+}
+
+.lp-card--3 {
+  top: 12%;
+  right: 18%;
+  animation: lpCardShuffleC 26s ease-in-out infinite;
+}
+
+.lp-card--4 {
+  top: 33%;
+  right: 5%;
+  animation: lpCardShuffleD 30s ease-in-out infinite;
+}
+
+.lp-card--5 {
+  top: 42%;
+  left: 10%;
+  animation: lpCardShuffleE 27s ease-in-out infinite;
+}
+
+.lp-card--6 {
+  top: 56%;
+  left: 31%;
+  animation: lpCardShuffleF 29s ease-in-out infinite;
+}
+
+.lp-card--7 {
+  top: 52%;
+  right: 24%;
+  animation: lpCardShuffleG 25s ease-in-out infinite;
+}
+
+.lp-card--8 {
+  top: 68%;
+  right: 8%;
+  animation: lpCardShuffleH 31s ease-in-out infinite;
+}
+
+.lp-glow {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.58), transparent 22rem),
+    radial-gradient(circle at 72% 12%, rgba(255, 255, 255, 0.34), transparent 18rem);
+  opacity: 0.75;
+}
+
+@keyframes lpFloatViolet {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(12vw, 4vh, 0) scale(1.08); }
+}
+
+@keyframes lpFloatSky {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(-10vw, 8vh, 0) scale(1.1); }
+}
+
+@keyframes lpFloatAmber {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(8vw, -7vh, 0) scale(1.12); }
+}
+
+@keyframes lpCardShuffleA {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-8deg); }
+  25% { transform: translate3d(4vw, 2vh, 0) rotate(-4deg); }
+  50% { transform: translate3d(10vw, -1vh, 0) rotate(3deg); }
+  75% { transform: translate3d(3vw, 5vh, 0) rotate(-2deg); }
+}
+
+@keyframes lpCardShuffleB {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(7deg); }
+  30% { transform: translate3d(-4vw, 4vh, 0) rotate(2deg); }
+  60% { transform: translate3d(6vw, 1vh, 0) rotate(9deg); }
+  80% { transform: translate3d(1vw, -3vh, 0) rotate(4deg); }
+}
+
+@keyframes lpCardShuffleC {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-5deg); }
+  35% { transform: translate3d(-8vw, 2vh, 0) rotate(-1deg); }
+  65% { transform: translate3d(-2vw, 7vh, 0) rotate(-9deg); }
+}
+
+@keyframes lpCardShuffleD {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(9deg); }
+  25% { transform: translate3d(-6vw, -2vh, 0) rotate(5deg); }
+  55% { transform: translate3d(-1vw, 6vh, 0) rotate(12deg); }
+  85% { transform: translate3d(-8vw, 3vh, 0) rotate(3deg); }
+}
+
+@keyframes lpCardShuffleE {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-10deg); }
+  40% { transform: translate3d(7vw, -3vh, 0) rotate(-4deg); }
+  70% { transform: translate3d(3vw, 5vh, 0) rotate(-12deg); }
+}
+
+@keyframes lpCardShuffleF {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(5deg); }
+  20% { transform: translate3d(-3vw, -4vh, 0) rotate(1deg); }
+  50% { transform: translate3d(6vw, 2vh, 0) rotate(8deg); }
+  80% { transform: translate3d(-2vw, 6vh, 0) rotate(3deg); }
+}
+
+@keyframes lpCardShuffleG {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-6deg); }
+  33% { transform: translate3d(4vw, -2vh, 0) rotate(-1deg); }
+  66% { transform: translate3d(-5vw, 4vh, 0) rotate(-9deg); }
+}
+
+@keyframes lpCardShuffleH {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(8deg); }
+  28% { transform: translate3d(-4vw, -4vh, 0) rotate(4deg); }
+  58% { transform: translate3d(-9vw, 1vh, 0) rotate(11deg); }
+  82% { transform: translate3d(-2vw, 5vh, 0) rotate(6deg); }
+}
+
+.events-index-page .index-feature-card {
+  transition: transform 140ms cubic-bezier(.2, .8, .2, 1), box-shadow 140ms;
+  will-change: transform;
+}
+
+.events-index-page .index-feature-card:hover {
+  transform: translateY(-6px) rotate(-0.6deg);
+  box-shadow: 0 12px 28px rgba(10, 25, 47, 0.08);
+}
+
+.events-index-page .index-feature-card:active {
+  transform: translateY(-2px) rotate(-0.2deg);
+  transition-duration: 80ms;
+}
+
 @media (max-width: 767px) {
+  .lp-card {
+    width: 8rem;
+    height: 5.2rem;
+    border-radius: 1.3rem;
+    opacity: 0.58;
+  }
+
+  .lp-card::before {
+    top: 0.9rem;
+    left: 0.8rem;
+  }
+
+  .lp-card::after {
+    top: 2rem;
+    left: 0.8rem;
+    right: 1.5rem;
+  }
+
+  .lp-ambient--violet,
+  .lp-ambient--sky,
+  .lp-ambient--amber {
+    filter: blur(54px);
+  }
+
   .shuffly-fab-item[data-fab-position="top-left"] {
     top: -0.35rem;
     right: 4.15rem;
