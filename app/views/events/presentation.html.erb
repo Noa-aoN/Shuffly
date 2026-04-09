@@ -13,12 +13,12 @@
 <!-- メインコンテナ                             -->
 <!-- ========================================== -->
 <div class="min-h-screen bg-gray-50 text-gray-900">
-  <div class="max-w-7xl mx-auto px-6 pt-0 pb-2">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-0 pb-2">
     <!-- ========================================== -->
     <!-- イベントタイトル表示                       -->
     <!-- ========================================== -->
     <div id="event-title-wrap" class="text-center mb-2">
-      <h1 id="event-title" class="text-3xl font-extrabold border border-dashed rounded-md px-4 py-3 bg-white inline-block"></h1>
+      <h1 id="event-title" class="text-2xl sm:text-3xl font-extrabold border border-dashed rounded-md px-3 sm:px-4 py-2.5 sm:py-3 bg-white inline-block"></h1>
     </div>
 
     <!-- ========================================== -->
@@ -27,16 +27,16 @@
     <header class="mb-2">
       <!-- モード切り替えタブ（グループ/順番/役割） -->
       <nav class="mt-6 border-b border-gray-200">
-        <div class="flex gap-8 justify-center w-full">
-          <button data-mode="groups" class="mode-btn pb-3 flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg text-blue-600 border-blue-600">
+        <div class="flex gap-2 sm:gap-8 justify-center w-full">
+          <button data-mode="groups" class="mode-btn pb-3 flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 -mb-px border-b-2 text-xs sm:text-sm md:text-lg text-blue-600 border-blue-600">
             <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
             <span class="leading-none">グループ分け</span>
           </button>
-          <button data-mode="order" class="mode-btn pb-3 flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg text-gray-600 hover:text-gray-800">
+          <button data-mode="order" class="mode-btn pb-3 flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 -mb-px border-b-2 text-xs sm:text-sm md:text-lg text-gray-600 hover:text-gray-800">
             <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
             <span class="leading-none">順番決め</span>
           </button>
-          <button data-mode="roles" class="mode-btn pb-3 flex-1 flex items-center justify-center gap-2 px-3 py-2 -mb-px border-b-2 text-sm md:text-lg text-gray-600 hover:text-gray-800">
+          <button data-mode="roles" class="mode-btn pb-3 flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 -mb-px border-b-2 text-xs sm:text-sm md:text-lg text-gray-600 hover:text-gray-800">
             <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5" %>
             <span class="leading-none">役割決め</span>
           </button>
@@ -53,7 +53,7 @@
         <!-- ========================================== -->
         <!-- 結果表示エリア                             -->
         <!-- ========================================== -->
-        <section class="bg-white rounded-lg border-2 border-dashed border-gray-300 p-6 flex flex-col items-center justify-center min-h-[200px]">
+        <section class="bg-white rounded-lg border-2 border-dashed border-gray-300 p-4 sm:p-6 flex flex-col items-center justify-center min-h-[200px]">
           <div class="text-center max-w-7xl w-full">
             <!-- サブタイトルとヒント -->
             <h2 id="display-subtitle" class="text-xl font-semibold mb-2">シャッフル結果</h2>
@@ -78,7 +78,7 @@
         <!-- ========================================== -->
         <!-- 操作ボタングループ                         -->
         <!-- ========================================== -->
-        <div class="flex flex-col md:flex-row gap-2 mb-3 items-center justify-center w-full">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-2 mb-3 items-stretch justify-center w-full">
           <%= render 'shared/button',
                 f: nil,
                 button_text: '全画面表示',
@@ -86,7 +86,9 @@
                 path: '#',
                 variant: 'secondary',
                 full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+                full_width: true,
+                wrapper_class: 'mt-0',
+                extra_class: 'w-full text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
           <%= render 'shared/button',
                 f: nil,
                 button_text: '結果を隠す',
@@ -94,7 +96,9 @@
                 path: '#',
                 variant: 'secondary',
                 full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+                full_width: true,
+                wrapper_class: 'mt-0',
+                extra_class: 'w-full text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
           <%= render 'shared/button',
                 f: nil,
                 button_text: '前の結果',
@@ -102,7 +106,9 @@
                 path: '#',
                 variant: 'secondary',
                 full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+                full_width: true,
+                wrapper_class: 'mt-0',
+                extra_class: 'w-full text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
           <%= render 'shared/button',
                 f: nil,
                 button_text: '1件表示',
@@ -110,7 +116,9 @@
                 path: '#',
                 variant: 'secondary',
                 full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+                full_width: true,
+                wrapper_class: 'mt-0',
+                extra_class: 'w-full text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
           <%= render 'shared/button',
                 f: nil,
                 button_text: '後の結果',
@@ -118,7 +126,9 @@
                 path: '#',
                 variant: 'secondary',
                 full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
+                full_width: true,
+                wrapper_class: 'mt-0',
+                extra_class: 'w-full text-center px-6 py-3 bg-white border rounded-lg text-blue-600 hover:bg-gray-50' %>
           <%= render 'shared/button',
                 f: nil,
                 button_text: '結果一覧',
@@ -126,7 +136,9 @@
                 path: '#',
                 variant: 'primary',
                 full_mobile: false,
-                extra_class: 'w-full sm:flex-1 text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
+                full_width: true,
+                wrapper_class: 'mt-0',
+                extra_class: 'w-full text-center px-6 py-3 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600' %>
         </div>
 
         <!-- ========================================== -->
@@ -152,7 +164,7 @@
 
             <!-- 表示スタイル選択 -->
             <label class="text-sm text-gray-600 mr-2">表示スタイル</label>
-            <div class="flex gap-2 items-center text-sm mt-2">
+            <div class="flex flex-wrap gap-x-3 gap-y-2 items-center text-sm mt-2">
               <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="simple" class="mr-1" checked> シンプル</label>
               <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="work" class="mr-1"> ワーク</label>
               <label class="inline-flex items-center"><input type="radio" name="presentationStyle" value="school" class="mr-1"> スクール</label>
@@ -164,7 +176,7 @@
             <!-- 演出ON/OFF -->
             <div class="mt-3 text-sm">
               <div class="font-medium mb-1">演出</div>
-              <div class="flex gap-3 items-center">
+              <div class="flex flex-wrap gap-x-3 gap-y-2 items-center">
                 <label class="inline-flex items-center"><input type="radio" name="presentationPerformance" value="on" class="mr-1" checked> オン</label>
                 <label class="inline-flex items-center"><input type="radio" name="presentationPerformance" value="off" class="mr-1"> オフ</label>
               </div>
@@ -173,7 +185,7 @@
             <!-- 効果音ON/OFF -->
             <div class="mt-3 text-sm">
               <div class="font-medium mb-1">効果音</div>
-              <div class="flex gap-3 items-center">
+              <div class="flex flex-wrap gap-x-3 gap-y-2 items-center">
                 <label class="inline-flex items-center"><input type="radio" name="presentationSound" value="on" class="mr-1" checked> オン</label>
                 <label class="inline-flex items-center"><input type="radio" name="presentationSound" value="off" class="mr-1"> オフ</label>
               </div>
