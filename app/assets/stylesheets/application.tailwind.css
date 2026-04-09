@@ -1016,6 +1016,14 @@ body.shuffly-app {
   will-change: transform;
 }
 
+.lp-background.is-cta-bursting .lp-card-shell {
+  animation: lpCtaBurstOut 190ms cubic-bezier(0.16, 0.7, 0.24, 1) forwards;
+}
+
+.lp-background.is-cta-bursting .lp-card-shell .lp-card {
+  animation-play-state: paused;
+}
+
 .lp-card {
   position: relative;
   display: block;
@@ -1104,41 +1112,65 @@ body.shuffly-app {
 .lp-card-shell--1 {
   top: 9%;
   left: 6%;
+  --lp-cta-burst-x: -14rem;
+  --lp-cta-burst-y: -10rem;
+  --lp-cta-burst-rotate: -22deg;
 }
 
 .lp-card-shell--2 {
   top: 20%;
   left: 22%;
+  --lp-cta-burst-x: -10rem;
+  --lp-cta-burst-y: -12rem;
+  --lp-cta-burst-rotate: -18deg;
 }
 
 .lp-card-shell--3 {
   top: 12%;
   right: 18%;
+  --lp-cta-burst-x: 10rem;
+  --lp-cta-burst-y: -12rem;
+  --lp-cta-burst-rotate: 18deg;
 }
 
 .lp-card-shell--4 {
   top: 33%;
   right: 5%;
+  --lp-cta-burst-x: 14rem;
+  --lp-cta-burst-y: -4rem;
+  --lp-cta-burst-rotate: 22deg;
 }
 
 .lp-card-shell--5 {
   top: 42%;
   left: 10%;
+  --lp-cta-burst-x: -14rem;
+  --lp-cta-burst-y: 3rem;
+  --lp-cta-burst-rotate: -16deg;
 }
 
 .lp-card-shell--6 {
   top: 56%;
   left: 31%;
+  --lp-cta-burst-x: -7rem;
+  --lp-cta-burst-y: 12rem;
+  --lp-cta-burst-rotate: -12deg;
 }
 
 .lp-card-shell--7 {
   top: 52%;
   right: 24%;
+  --lp-cta-burst-x: 8rem;
+  --lp-cta-burst-y: 12rem;
+  --lp-cta-burst-rotate: 12deg;
 }
 
 .lp-card-shell--8 {
   top: 68%;
   right: 8%;
+  --lp-cta-burst-x: 14rem;
+  --lp-cta-burst-y: 8rem;
+  --lp-cta-burst-rotate: 18deg;
 }
 
 .lp-card--1 {
@@ -1263,6 +1295,35 @@ body.shuffly-app {
   }
   100% {
     background-position: 4.2rem -3rem, -4rem 3.2rem, 3.4rem 3.8rem, -3rem 2.4rem, 0 0;
+  }
+}
+
+@keyframes lpCtaBurstOut {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  28% {
+    opacity: 0.96;
+    transform:
+      translate3d(
+        calc(var(--lp-cta-burst-x, 0px) * 0.18),
+        calc(var(--lp-cta-burst-y, 0px) * 0.18),
+        0
+      )
+      rotate(calc(var(--lp-cta-burst-rotate, 0deg) * 0.24))
+      scale(1.012);
+  }
+  100% {
+    opacity: 0.06;
+    transform:
+      translate3d(
+        calc(var(--lp-cta-burst-x, 0px) * 0.58),
+        calc(var(--lp-cta-burst-y, 0px) * 0.58),
+        0
+      )
+      rotate(calc(var(--lp-cta-burst-rotate, 0deg) * 0.92))
+      scale(0.95);
   }
 }
 

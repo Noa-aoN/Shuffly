@@ -25,4 +25,5 @@ function initPageReveal() {
 }
 
 document.addEventListener("DOMContentLoaded", initPageReveal)
+document.addEventListener("turbo:load", initPageReveal)
 window.addEventListener("pageshow", initPageReveal)

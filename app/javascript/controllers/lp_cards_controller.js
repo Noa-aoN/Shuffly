@@ -13,6 +13,8 @@ export default class extends Controller {
     this.burstState = null
     this.lastPointer = null
     this.burstTriggered = false
+    this.ctaBurstLocked = false
+    this.ctaNavigationTimer = null
     this.wordmarkBurstTimer = null
     document.addEventListener("keydown", this.boundHandleKeydown)
     this.syncHintVisibility()
@@ -23,6 +25,7 @@ export default class extends Controller {
     if (this.pointerFrame) window.cancelAnimationFrame(this.pointerFrame)
     if (this.animationFrame) window.cancelAnimationFrame(this.animationFrame)
     if (this.pointerState?.timer) window.clearTimeout(this.pointerState.timer)
+    if (this.ctaNavigationTimer) window.clearTimeout(this.ctaNavigationTimer)
     if (this.wordmarkBurstTimer) window.clearTimeout(this.wordmarkBurstTimer)
   }
 
@@ -41,19 +44,34 @@ export default class extends Controller {
   }
 
   burstCta(event) {
+    const target = event.currentTarget
+    const href = target.getAttribute("href")
+    if (!href || target.getAttribute("target") === "_blank" || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+
     if (this.prefersReducedMotion || !this.hasCardShellTarget) return
 
-    const rect = event.currentTarget.getBoundingClientRect()
-    const clientX = rect.left + rect.width / 2
-    const clientY = rect.top + rect.height / 2
+    event.preventDefault()
 
     if (this.pointerState?.timer) window.clearTimeout(this.pointerState.timer)
+    if (this.pointerFrame) window.cancelAnimationFrame(this.pointerFrame)
+    if (this.animationFrame) window.cancelAnimationFrame(this.animationFrame)
+    if (this.ctaNavigationTimer) window.clearTimeout(this.ctaNavigationTimer)
 
-    this.lastPointer = { x: clientX, y: clientY }
     this.pointerState = null
+    this.burstState = null
     this.burstTriggered = false
-    this.triggerBurst(clientX, clientY, { oneWay: true })
-    this.flashWordmark()
+    this.ctaBurstLocked = true
+    this.cardShellTargets.forEach((shell) => {
+      shell.style.transform = ""
+    })
+    if (this.hasBackgroundTarget) {
+      this.backgroundTarget.classList.remove("is-cta-bursting")
+      void this.backgroundTarget.offsetWidth
+      this.backgroundTarget.classList.add("is-cta-bursting")
+    }
+    this.ctaNavigationTimer = window.setTimeout(() => {
+      window.location.assign(href)
+    }, 0)
   }
 
   openCard(event) {
@@ -99,7 +117,7 @@ export default class extends Controller {
   }
 
   handlePointer(event) {
-    if (this.prefersReducedMotion || !this.hasCardShellTarget) return
+    if (this.prefersReducedMotion || !this.hasCardShellTarget || this.ctaBurstLocked) return
     if (this.pointerFrame) window.cancelAnimationFrame(this.pointerFrame)
 
     const { clientX, clientY } = event
@@ -111,7 +129,7 @@ export default class extends Controller {
   }
 
   resetPointer() {
-    if (this.prefersReducedMotion || !this.hasCardShellTarget) return
+    if (this.prefersReducedMotion || !this.hasCardShellTarget || this.ctaBurstLocked) return
     if (this.pointerState?.timer) window.clearTimeout(this.pointerState.timer)
     if (this.animationFrame) window.cancelAnimationFrame(this.animationFrame)
     this.pointerState = null
@@ -225,6 +243,7 @@ export default class extends Controller {
   }
 
   queueBurst(clientX, clientY) {
+    if (this.ctaBurstLocked) return
     const hoveredIndex = this.findNearestCardIndex(clientX, clientY, 220)
 
     if (this.burstTriggered) {
