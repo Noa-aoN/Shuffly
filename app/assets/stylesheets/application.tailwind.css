@@ -151,6 +151,28 @@ body.shuffly-app {
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.035);
 }
 
+[data-page-reveal] {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 300ms ease,
+    transform 300ms ease;
+  transition-delay: var(--shuffly-reveal-delay, 0ms);
+}
+
+[data-page-reveal].is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-page-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 .shuffly-card,
 .shuffly-card-link,
 .shuffly-panel,

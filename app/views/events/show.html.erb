@@ -2,7 +2,7 @@
 
 <div class="shuffly-event-detail-page max-w-6xl mx-auto px-4 py-4 md:px-4 md:py-8">
   <%# ヘッダー: タイトルとメタデータ %>
-  <div class="shuffly-card px-6 py-6 md:px-8 md:py-8 mb-6">
+  <div class="shuffly-card px-6 py-6 md:px-8 md:py-8 mb-6" data-page-reveal>
     <div class="flex flex-col gap-6">
       <div class="flex-1">
         <h1 class="mb-3 text-2xl md:text-3xl font-semibold text-[var(--shuffly-text)]">
@@ -84,7 +84,7 @@
   </div>
 
   <%# タブナビゲーション（results_panelと同じスタイル） %>
-  <div class="mb-6">
+  <div class="mb-6" data-page-reveal>
     <div class="shuffly-tabbar flex w-full items-center gap-2 rounded-2xl p-1.5">
       <button id="tab-groups" class="shuffly-tab shuffly-results-tab shuffly-results-tab-active flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm md:text-base font-semibold">
         <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "グループアイコン" %>
@@ -102,7 +102,7 @@
   </div>
 
   <%# グループパネル %>
-  <div id="panel-groups" class="shuffly-panel px-6 md:px-10 py-8">
+  <div id="panel-groups" class="shuffly-panel px-6 md:px-10 py-8" data-page-reveal>
     <div class="mb-4">
       <h3 class="font-semibold text-[var(--shuffly-text)]">グループ表示</h3>
     </div>
@@ -159,7 +159,7 @@
   </div>
 
   <%# 順番パネル %>
-  <div id="panel-order" class="shuffly-panel px-6 md:px-10 py-8 hidden">
+  <div id="panel-order" class="shuffly-panel px-6 md:px-10 py-8 hidden" data-page-reveal>
     <div class="mb-4">
       <h3 class="font-semibold text-[var(--shuffly-text)]">順番表示</h3>
     </div>
@@ -216,7 +216,7 @@
   </div>
 
   <%# 役割パネル %>
-  <div id="panel-roles" class="shuffly-panel px-6 md:px-10 py-8 hidden">
+  <div id="panel-roles" class="shuffly-panel px-6 md:px-10 py-8 hidden" data-page-reveal>
     <div class="mb-4">
       <h3 class="font-semibold text-[var(--shuffly-text)]">役割表示</h3>
     </div>
@@ -273,7 +273,7 @@
   </div>
 
   <%# メモカード %>
-  <div class="shuffly-panel px-6 md:px-10 py-8 mt-6">
+  <div class="shuffly-panel px-6 md:px-10 py-8 mt-6" data-page-reveal>
     <h2 class="text-xl font-semibold text-[var(--shuffly-text)] mb-4"><%= t("mypage.event_detail.memo") %></h2>
     <%= form_with model: @event, url: event_path(@event), method: :patch, id: 'memo-form', local: true, data: { turbo: false } do |f| %>
       <%= f.text_area :memo,
@@ -295,7 +295,7 @@
   </div>
 
   <%# エクスポートセクション %>
-  <div class="shuffly-panel px-6 md:px-10 py-8 mt-6">
+  <div class="shuffly-panel px-6 md:px-10 py-8 mt-6" data-page-reveal>
     <h2 class="text-xl font-semibold text-[var(--shuffly-text)] mb-4"><%= t("mypage.event_detail.export") %></h2>
     <div class="grid grid-cols-1 gap-2 md:grid-cols-3">
       <div>
