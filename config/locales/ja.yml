@@ -16,6 +16,7 @@ ja:
         password_hint: "変更しない場合は空欄"
         password_min_length: "%{count}文字以上"
         current_password_hint: "変更を確認するために現在のパスワードが必要です"
+        current_password_required_for_delete: "アカウント削除には現在のパスワードを入力してください。"
         submit: "更新"
         cancel_account_title: "アカウント削除"
         cancel_account_message: "ご利用ありがとうございました"
@@ -130,12 +131,17 @@ ja:
               blank: "を入力してください"
               invalid: "は有効なメールアドレスではありません"
               taken: "は既に使用されています"
+            name:
+              blank: "を入力してください"
             password:
               blank: "を入力してください"
               too_short: "は%{count}文字以上で入力してください"
               confirmation: "と確認用パスワードが一致しません"
             password_confirmation:
               confirmation: "とパスワードが一致しません"
+            current_password:
+              blank: "を入力してください"
+              invalid: "が正しくありません"
         member_list:
           attributes:
             name:
