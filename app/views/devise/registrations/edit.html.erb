@@ -1,7 +1,7 @@
 <%# アカウント編集画面 %>
 
 <%= render 'shared/devise_card', title: t("devise.registrations.edit.title") do %>
-  <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }, data: { turbo: false, controller: 'password-toggle' }) do |f| %>
+  <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put, id: 'edit-account-form' }, data: { turbo: false, controller: 'password-toggle' }) do |f| %>
     <%= render "devise/shared/error_messages", resource: resource %>
 
     <div class="mb-4">
@@ -73,36 +73,54 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:place-items-center mt-6">
-      <%= render 'shared/button',
-            button_text: "マイページへ戻る",
-            path: mypage_path(tab: 'account'),
-            variant: 'secondary',
-            size: 'md',
-            full_mobile: true,
-            extra_class: 'w-full',
-            icon: 'icons/keyboard_return_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg' %>
-
-      <%= render 'shared/button',
-            f: f,
-            button_text: "情報を更新する",
-            variant: 'primary',
-            size: 'md',
-            full_mobile: true,
-            extra_class: 'w-full',
-            icon: 'icons/save_24dp_1F1F1F.svg' %>
-
-      <%= render 'shared/button',
-            button_text: "アカウントを削除する",
-            path: registration_path(resource_name),
-            variant: 'danger',
-            size: 'md',
-            full_mobile: true,
-            extra_class: 'w-full',
-            icon: 'icons/account_circle_off_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-            button_to_method: :delete,
-            confirm_message: t("devise.registrations.edit.cancel_account_confirm") %>
-    </div>
   <% end %>
+
+  <div class="grid grid-cols-1 gap-2 sm:grid-cols-3 mt-6">
+    <%= render 'shared/button',
+          button_text: "マイページへ戻る",
+          path: mypage_path(tab: 'account'),
+          variant: 'secondary',
+          size: 'md',
+          full_mobile: true,
+          extra_class: 'w-full',
+          icon: 'icons/keyboard_return_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+          wrapper_class: 'mt-0' %>
+
+    <%= render 'shared/button',
+          button_text: "情報を更新する",
+          variant: 'primary',
+          size: 'md',
+          full_mobile: true,
+          extra_class: 'w-full',
+          icon: 'icons/save_24dp_1F1F1F.svg',
+          is_button: true,
+          html_type: 'submit',
+          form_id: 'edit-account-form',
+          wrapper_class: 'mt-0' %>
+
+    <div class="mt-0">
+      <%= form_with url: registration_path(resource_name),
+            method: :delete,
+            local: true,
+            data: { turbo: false },
+            html: {
+              id: 'delete-account-form',
+              class: 'w-full',
+              onsubmit: "const src=document.getElementById('current-password-field'); const hidden=this.querySelector('input[name=\"user[current_password]\"]'); if(hidden && src){ hidden.value = src.value; } if(!hidden || !hidden.value.trim()){ alert('#{j t('devise.registrations.edit.current_password_required_for_delete')}'); if(src){ src.focus(); } return false; } return window.confirm('#{j t('devise.registrations.edit.cancel_account_confirm')}');"
+            } do %>
+        <%= hidden_field_tag 'user[current_password]', '' %>
+        <%= render 'shared/button',
+              button_text: "アカウントを削除する",
+              variant: 'danger',
+              size: 'md',
+              full_mobile: true,
+              extra_class: 'w-full',
+              icon: 'icons/account_circle_off_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+              is_button: true,
+              html_type: 'submit',
+              wrapper_class: 'mt-0' %>
+      <% end %>
+    </div>
+  </div>
 
 <% end %>

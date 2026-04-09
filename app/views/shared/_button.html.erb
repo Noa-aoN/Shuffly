@@ -14,6 +14,8 @@
 <% is_button = local_assigns.key?(:is_button) ? local_assigns[:is_button] : nil %>
 <% data = local_assigns.fetch(:data, {}) %>
 <% wrapper_class = local_assigns.fetch(:wrapper_class, 'mt-2') %>
+<% html_type = local_assigns.fetch(:html_type, nil) %>
+<% form_id = local_assigns.fetch(:form_id, nil) %>
 
 <%# 新規オプション: icon (asset パス or URL), icon_class, icon_alt, 既に構築済みの icon_html があれば優先する %>
 <% icon_html = local_assigns.fetch(:icon_html, nil) %>
@@ -21,6 +23,7 @@
 <%# アイコンとテキストの間は全角スペース1つで制御する %>
 <% icon_class = local_assigns.fetch(:icon_class, 'inline-block align-middle') %>
 <% icon_alt = local_assigns.fetch(:icon_alt, '') %>
+<% escaped_confirm = confirm_message.present? ? j(confirm_message) : nil %>
 
 <% min_width_class = full_width ? '' : 'sm:min-w-[230px] lg:min-w-[310px]' %>
 <% base = ["inline-flex items-center justify-center rounded-[12px] font-semibold tracking-[0.01em] focus:outline-none focus:ring-2 focus:ring-offset-2 transition px-6 py-3 border", min_width_class].join(' ').squeeze(' ').strip %>
@@ -67,11 +70,12 @@
     <%# JavaScript用のボタン: type="button" %>
     <% button_opts = {
       class: classes,
-      type: 'button',
+      type: (html_type.presence || 'button'),
       id: id,
       disabled: disabled,
       data: data.merge(data_action.present? ? { action: data_action } : {})
     } %>
+    <% button_opts[:form] = form_id if form_id.present? %>
     <% button_opts.delete_if { |_, v| v.nil? || v == {} } %>
     <%# アイコンがある場合はアイコンとテキストの間に全角スペースを1つ挿入する %>
     <% separator = icon_html.present? ? "　" : '' %>
@@ -101,9 +105,14 @@
     <%# button_to for non-GET requests (delete, post, etc.) %>
     <% button_opts = { class: classes, method: button_to_method, id: id } %>
     <% button_opts[:data] = { turbo: false } %>
+    <% button_opts[:form] = { data: {} } %>
     <% if confirm_message.present? %>
       <% button_opts[:data][:confirm] = confirm_message %>
+      <% button_opts[:form][:data][:turbo_confirm] = confirm_message %>
+      <% button_opts[:form][:data][:confirm] = confirm_message %>
+      <% button_opts[:form][:onsubmit] = "return window.confirm('#{escaped_confirm}')" %>
     <% end %>
+    <% button_opts[:form].delete_if { |_, v| v.nil? || v == {} } if button_opts[:form].present? %>
     <% button_opts.delete_if { |_, v| v.nil? || v == {} } %>
     <%# ブロック形式でiconを含むHTMLを渡す %>
     <%= button_to path, button_opts do %>

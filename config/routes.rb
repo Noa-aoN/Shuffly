@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   # Devise 認証
-  devise_for :users
+  devise_for :users, controllers: { registrations: "users/registrations" }
 
   # メイン画面をイベントページに統一 (SPA)
   root "events#index"
