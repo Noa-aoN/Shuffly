@@ -23,7 +23,7 @@
       <div class="flex flex-col sm:items-end gap-2 text-sm">
         <%= link_to mypage_path(tab: 'events'), class: "shuffly-badge shuffly-badge-accent transition hover:brightness-95", data: { turbo: true } do %>
           <%= image_tag 'icons/event_note_24dp_1F1F1F.svg', width: 16, height: 16, class: "text-blue-600", alt: "" %>
-          <%= @events_count %>件のイベント
+          <%= @events_count %>件のイベント履歴
         <% end %>
         <%= link_to mypage_path(tab: 'member_lists'), class: "shuffly-badge shuffly-badge-success transition hover:brightness-95", data: { turbo: true } do %>
           <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 16, height: 16, class: "text-green-600", alt: "" %>
@@ -220,18 +220,16 @@
     <div class="space-y-4">
       <% if @events.any? %>
         <% @events.each do |event| %>
-          <%= link_to event_path(event), class: "shuffly-card-link block px-6 md:px-10 py-8 cursor-pointer group" do %>
+          <%= link_to event_path(event), class: "shuffly-card-link relative block px-6 md:px-10 py-8 cursor-pointer group" do %>
+            <% if event.memo.present? %>
+              <span class="shuffly-ribbon shuffly-ribbon-note">メモあり</span>
+            <% end %>
             <div class="flex items-center justify-between gap-4">
               <div class="flex-1">
                 <div class="mb-2 flex items-start justify-between gap-3">
                   <h3 class="font-semibold text-lg text-[var(--shuffly-text)]">
                     <%= event.title.presence || "イベント #{event.id}" %>
                   </h3>
-                  <% if event.memo.present? %>
-                    <span class="shuffly-badge shuffly-badge-neutral !px-2 !py-0.5 text-xs shrink-0">
-                      メモあり
-                    </span>
-                  <% end %>
                 </div>
                 <div class="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-[var(--shuffly-text-secondary)]">
                   <div class="flex flex-col gap-1 text-xs text-[var(--shuffly-text-muted)]">
@@ -249,13 +247,13 @@
                   <% if group_count > 0 || order_count > 0 || role_count > 0 %>
                     <div class="flex flex-wrap items-center gap-2">
                       <span class="shuffly-badge shuffly-badge-accent !px-2 !py-0.5 text-xs">
-                        グループ: <strong><%= group_count %></strong>回
+                        グループ分け <strong><%= group_count %></strong>回
                       </span>
                       <span class="shuffly-badge shuffly-badge-success !px-2 !py-0.5 text-xs">
-                        順番: <strong><%= order_count %></strong>回
+                        順番決め <strong><%= order_count %></strong>回
                       </span>
-                      <span class="shuffly-badge shuffly-badge-neutral !px-2 !py-0.5 text-xs">
-                        役割: <strong><%= role_count %></strong>回
+                      <span class="shuffly-badge shuffly-badge-role !px-2 !py-0.5 text-xs">
+                        役割決め <strong><%= role_count %></strong>回
                       </span>
                     </div>
                   <% end %>

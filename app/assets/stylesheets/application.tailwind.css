@@ -395,6 +395,12 @@ body.shuffly-app {
   border-color: rgba(148, 163, 184, 0.18);
 }
 
+.shuffly-badge-role {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.22);
+}
+
 .shuffly-optional-header {
   cursor: pointer;
 }
@@ -625,6 +631,15 @@ body.shuffly-app {
 .shuffly-ribbon-button {
   top: -0.55rem;
   right: 0.85rem;
+}
+
+.shuffly-ribbon-note {
+  top: 0.65rem;
+  right: 0.75rem;
+  border-color: rgba(148, 163, 184, 0.24);
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(241, 245, 249, 0.94));
+  color: #475569;
+  box-shadow: 0 2px 8px rgba(148, 163, 184, 0.08);
 }
 
 /* ========================================
