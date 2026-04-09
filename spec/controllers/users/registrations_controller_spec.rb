@@ -34,7 +34,7 @@ RSpec.describe Users::RegistrationsController, type: :controller do
           }
         }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include('アカウント情報を保存できませんでした')
       end
     end
@@ -57,7 +57,7 @@ RSpec.describe Users::RegistrationsController, type: :controller do
           delete :destroy, params: { user: { current_password: '' } }
         }.not_to change(User, :count)
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include('アカウント情報を削除できませんでした')
       end
 
@@ -66,7 +66,7 @@ RSpec.describe Users::RegistrationsController, type: :controller do
           delete :destroy, params: { user: { current_password: 'wrong-password' } }
         }.not_to change(User, :count)
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include('アカウント情報を削除できませんでした')
       end
     end

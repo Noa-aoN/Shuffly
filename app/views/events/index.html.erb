@@ -37,9 +37,9 @@
         </h2>
         <p class="lp-lead text-lg mb-5 text-[var(--shuffly-text-secondary)]"><span class="rounded-md bg-[rgba(254,240,138,0.82)] px-2 py-1 text-[var(--shuffly-text)] shadow-[inset_0_0_0_1px_rgba(202,138,4,0.12)] font-medium">グループ分け・順番決め・役割分担</span>を、その場で素早く。</p>
         <div class="lp-value-strip mb-8 flex flex-wrap items-center justify-center gap-2 text-sm text-[var(--shuffly-text-secondary)]">
-          <span class="lp-value-pill">登録なしですぐ開始</span>
-          <span class="lp-value-pill">ログイン後は保存と再開に対応</span>
-          <span class="lp-value-pill">イベント準備を数分で短縮</span>
+          <span class="lp-value-pill">登録なしですぐ使える</span>
+          <span class="lp-value-pill">ログインで保存・再開</span>
+          <span class="lp-value-pill">イベント準備を時短</span>
         </div>
 
         <!-- CTAボタングループ -->
@@ -53,7 +53,7 @@
                   full_mobile: true,
                   data: {
                     lp_cards_hint: '登録なしでそのまま開始。メンバー入力からすぐに試せます。',
-                    action: 'mouseenter->lp-cards#previewCta mouseleave->lp-cards#resetCta focus->lp-cards#previewCta blur->lp-cards#resetCta'
+                    action: 'mouseenter->lp-cards#previewCta mouseleave->lp-cards#resetCta focus->lp-cards#previewCta blur->lp-cards#resetCta click->lp-cards#burstCta'
                   },
                   icon: 'icons/bolt_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                   icon_class: 'inline-block' %>
@@ -67,7 +67,7 @@
                     full_mobile: true,
                     data: {
                       lp_cards_hint: '保存済みのイベントやメンバーリストをまとめて管理できます。',
-                      action: 'mouseenter->lp-cards#previewCta mouseleave->lp-cards#resetCta focus->lp-cards#previewCta blur->lp-cards#resetCta'
+                      action: 'mouseenter->lp-cards#previewCta mouseleave->lp-cards#resetCta focus->lp-cards#previewCta blur->lp-cards#resetCta click->lp-cards#burstCta'
                     },
                     icon: 'icons/account_circle_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                     icon_class: 'inline-block' %>
@@ -79,7 +79,7 @@
                     full_mobile: true,
                     data: {
                       lp_cards_hint: 'メンバーリスト保存、履歴確認、テーマ変更を使いたい人向けです。',
-                      action: 'mouseenter->lp-cards#previewCta mouseleave->lp-cards#resetCta focus->lp-cards#previewCta blur->lp-cards#resetCta'
+                      action: 'mouseenter->lp-cards#previewCta mouseleave->lp-cards#resetCta focus->lp-cards#previewCta blur->lp-cards#resetCta click->lp-cards#burstCta'
                     },
                     icon: 'icons/login_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
                     icon_class: 'inline-block' %>

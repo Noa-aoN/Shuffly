@@ -13,6 +13,9 @@ export default class extends Controller {
     this.burstState = null
     this.lastPointer = null
     this.burstTriggered = false
+    this.ctaBurstLocked = false
+    this.ctaNavigationTimer = null
+    this.wordmarkBurstTimer = null
     document.addEventListener("keydown", this.boundHandleKeydown)
     this.syncHintVisibility()
   }
@@ -22,6 +25,8 @@ export default class extends Controller {
     if (this.pointerFrame) window.cancelAnimationFrame(this.pointerFrame)
     if (this.animationFrame) window.cancelAnimationFrame(this.animationFrame)
     if (this.pointerState?.timer) window.clearTimeout(this.pointerState.timer)
+    if (this.ctaNavigationTimer) window.clearTimeout(this.ctaNavigationTimer)
+    if (this.wordmarkBurstTimer) window.clearTimeout(this.wordmarkBurstTimer)
   }
 
   previewCta(event) {
@@ -36,6 +41,37 @@ export default class extends Controller {
     if (!this.hasCtaHintTarget) return
     this.ctaHintTarget.textContent = this.defaultHint
     this.syncHintVisibility()
+  }
+
+  burstCta(event) {
+    const target = event.currentTarget
+    const href = target.getAttribute("href")
+    if (!href || target.getAttribute("target") === "_blank" || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+
+    if (this.prefersReducedMotion || !this.hasCardShellTarget) return
+
+    event.preventDefault()
+
+    if (this.pointerState?.timer) window.clearTimeout(this.pointerState.timer)
+    if (this.pointerFrame) window.cancelAnimationFrame(this.pointerFrame)
+    if (this.animationFrame) window.cancelAnimationFrame(this.animationFrame)
+    if (this.ctaNavigationTimer) window.clearTimeout(this.ctaNavigationTimer)
+
+    this.pointerState = null
+    this.burstState = null
+    this.burstTriggered = false
+    this.ctaBurstLocked = true
+    this.cardShellTargets.forEach((shell) => {
+      shell.style.transform = ""
+    })
+    if (this.hasBackgroundTarget) {
+      this.backgroundTarget.classList.remove("is-cta-bursting")
+      void this.backgroundTarget.offsetWidth
+      this.backgroundTarget.classList.add("is-cta-bursting")
+    }
+    this.ctaNavigationTimer = window.setTimeout(() => {
+      window.location.assign(href)
+    }, 0)
   }
 
   openCard(event) {
@@ -81,7 +117,7 @@ export default class extends Controller {
   }
 
   handlePointer(event) {
-    if (this.prefersReducedMotion || !this.hasCardShellTarget) return
+    if (this.prefersReducedMotion || !this.hasCardShellTarget || this.ctaBurstLocked) return
     if (this.pointerFrame) window.cancelAnimationFrame(this.pointerFrame)
 
     const { clientX, clientY } = event
@@ -93,7 +129,7 @@ export default class extends Controller {
   }
 
   resetPointer() {
-    if (this.prefersReducedMotion || !this.hasCardShellTarget) return
+    if (this.prefersReducedMotion || !this.hasCardShellTarget || this.ctaBurstLocked) return
     if (this.pointerState?.timer) window.clearTimeout(this.pointerState.timer)
     if (this.animationFrame) window.cancelAnimationFrame(this.animationFrame)
     this.pointerState = null
@@ -113,6 +149,16 @@ export default class extends Controller {
   deactivateWordmark() {
     if (!this.hasWordmarkTarget) return
     this.wordmarkTarget.classList.remove("is-shuffling")
+  }
+
+  flashWordmark() {
+    if (!this.hasWordmarkTarget) return
+    this.wordmarkTarget.classList.add("is-shuffling")
+    if (this.wordmarkBurstTimer) window.clearTimeout(this.wordmarkBurstTimer)
+    this.wordmarkBurstTimer = window.setTimeout(() => {
+      this.wordmarkTarget.classList.remove("is-shuffling")
+      this.wordmarkBurstTimer = null
+    }, 420)
   }
 
   syncHintVisibility() {
@@ -158,14 +204,14 @@ export default class extends Controller {
         const burst = this.burstState.offsets[index]
         if (burst) {
           const progress = 1 - (this.burstState.until - now) / this.burstState.duration
-          const exitPhase = 0.56
+          const exitPhase = this.burstState.oneWay ? 1 : 0.56
           if (progress <= exitPhase) {
             const t = progress / exitPhase
             offsetX += burst.x * t
             offsetY += burst.y * t
             rotation += burst.rotate * t
             scale += burst.scale * t
-          } else {
+          } else if (!this.burstState.oneWay) {
             const t = (progress - exitPhase) / (1 - exitPhase)
             offsetX += burst.reentryX * (1 - t)
             offsetY += burst.reentryY * (1 - t)
@@ -173,7 +219,7 @@ export default class extends Controller {
             scale += burst.scale * (1 - t) * 0.8
           }
 
-          if (burst.swapX || burst.swapY) {
+          if (!this.burstState.oneWay && (burst.swapX || burst.swapY)) {
             const swapExitPhase = 0.36
             const swapReturnPhase = 0.7
             if (progress <= swapExitPhase) {
@@ -197,6 +243,7 @@ export default class extends Controller {
   }
 
   queueBurst(clientX, clientY) {
+    if (this.ctaBurstLocked) return
     const hoveredIndex = this.findNearestCardIndex(clientX, clientY, 220)
 
     if (this.burstTriggered) {
@@ -228,9 +275,10 @@ export default class extends Controller {
     }
   }
 
-  triggerBurst(clientX, clientY) {
+  triggerBurst(clientX, clientY, options = {}) {
     if (this.burstTriggered) return
-    const duration = 1120
+    const oneWay = Boolean(options.oneWay)
+    const duration = oneWay ? 420 : 1120
     const centers = this.cardShellTargets.map((shell) => {
       const rect = shell.getBoundingClientRect()
       return {
@@ -291,8 +339,6 @@ export default class extends Controller {
       Number.isFinite(distanceToEdgeY) ? Math.abs(distanceToEdgeY) : Infinity
     )
     const oppositeTravel = travel + 240
-    const impacted = []
-
     const offsets = this.cardShellTargets.map((_, index) => {
       if (index === primaryIndex) {
         const curveSide = Math.random() > 0.5 ? 1 : -1
@@ -318,6 +364,24 @@ export default class extends Controller {
       const perpendicularSigned = relX * tangentX + relY * tangentY
       const perpendicular = Math.abs(perpendicularSigned)
 
+      if (oneWay) {
+        const exit = this.buildScatterExitVector(center, index + primaryIndex + 1)
+        const rotateDirection = exit.x >= 0 ? 1 : -1
+        return {
+          x: exit.x,
+          y: exit.y,
+          reentryX: 0,
+          reentryY: 0,
+          rotate: rotateDirection * (180 + (index % 3) * 36),
+          reentryRotate: 0,
+          scale: 0.04,
+          swapExitX: 0,
+          swapExitY: 0,
+          swapX: 0,
+          swapY: 0
+        }
+      }
+
       if (projection < -30 || projection > travel * 0.7 || perpendicular > 120) {
         return null
       }
@@ -337,7 +401,6 @@ export default class extends Controller {
         swapX: 0,
         swapY: 0
       }
-      impacted.push(index)
       return impact
     })
 
@@ -401,7 +464,8 @@ export default class extends Controller {
       until: Date.now() + duration,
       duration,
       primaryIndex,
-      offsets
+      offsets,
+      oneWay
     }
     this.burstTriggered = true
 
@@ -422,9 +486,10 @@ export default class extends Controller {
       if (Date.now() < this.burstState.until) {
         this.animationFrame = window.requestAnimationFrame(tick)
       } else {
+        const wasOneWay = this.burstState.oneWay
         this.burstState = null
         this.burstTriggered = false
-        if (this.lastPointer) {
+        if (this.lastPointer && !wasOneWay) {
           this.applyPointerMotion(this.lastPointer.x, this.lastPointer.y)
         }
         this.animationFrame = null

@@ -1,7 +1,9 @@
-document.addEventListener('DOMContentLoaded', () => {
+function initializeEventsLinking() {
   const saveBtn = document.getElementById('btn-save-pending');
 
   if (saveBtn) {
+    if (saveBtn.dataset.eventsLinkingBound === 'true') return;
+    saveBtn.dataset.eventsLinkingBound = 'true';
     saveBtn.addEventListener('click', async () => {
       try {
         // トークンを取得
@@ -80,4 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-});
+}
+
+document.addEventListener('DOMContentLoaded', initializeEventsLinking);
+document.addEventListener('turbo:load', initializeEventsLinking);

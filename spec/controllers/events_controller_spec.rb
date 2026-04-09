@@ -167,6 +167,15 @@ RSpec.describe EventsController, type: :controller do
         expect(assigns(:group_history)).to eq(event.group_history)
         expect(response).to have_http_status(:ok)
       end
+
+      it 'オーナーには削除確認付きの削除ボタンを表示する' do
+        login_as(user)
+
+        get :show, params: { id: event.id }
+
+        expect(response.body).to include('btn-delete-event')
+        expect(response.body).to include('本当にこのイベント履歴を削除しますか？')
+      end
     end
 
     context 'IDが"show"の場合' do

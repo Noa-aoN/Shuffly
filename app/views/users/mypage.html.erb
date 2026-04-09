@@ -8,7 +8,7 @@
 
 <div class="max-w-6xl mx-auto px-6 py-6 md:py-8">
   <%# ユーザー情報ヘッダー %>
-  <div class="shuffly-card px-6 md:px-10 py-8 mb-6">
+  <div class="shuffly-card px-6 md:px-10 py-8 mb-6" data-page-reveal>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex items-center gap-4">
         <div class="w-16 h-16 rounded-full flex items-center justify-center shrink-0 bg-[rgba(139,92,246,0.10)] border border-[rgba(139,92,246,0.14)]">
@@ -34,7 +34,7 @@
   </div>
 
   <%# タブナビゲーション - 統合パーシャル使用 %>
-  <div class="mb-6">
+  <div class="mb-6" data-page-reveal>
     <%= render 'shared/tabs',
           tabs: [
             { id: 'events', text: t("mypage.tabs.events"), icon: 'icons/event_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', path: mypage_path(tab: 'events'), data: { turbo: true } },
@@ -55,7 +55,7 @@
       <% if @member_lists && @member_lists.any? %>
         <%# メンバーリストカード一覧 %>
         <% @member_lists.each do |member_list| %>
-          <%= link_to edit_member_list_path(member_list), class: "shuffly-card-link block px-6 md:px-10 py-8 cursor-pointer group" do %>
+          <%= link_to edit_member_list_path(member_list), class: "shuffly-card-link block px-6 md:px-10 py-8 cursor-pointer group", data: { page_reveal: true } do %>
             <div class="flex items-center justify-between gap-4">
               <div class="flex-1">
                 <h3 class="font-semibold text-lg text-[var(--shuffly-text)] mb-2">
@@ -99,7 +99,7 @@
           </div>
         <% end %>
       <% else %>
-        <div class="shuffly-card px-6 md:px-10 py-12 text-center">
+        <div class="shuffly-card px-6 md:px-10 py-12 text-center" data-page-reveal>
           <%= image_tag 'icons/groups_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg', width: 64, height: 64, class: "mx-auto text-gray-300 mb-4", alt: "空のメンバーリストアイコン" %>
           <p class="mb-6 text-[var(--shuffly-text-secondary)]"><%= t("mypage.member_lists.empty") %></p>
           <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center w-full">
@@ -120,7 +120,7 @@
   <% when 'account' %>
     <div class="space-y-4">
       <%# アカウント情報カード %>
-      <%= link_to edit_user_registration_path, class: "shuffly-card-link block px-6 md:px-10 py-8 cursor-pointer group" do %>
+      <%= link_to edit_user_registration_path, class: "shuffly-card-link block px-6 md:px-10 py-8 cursor-pointer group", data: { page_reveal: true } do %>
         <div class="flex items-center justify-between gap-4">
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-3">
@@ -149,7 +149,7 @@
       <% end %>
 
       <%# タイムゾーン設定カード %>
-      <%= link_to timezone_settings_path, class: "shuffly-card-link block px-6 md:px-10 py-8 cursor-pointer group" do %>
+      <%= link_to timezone_settings_path, class: "shuffly-card-link block px-6 md:px-10 py-8 cursor-pointer group", data: { page_reveal: true } do %>
         <div class="flex items-center justify-between gap-4">
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-3">
@@ -175,7 +175,7 @@
       <% end %>
 
       <%# スタイル設定カード %>
-      <div class="shuffly-card-link shuffly-card-link-disabled relative block px-6 md:px-10 py-8 group overflow-visible cursor-not-allowed" aria-disabled="true">
+      <div class="shuffly-card-link shuffly-card-link-disabled relative block px-6 md:px-10 py-8 group overflow-visible cursor-not-allowed" aria-disabled="true" data-page-reveal>
         <span class="shuffly-ribbon top-1">準備中</span>
         <div class="flex items-center justify-between gap-4 cursor-not-allowed">
           <div class="flex-1">
@@ -220,13 +220,13 @@
     <div class="space-y-4">
       <% if @events.any? %>
         <% @events.each do |event| %>
-          <%= link_to event_path(event), class: "shuffly-card-link relative block px-6 md:px-10 py-8 cursor-pointer group" do %>
+          <%= link_to event_path(event), class: "shuffly-card-link relative block px-6 md:px-10 py-8 cursor-pointer group", data: { page_reveal: true } do %>
             <% if event.memo.present? %>
               <span class="shuffly-ribbon shuffly-ribbon-note">メモあり</span>
             <% end %>
             <div class="flex items-center justify-between gap-4">
               <div class="flex-1">
-                <div class="mb-2 flex items-start justify-between gap-3">
+                <div class="mb-2 flex items-start justify-between gap-3 pr-16 sm:pr-0">
                   <h3 class="font-semibold text-lg text-[var(--shuffly-text)]">
                     <%= event.title.presence || "イベント #{event.id}" %>
                   </h3>
@@ -287,7 +287,7 @@
         <% end %>
       <% else %>
         <%# 空の状態 %>
-        <div class="shuffly-card px-6 md:px-10 py-16 text-center">
+        <div class="shuffly-card px-6 md:px-10 py-16 text-center" data-page-reveal>
           <div class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 bg-[rgba(139,92,246,0.10)] border border-[rgba(139,92,246,0.14)]">
             <%= image_tag 'icons/event_note_24dp_1F1F1F.svg', width: 48, height: 48, class: "text-blue-400", alt: "イベントアイコン" %>
           </div>

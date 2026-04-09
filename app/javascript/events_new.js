@@ -2762,12 +2762,13 @@ if (typeof window !== 'undefined') {
   window.ShufflyApp = ShufflyApp;
 }
 
-// JavaScriptの初期化（DOMContentLoaded時に自動実行）
-document.addEventListener('DOMContentLoaded', () => {
+function initializeShufflyEventPage() {
   if (window.ShufflyApp) {
     // data属性から設定を読み取る
     const container = document.querySelector('[data-is-signed-in]');
     if (container) {
+      if (container.dataset.shufflyInitialized === 'true') return;
+      container.dataset.shufflyInitialized = 'true';
       const config = {
         isSignedIn: container.dataset.isSignedIn === 'true',
         iconExpand: container.dataset.iconExpand || '',
@@ -3093,4 +3094,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
-});
+}
+
+// JavaScriptの初期化
+document.addEventListener('DOMContentLoaded', initializeShufflyEventPage);
+document.addEventListener('turbo:load', initializeShufflyEventPage);
