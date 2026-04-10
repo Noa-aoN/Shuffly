@@ -138,5 +138,35 @@ RSpec.describe Event, type: :model do
 
       expect(params).to eq('members_data' => '{"members":["Alice"]}')
     end
+
+    it 'サイズ超過のJSONをデフォルト値へフォールバックする（DoS対策）' do
+      # 1MBを超えるJSON文字列を作成
+      large_pattern = '["user"],'
+      iterations = ((1.megabyte + 1000) / large_pattern.bytesize).ceil + 100
+      large_content = large_pattern * iterations
+      large_content = large_content.sub(/,\z/, '')  # 末尾のカンマを削除
+      large_json = '{"members":[' + large_content + ']}'
+
+      params = { 'members_data' => large_json }
+
+      normalized = described_class.normalize_json_fields(params)
+
+      # サイズ超過時はデフォルト値を返す
+      expect(normalized['members_data']).to eq({})
+    end
+
+    it 'サイズ制限内のJSONは正常に処理する' do
+      # 1MB未満のJSON文字列（約9KB）
+      safe_json = '{"members":[' + ([ '["user"]' ] * 1000).join(',') + ']}'
+
+      params = { 'members_data' => safe_json }
+
+      normalized = described_class.normalize_json_fields(params)
+
+      # サイズ制限内は正常にパース
+      expect(normalized['members_data']).to be_a(Hash)
+      expect(normalized['members_data']['members']).to be_an(Array)
+      expect(normalized['members_data']['members'].length).to eq(1000)
+    end
   end
 end

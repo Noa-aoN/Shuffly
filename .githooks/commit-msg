@@ -1,0 +1,38 @@
+#!/bin/bash
+# Commit message hook to enforce prefix usage
+# Valid prefixes: feat, fix, test, docs, refactor, chore, perf, style, build
+
+MSG_FILE=$1
+COMMIT_MSG=$(cat "$MSG_FILE")
+
+# Get only the first line (subject)
+FIRST_LINE=$(echo "$COMMIT_MSG" | head -n 1)
+
+# Skip merge commits (they have their own format)
+if [[ "$FIRST_LINE" =~ ^Merge ]]; then
+  exit 0
+fi
+
+# Check if message starts with valid prefix and has content after colon
+if [[ ! "$FIRST_LINE" =~ ^(feat|fix|test|docs|refactor|chore|perf|style|build):\ .+ ]]; then
+  echo "❌ コミットメッセージは prefix から始めてください"
+  echo ""
+  echo "使用可能な prefix:"
+  echo "   feat:  新機能"
+  echo "   fix:   バグ修正"
+  echo "   test:  テスト追加・修正"
+  echo "   docs:  ドキュメント"
+  echo "   refactor: リファクタリング"
+  echo "   chore: その他の作業"
+  echo "   perf:  パフォーマンス改善"
+  echo "   style: コードスタイル"
+  echo "   build: ビルドシステム・依存関係"
+  echo ""
+  echo "例: feat: グループ分け機能を追加"
+  echo "    fix: イベント保存時のJSONパースエラーを修正"
+  echo ""
+  echo "実際のメッセージ: $FIRST_LINE"
+  exit 1
+fi
+
+exit 0

@@ -1,3 +1,12 @@
+/**
+ * メンバー間の共同出現回数マップを生成
+ *
+ * @param {Array<Object>} entries - メンバーのエントリ配列
+ * @param {string} entries[].name - メンバー名
+ * @param {Array} entries[].history - メンバーのグループ履歴（グループIDの配列）
+ * @param {boolean} [ignoreLast=true] - 最新の履歴を無視するかどうか
+ * @returns {Object<string, Object<string, number>>} メンバー名をキーとした共同出現回数マップ
+ */
 export function getCoOccurrenceMap(entries, ignoreLast = true) {
   const map = {}
   const historySets = {}
@@ -22,6 +31,18 @@ export function getCoOccurrenceMap(entries, ignoreLast = true) {
   return map
 }
 
+/**
+ * 生テキストから正規化されたメンバーリストを構築
+ *
+ * @param {string} rawText - メンバー情報の生テキスト（改行またはカンマ区切り）
+ * @param {Function} parseEntry - 各行をパースする関数
+ * @param {string} parseEntry.name - パースされたメンバー名
+ * @param {Array} parseEntry.history - メンバーの履歴データ
+ * @returns {Array<Object>} 正規化されたメンバーオブジェクトの配列
+ * @returns {number} returns[].id - メンバーID（1から始まる連番）
+ * @returns {string} returns[].name - メンバー名
+ * @returns {Array} returns[].history - メンバーの履歴データ
+ */
 export function buildNormalizedMembers(rawText, parseEntry) {
   return rawText.trim().split(/[\r\n,]+/).map((line, index) => {
     const parsed = parseEntry(line.trim())
@@ -33,6 +54,15 @@ export function buildNormalizedMembers(rawText, parseEntry) {
   }).filter((entry) => entry.name)
 }
 
+/**
+ * グループ分けラウンドから組み合わせキャッシュを構築
+ *
+ * @param {Array<Object>} groupRounds - グループ分けラウンドの配列
+ * @param {Array<Object>} groupRounds[].assignments - グループ割り当て情報
+ * @param {Array<Object>} groupRounds[].assignments[].members - メンバー配列
+ * @param {number|string} groupRounds[].assignments[].members[].member_id - メンバーID
+ * @returns {Object<string, number>} メンバーIDペアをキー（"id1-id2"形式）とした出現回数マップ
+ */
 export function buildCoOccurrenceCacheFromRounds(groupRounds) {
   const cache = {}
 

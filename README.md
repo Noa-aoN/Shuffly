@@ -177,8 +177,11 @@ Devise で管理する認証ユーザーです。
 
 ## 開発運用メモ
 
-- Git 運用は [docs/decisons/git-workflow.md](docs/decisons/git-workflow.md) を参照
+- Git 運用は [docs/decisions/git-workflow.md](docs/decisions/git-workflow.md) を参照
 - 個人開発中は `develop` を実質的な開発ブランチとして扱い、PR は `main` 向けに作成
+- コミットメッセージには prefix を必須化（`.githooks/commit-msg` で自動チェック）
+  - 使用可能な prefix: `feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`, `perf:`, `style:`, `build:`
+  - セットアップ: `git config core.hooksPath .githooks`
 
 ## 現在の技術的な重点
 

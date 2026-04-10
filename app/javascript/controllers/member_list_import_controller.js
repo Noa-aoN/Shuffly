@@ -1,6 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 
-// メンバーリストインポート用Stimulusコントローラー
+/**
+ * メンバーリストインポート用Stimulusコントローラー
+ *
+ * 保存済みのメンバーリストからメンバーをインポートする機能を提供
+ * 上書きまたは追記モードでインポートが可能
+ *
+ * @extends Controller
+ */
 export default class extends Controller {
   static targets = ["modal", "methodModal", "container"]
   static values = {
@@ -40,7 +47,13 @@ export default class extends Controller {
     this.selectedListIdValue = ''
   }
 
-  // メンバーリストを読み込む
+  /**
+   * メンバーリストを読み込む
+   *
+   * サーバーから保存済みメンバーリストを取得して表示
+   *
+   * @returns {Promise<void>}
+   */
   async loadMemberLists() {
     const container = this.containerTarget
 
@@ -124,7 +137,12 @@ export default class extends Controller {
     await this.importMembers('append')
   }
 
-  // メンバーをインポート
+  /**
+   * メンバーをインポート
+   *
+   * @param {string} method - インポート方法（'overwrite': 上書き, 'append': 追記）
+   * @returns {Promise<void>}
+   */
   async importMembers(method) {
     const listId = this.selectedListIdValue
     if (!listId) return
