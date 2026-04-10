@@ -157,7 +157,7 @@ RSpec.describe Event, type: :model do
 
     it 'サイズ制限内のJSONは正常に処理する' do
       # 1MB未満のJSON文字列（約9KB）
-      safe_json = '{"members":[' + (['["user"]'] * 1000).join(',') + ']}'
+      safe_json = '{"members":[' + ([ '["user"]' ] * 1000).join(',') + ']}'
 
       params = { 'members_data' => safe_json }
 
