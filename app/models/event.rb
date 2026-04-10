@@ -75,6 +75,13 @@ class Event < ApplicationRecord
 
   def self.normalize_json_field_value(key, value)
     if value.is_a?(String) && value.present?
+      # DoS対策: JSONデータサイズを制限（1MB）
+      max_size = 1.megabyte
+      if value.bytesize > max_size
+        Rails.logger.warn "JSON field #{key} exceeds size limit (#{value.bytesize} > #{max_size})"
+        return default_json_value_for(key)
+      end
+
       JSON.parse(value)
     elsif value.blank?
       default_json_value_for(key)
@@ -93,6 +100,13 @@ class Event < ApplicationRecord
   # JSONBフィールドをパースする（文字列の場合）
   def parse_jsonb_field(field_value)
     return field_value unless field_value.is_a?(String)
+
+    # DoS対策: JSONデータサイズを制限（1MB）
+    max_size = 1.megabyte
+    if field_value.bytesize > max_size
+      Rails.logger.warn "JSONB field exceeds size limit (#{field_value.bytesize} > #{max_size})"
+      return nil
+    end
 
     begin
       JSON.parse(field_value)
