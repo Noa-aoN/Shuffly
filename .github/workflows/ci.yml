@@ -52,6 +52,11 @@ jobs:
           bundle install --jobs 4 --retry 3
           yarn install
 
+      - name: Build frontend assets
+        run: |
+          yarn build
+          yarn build:css
+
       - name: Prepare database
         run: bin/rails db:prepare
 
