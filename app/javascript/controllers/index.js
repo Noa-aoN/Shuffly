@@ -18,3 +18,6 @@ application.register("password-toggle", PasswordToggleController)
 
 import LpCardsController from "./lp_cards_controller"
 application.register("lp-cards", LpCardsController)
+
+import TextareaMeterController from "./textarea_meter_controller"
+application.register("textarea-meter", TextareaMeterController)

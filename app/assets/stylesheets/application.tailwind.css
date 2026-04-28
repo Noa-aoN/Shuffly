@@ -337,6 +337,56 @@ body.shuffly-app {
   color: #94a3b8;
 }
 
+.shuffly-textarea-wrap {
+  position: relative;
+  display: block;
+}
+
+.shuffly-textarea-expand-btn {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  padding: 0;
+  border-radius: 9999px;
+  border: 1px solid rgba(203, 213, 225, 0.85);
+  background: rgba(255, 255, 255, 0.85);
+  color: #64748b;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.shuffly-textarea-expand-btn:hover {
+  background: rgba(124, 92, 255, 0.08);
+  border-color: rgba(124, 92, 255, 0.25);
+  color: var(--shuffly-text);
+}
+
+.shuffly-exec-count {
+  position: absolute;
+  top: -1.05rem;
+  right: 0.5rem;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(254, 240, 138, 0.95);
+  color: #4c1d95;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(202, 138, 4, 0.32);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
 .shuffly-input:hover,
 .shuffly-textarea:hover,
 .shuffly-select:hover,
@@ -598,6 +648,10 @@ body.shuffly-app {
   opacity: 0.96;
 }
 
+.shuffly-feature-card--plain {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.55) 35%, rgba(255, 255, 255, 0.92) 75%, #ffffff 100%);
+}
+
 .shuffly-event-detail-page {
   container-type: inline-size;
 }
@@ -641,18 +695,19 @@ body.shuffly-app {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgba(234, 88, 12, 0.28);
-  background: linear-gradient(180deg, rgba(255, 237, 213, 0.95), rgba(255, 224, 188, 0.93));
-  color: #c2410c;
+  border: 1px solid rgba(148, 163, 184, 0.36);
+  background: rgba(241, 245, 249, 0.96);
+  color: #475569;
   padding: 0.25rem 0.75rem;
   font-size: 0.72rem;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.08);
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
 }
 
 .shuffly-ribbon-button {
-  top: -0.55rem;
-  right: 0.85rem;
+  top: -1.05rem;
+  right: 0.5rem;
 }
 
 .shuffly-ribbon-note {
@@ -672,6 +727,7 @@ body.shuffly-app {
   position: relative;
   width: 3rem;
   height: 3rem;
+  z-index: 30;
 }
 
 .shuffly-fab-hint {
@@ -1434,6 +1490,42 @@ body.shuffly-app {
   overflow-y: auto;
 }
 
+.results-expand-modal.is-open {
+  display: flex;
+}
+
+.results-expand-modal-panel {
+  max-height: min(85vh, 48rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.results-expand-body {
+  flex: 1 1 auto;
+  margin: 0;
+  overflow-y: auto;
+  font-size: 1.25rem;
+  line-height: 1.7;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--shuffly-text);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.94));
+  border: 1px solid var(--shuffly-border);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  font-family: inherit;
+}
+
+@media (max-width: 767px) {
+  .results-expand-modal {
+    padding: 0.75rem;
+  }
+
+  .results-expand-body {
+    font-size: 1rem;
+  }
+}
+
 @media (max-width: 767px) {
   .lp-card {
     width: 6.7rem;
@@ -1487,16 +1579,12 @@ body.shuffly-app {
   }
 
   .lp-card-modal {
-    align-items: end;
-    padding: 0;
+    padding: 1rem;
   }
 
   .lp-card-modal-panel {
     max-width: 100%;
     max-height: min(82vh, 42rem);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    padding-bottom: 2rem;
   }
 
   .shuffly-fab-menu {

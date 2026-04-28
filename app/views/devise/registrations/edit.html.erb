@@ -75,13 +75,14 @@
 
   <% end %>
 
-  <div class="grid grid-cols-1 gap-2 sm:grid-cols-3 mt-6">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 w-full mt-6">
     <%= render 'shared/button',
           button_text: "マイページへ戻る",
           path: mypage_path(tab: 'account'),
           variant: 'secondary',
           size: 'md',
           full_mobile: true,
+          full_width: true,
           extra_class: 'w-full',
           icon: 'icons/keyboard_return_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
           wrapper_class: 'mt-0' %>
@@ -91,6 +92,7 @@
           variant: 'primary',
           size: 'md',
           full_mobile: true,
+          full_width: true,
           extra_class: 'w-full',
           icon: 'icons/save_24dp_1F1F1F.svg',
           is_button: true,
@@ -114,6 +116,7 @@
               variant: 'danger',
               size: 'md',
               full_mobile: true,
+              full_width: true,
               extra_class: 'w-full',
               icon: 'icons/account_circle_off_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
               is_button: true,

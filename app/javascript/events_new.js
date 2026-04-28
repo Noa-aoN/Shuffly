@@ -1295,7 +1295,37 @@ const ShufflyApp = (function() {
     updateGroupRoundDisplay();
   }
 
+  function updateExecuteCountBadge(type){
+    const targetMap = {
+      groups: { wrapper: 'settings-action-groups', count: historyData.groups.length + 1 },
+      order:  { wrapper: 'settings-action-order',  count: historyData.order.length + 1 },
+      roles:  { wrapper: 'settings-action-roles',  count: historyData.roles.length + 1 }
+    };
+    const types = type ? [type] : Object.keys(targetMap);
+    types.forEach((t) => {
+      const conf = targetMap[t];
+      if(!conf) return;
+      const wrapper = document.getElementById(conf.wrapper);
+      if(!wrapper) return;
+      const btn = wrapper.querySelector('a, button');
+      if(!btn) return;
+      // 絶対配置のバッジを正しくアンカーするため、ボタン側に位置基準を保証する
+      if(window.getComputedStyle(btn).position === 'static'){
+        btn.style.position = 'relative';
+      }
+      let badge = btn.querySelector('.shuffly-exec-count');
+      if(!badge){
+        badge = document.createElement('span');
+        badge.className = 'shuffly-exec-count';
+        badge.setAttribute('aria-hidden', 'true');
+        btn.appendChild(badge);
+      }
+      badge.textContent = `次:${conf.count}回目`;
+    });
+  }
+
   function updateGroupRoundDisplay(){
+    updateExecuteCountBadge('groups');
     const el = document.getElementById('groupRoundHint');
     if(!el) return;
 
@@ -1321,6 +1351,7 @@ const ShufflyApp = (function() {
   }
 
   function updateOrderRoundDisplay(){
+    updateExecuteCountBadge('order');
     const el = document.getElementById('orderRoundHint');
     if(!el) return;
 
@@ -1346,6 +1377,7 @@ const ShufflyApp = (function() {
   }
 
   function updateRolesRoundDisplay(){
+    updateExecuteCountBadge('roles');
     const el = document.getElementById('rolesRoundHint');
     if(!el) return;
 
@@ -1669,6 +1701,45 @@ const ShufflyApp = (function() {
       // Update navigation buttons
       updateNavigationButtons('roles');
     }
+  }
+
+  function getActiveResultTab(){
+    if(document.querySelector('#tab-order.shuffly-tab-active')) return 'order';
+    if(document.querySelector('#tab-roles.shuffly-tab-active')) return 'roles';
+    return 'groups';
+  }
+
+  function openResultsExpandModal(sourceId){
+    const modal = document.getElementById('results-expand-modal');
+    const body = document.getElementById('results-expand-body');
+    const titleEl = document.getElementById('results-expand-title');
+    if(!modal || !body) return;
+    const titles = {
+      groupOutput: 'グループ分けの結果',
+      orderOutput: '順番決めの結果',
+      rolesOutput: '役割分担の結果'
+    };
+    let id = sourceId;
+    if(!id){
+      const tab = getActiveResultTab();
+      id = tab === 'order' ? 'orderOutput' : tab === 'roles' ? 'rolesOutput' : 'groupOutput';
+    }
+    const ta = document.getElementById(id);
+    const value = (ta && ta.value || '').trim();
+    body.textContent = value || '結果はまだありません。シャッフルを実行してください。';
+    if(titleEl) titleEl.textContent = titles[id] || '結果を拡大表示';
+    modal.classList.remove('hidden');
+    modal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeResultsExpandModal(){
+    const modal = document.getElementById('results-expand-modal');
+    if(!modal) return;
+    if(!modal.classList.contains('is-open')) return;
+    modal.classList.remove('is-open');
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
   }
 
   function switchSettingsTab(name){
@@ -2085,6 +2156,8 @@ const ShufflyApp = (function() {
     setRoleDefinitions(getRoleDefinitions());
     syncAuxiliarySettings();
     syncOptionalCardSummaries();
+    // 初期化時に全タブの実行回数バッジ（次:N回目）を生成
+    updateExecuteCountBadge();
     // 初期化時には履歴を作成しない（グループ分け実行時のみ履歴を保存）
     // これにより「0回目（未実施）」が履歴として保存される問題を回避
     // if(shufflyHistory.length === 0 && getRawValue().trim() !== "") pushToHistory('groups');
@@ -2256,6 +2329,21 @@ const ShufflyApp = (function() {
     bindIf('tab-groups', 'click', ()=>switchResultTab('groups'));
     bindIf('tab-order', 'click', ()=>switchResultTab('order'));
     bindIf('tab-roles', 'click', ()=>switchResultTab('roles'));
+
+    // 結果拡大表示モーダル — 各結果 textarea の拡大ボタンから発火
+    document.addEventListener('textarea-meter:expand', (e)=>{
+      const id = e && e.detail ? e.detail.id : null;
+      openResultsExpandModal(id);
+    });
+    document.querySelectorAll('[data-results-expand-close]').forEach((el)=>{
+      el.addEventListener('click', (e)=>{
+        if(e) e.preventDefault();
+        closeResultsExpandModal();
+      });
+    });
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape') closeResultsExpandModal();
+    });
 
     // グループ表示オプションの変更（変更してもグループ分け実行前は結果反映しない）
     bindIf('displayFormatSelect', 'change', ()=>{ if(groupsAssigned){ showGroups(); showStats(); } });

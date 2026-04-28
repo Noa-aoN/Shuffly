@@ -32,15 +32,18 @@
         </div>
 
         <%# 保存ボタン %>
-        <div class="grid grid-cols-1 sm:grid-cols-1 gap-2 sm:place-items-center">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
           <%= render 'shared/button',
                 f: f,
                 button_text: '設定を保存',
                 variant: 'primary',
                 size: 'md',
                 full_mobile: true,
+                full_width: true,
                 extra_class: 'w-full',
-                icon: 'icons/save_24dp_1F1F1F.svg' %>
+                wrapper_class: 'mt-0 md:col-start-2',
+                icon: 'icons/save_24dp_1F1F1F.svg',
+                icon_class: 'inline-block' %>
         </div>
       </div>
     <% end %>
