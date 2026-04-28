@@ -46,13 +46,13 @@
 
     <%# アクションボタン %>
     <div class="mt-6 border-t border-[var(--shuffly-border)] pt-6">
-      <div class="grid grid-cols-1 gap-2 md:grid-cols-3">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
         <%= render 'shared/button',
               button_text: t("mypage.event_detail.back"),
               path: mypage_path(tab: 'events'),
               variant: 'tertiary',
-              size: 'sm',
               full_mobile: true,
+              full_width: true,
               extra_class: 'w-full',
               icon: 'icons/keyboard_return_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
               icon_class: 'inline-block',
@@ -61,8 +61,8 @@
               button_text: '続きからシャッフル',
               path: new_event_path(load_event_id: @event.id),
               variant: 'primary',
-              size: 'sm',
               full_mobile: true,
+              full_width: true,
               extra_class: 'w-full',
               icon: 'icons/start_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
               icon_class: 'inline-block',
@@ -71,9 +71,9 @@
               button_text: 'イベントを削除',
               path: event_path(@event),
               variant: 'danger',
-              size: 'sm',
               button_to_method: :delete,
               full_mobile: true,
+              full_width: true,
               extra_class: 'w-full shadow-sm',
               icon: 'icons/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
               confirm_message: t("mypage.event_detail.delete_confirm_event"),
@@ -83,22 +83,15 @@
     </div>
   </div>
 
-  <%# タブナビゲーション（results_panelと同じスタイル） %>
+  <%# タブナビゲーション（共通パーシャル使用） %>
   <div class="mb-6" data-page-reveal>
-    <div class="shuffly-tabbar flex w-full items-center gap-2 rounded-2xl p-1.5">
-      <button id="tab-groups" class="shuffly-tab shuffly-results-tab shuffly-results-tab-active flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm md:text-base font-semibold">
-        <%= image_tag "icons/diversity_3_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "グループアイコン" %>
-        <span class="hidden sm:inline leading-none">グループ</span>
-      </button>
-      <button id="tab-order" class="shuffly-tab shuffly-results-tab flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm md:text-base font-semibold">
-        <%= image_tag "icons/format_list_numbered_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "順番アイコン" %>
-        <span class="hidden sm:inline leading-none">順番</span>
-      </button>
-      <button id="tab-roles" class="shuffly-tab shuffly-results-tab flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm md:text-base font-semibold">
-        <%= image_tag "icons/badge_24dp_1F1F1F.svg", width: 24, height: 24, class: "inline-block relative bottom-0.5", alt: "役割アイコン" %>
-        <span class="hidden sm:inline leading-none">役割</span>
-      </button>
-    </div>
+    <%= render 'shared/tabs',
+          tabs: [
+            { id: 'groups', text: 'グループ', icon: 'icons/diversity_3_24dp_1F1F1F.svg' },
+            { id: 'order', text: '順番', icon: 'icons/format_list_numbered_24dp_1F1F1F.svg' },
+            { id: 'roles', text: '役割', icon: 'icons/badge_24dp_1F1F1F.svg' }
+          ],
+          active_tab: 'groups' %>
   </div>
 
   <%# グループパネル %>
@@ -117,44 +110,43 @@
     </div>
 
     <%# 結果操作ボタン（tertiary） %>
-    <div class="mt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-      <div class="grid grid-cols-2 gap-2 md:min-w-[420px]">
-        <%= render 'shared/button',
-              f: nil,
-              button_text: raw('<span class="hidden sm:inline">前回のグループ分け</span><span class="inline sm:hidden">前回</span>'),
-              id: 'btn-prev-groups',
-              path: '#',
-              variant: 'tertiary',
-              full_mobile: true,
-              extra_class: 'w-full',
-              icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-              icon_class: 'inline-block',
-              wrapper_class: 'mt-0' %>
-        <%= render 'shared/button',
-              f: nil,
-              button_text: raw('<span class="hidden sm:inline">次回のグループ分け</span><span class="inline sm:hidden">次回</span>'),
-              id: 'btn-next-groups',
-              path: '#',
-              variant: 'tertiary',
-              full_mobile: true,
-              extra_class: 'w-full',
-              icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-              icon_class: 'inline-block icon_right',
-              wrapper_class: 'mt-0' %>
-      </div>
-      <div class="md:min-w-[250px]">
-        <%= render 'shared/button',
-              f: nil,
-              button_text: 'クリップボードにコピー',
-              id: 'btn-copy-groups',
-              path: '#',
-              variant: 'tertiary',
-              full_mobile: true,
-              extra_class: 'w-full',
-              icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-              icon_class: 'inline-block',
-              wrapper_class: 'mt-0' %>
-      </div>
+    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
+      <%= render 'shared/button',
+            f: nil,
+            button_text: raw('<span class="hidden sm:inline">前回のグループ分け</span><span class="inline sm:hidden">前回</span>'),
+            id: 'btn-prev-groups',
+            path: '#',
+            variant: 'tertiary',
+            full_mobile: true,
+            full_width: true,
+            extra_class: 'w-full',
+            icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block',
+            wrapper_class: 'mt-0' %>
+      <%= render 'shared/button',
+            f: nil,
+            button_text: raw('<span class="hidden sm:inline">次回のグループ分け</span><span class="inline sm:hidden">次回</span>'),
+            id: 'btn-next-groups',
+            path: '#',
+            variant: 'tertiary',
+            full_mobile: true,
+            full_width: true,
+            extra_class: 'w-full',
+            icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block icon_right',
+            wrapper_class: 'mt-0' %>
+      <%= render 'shared/button',
+            f: nil,
+            button_text: 'クリップボードにコピー',
+            id: 'btn-copy-groups',
+            path: '#',
+            variant: 'tertiary',
+            full_mobile: true,
+            full_width: true,
+            extra_class: 'w-full',
+            icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block',
+            wrapper_class: 'mt-0' %>
     </div>
   </div>
 
@@ -174,44 +166,43 @@
     </div>
 
     <%# 結果操作ボタン（tertiary） %>
-    <div class="mt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-      <div class="grid grid-cols-2 gap-2 md:min-w-[420px]">
-        <%= render 'shared/button',
-              f: nil,
-              button_text: raw('<span class="hidden sm:inline">前回の順番決め</span><span class="inline sm:hidden">前回</span>'),
-              id: 'btn-prev-order',
-              path: '#',
-              variant: 'tertiary',
-              full_mobile: true,
-              extra_class: 'w-full',
-              icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-              icon_class: 'inline-block',
-              wrapper_class: 'mt-0' %>
-        <%= render 'shared/button',
-              f: nil,
-              button_text: raw('<span class="hidden sm:inline">次回の順番決め</span><span class="inline sm:hidden">次回</span>'),
-              id: 'btn-next-order',
-              path: '#',
-              variant: 'tertiary',
-              full_mobile: true,
-              extra_class: 'w-full',
-              icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-              icon_class: 'inline-block icon_right',
-              wrapper_class: 'mt-0' %>
-      </div>
-      <div class="md:min-w-[250px]">
-        <%= render 'shared/button',
-              f: nil,
-              button_text: 'クリップボードにコピー',
-              id: 'btn-copy-order',
-              path: '#',
-              variant: 'tertiary',
-              full_mobile: true,
-              extra_class: 'w-full',
-              icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-              icon_class: 'inline-block',
-              wrapper_class: 'mt-0' %>
-      </div>
+    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
+      <%= render 'shared/button',
+            f: nil,
+            button_text: raw('<span class="hidden sm:inline">前回の順番決め</span><span class="inline sm:hidden">前回</span>'),
+            id: 'btn-prev-order',
+            path: '#',
+            variant: 'tertiary',
+            full_mobile: true,
+            full_width: true,
+            extra_class: 'w-full',
+            icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block',
+            wrapper_class: 'mt-0' %>
+      <%= render 'shared/button',
+            f: nil,
+            button_text: raw('<span class="hidden sm:inline">次回の順番決め</span><span class="inline sm:hidden">次回</span>'),
+            id: 'btn-next-order',
+            path: '#',
+            variant: 'tertiary',
+            full_mobile: true,
+            full_width: true,
+            extra_class: 'w-full',
+            icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block icon_right',
+            wrapper_class: 'mt-0' %>
+      <%= render 'shared/button',
+            f: nil,
+            button_text: 'クリップボードにコピー',
+            id: 'btn-copy-order',
+            path: '#',
+            variant: 'tertiary',
+            full_mobile: true,
+            full_width: true,
+            extra_class: 'w-full',
+            icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block',
+            wrapper_class: 'mt-0' %>
     </div>
   </div>
 
@@ -231,44 +222,43 @@
     </div>
 
     <%# 結果操作ボタン（tertiary） %>
-    <div class="mt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-      <div class="grid grid-cols-2 gap-2 md:min-w-[420px]">
-        <%= render 'shared/button',
-              f: nil,
-              button_text: raw('<span class="hidden sm:inline">前回の役割決め</span><span class="inline sm:hidden">前回</span>'),
-              id: 'btn-prev-roles',
-              path: '#',
-              variant: 'tertiary',
-              full_mobile: true,
-              extra_class: 'w-full',
-              icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-              icon_class: 'inline-block',
-              wrapper_class: 'mt-0' %>
-        <%= render 'shared/button',
-              f: nil,
-              button_text: raw('<span class="hidden sm:inline">次回の役割決め</span><span class="inline sm:hidden">次回</span>'),
-              id: 'btn-next-roles',
-              path: '#',
-              variant: 'tertiary',
-              full_mobile: true,
-              extra_class: 'w-full',
-              icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-              icon_class: 'inline-block icon_right',
-              wrapper_class: 'mt-0' %>
-      </div>
-      <div class="md:min-w-[250px]">
-        <%= render 'shared/button',
-              f: nil,
-              button_text: 'クリップボードにコピー',
-              id: 'btn-copy-roles',
-              path: '#',
-              variant: 'tertiary',
-              full_mobile: true,
-              extra_class: 'w-full',
-              icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-              icon_class: 'inline-block',
-              wrapper_class: 'mt-0' %>
-      </div>
+    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
+      <%= render 'shared/button',
+            f: nil,
+            button_text: raw('<span class="hidden sm:inline">前回の役割決め</span><span class="inline sm:hidden">前回</span>'),
+            id: 'btn-prev-roles',
+            path: '#',
+            variant: 'tertiary',
+            full_mobile: true,
+            full_width: true,
+            extra_class: 'w-full',
+            icon: 'icons/keyboard_double_arrow_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block',
+            wrapper_class: 'mt-0' %>
+      <%= render 'shared/button',
+            f: nil,
+            button_text: raw('<span class="hidden sm:inline">次回の役割決め</span><span class="inline sm:hidden">次回</span>'),
+            id: 'btn-next-roles',
+            path: '#',
+            variant: 'tertiary',
+            full_mobile: true,
+            full_width: true,
+            extra_class: 'w-full',
+            icon: 'icons/keyboard_double_arrow_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block icon_right',
+            wrapper_class: 'mt-0' %>
+      <%= render 'shared/button',
+            f: nil,
+            button_text: 'クリップボードにコピー',
+            id: 'btn-copy-roles',
+            path: '#',
+            variant: 'tertiary',
+            full_mobile: true,
+            full_width: true,
+            extra_class: 'w-full',
+            icon: 'icons/content_copy_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block',
+            wrapper_class: 'mt-0' %>
     </div>
   </div>
 
@@ -280,16 +270,17 @@
             rows: 3,
             class: "shuffly-textarea px-4 py-3 text-base focus:outline-none",
             placeholder: t("mypage.event_detail.memo_placeholder") %>
-      <div class="mt-3 flex justify-center">
+      <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
         <%= render 'shared/button',
               f: f,
               button_text: t("mypage.event_detail.save_memo"),
               variant: 'tertiary',
-              full_mobile: false,
-              extra_class: 'w-full sm:min-w-[380px]',
+              full_mobile: true,
+              full_width: true,
+              extra_class: 'w-full',
               icon: 'icons/edit_note_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
               icon_class: 'inline-block',
-              wrapper_class: 'mt-0' %>
+              wrapper_class: 'mt-0 md:col-start-2' %>
       </div>
     <% end %>
   </div>
@@ -297,31 +288,29 @@
   <%# エクスポートセクション %>
   <div class="shuffly-panel px-6 md:px-10 py-8 mt-6" data-page-reveal>
     <h2 class="text-xl font-semibold text-[var(--shuffly-text)] mb-4"><%= t("mypage.event_detail.export") %></h2>
-    <div class="grid grid-cols-1 gap-2 md:grid-cols-3">
-      <div>
-        <%= render 'shared/button',
-              button_text: "テキスト出力",
-              path: '#',
-              id: 'btn-export-current',
-              variant: 'primary',
-              full_mobile: true,
-              extra_class: 'w-full',
-              icon: 'icons/download_2_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-              icon_class: 'inline-block',
-              wrapper_class: 'mt-0' %>
-      </div>
-      <div>
-        <%= render 'shared/button',
-              button_text: "テキスト全履歴出力",
-              path: '#',
-              id: 'btn-export-all-history',
-              variant: 'tertiary',
-              full_mobile: true,
-              extra_class: 'w-full',
-              icon: 'icons/download_2_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
-              icon_class: 'inline-block',
-              wrapper_class: 'mt-0' %>
-      </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
+      <%= render 'shared/button',
+            button_text: "テキスト出力",
+            path: '#',
+            id: 'btn-export-current',
+            variant: 'primary',
+            full_mobile: true,
+            full_width: true,
+            extra_class: 'w-full',
+            icon: 'icons/download_2_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block',
+            wrapper_class: 'mt-0' %>
+      <%= render 'shared/button',
+            button_text: "テキスト全履歴出力",
+            path: '#',
+            id: 'btn-export-all-history',
+            variant: 'tertiary',
+            full_mobile: true,
+            full_width: true,
+            extra_class: 'w-full',
+            icon: 'icons/download_2_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
+            icon_class: 'inline-block',
+            wrapper_class: 'mt-0' %>
       <div class="relative w-full overflow-visible">
         <span class="shuffly-ribbon shuffly-ribbon-button">準備中</span>
         <%= render 'shared/button',
@@ -331,6 +320,7 @@
               is_button: true,
               disabled: true,
               full_mobile: true,
+              full_width: true,
               extra_class: 'w-full opacity-70 cursor-not-allowed',
               icon: 'icons/share_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
               icon_class: 'inline-block',
@@ -433,9 +423,9 @@
 
       // Update tab styles
       tabs.forEach(t => {
-        t.classList.remove('shuffly-results-tab-active');
+        t.classList.remove('shuffly-tab-active');
       });
-      this.classList.add('shuffly-results-tab-active');
+      this.classList.add('shuffly-tab-active');
 
       // Show target panel
       Object.values(panels).forEach(p => p.classList.add('hidden'));
@@ -724,9 +714,9 @@
       const tabEl = document.getElementById('tab-' + tab);
       if (tabEl) {
         if (tab === tabName) {
-          tabEl.classList.add('shuffly-results-tab-active');
+          tabEl.classList.add('shuffly-tab-active');
         } else {
-          tabEl.classList.remove('shuffly-results-tab-active');
+          tabEl.classList.remove('shuffly-tab-active');
         }
       }
     });

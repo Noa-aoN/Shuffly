@@ -13,6 +13,7 @@
   <!-- ========================================== -->
   <!-- タブナビゲーション                         -->
   <!-- ========================================== -->
+  <h3 class="shuffly-section-heading mb-2 font-semibold"><span class="shuffly-bullet">●</span> 決めたいこと</h3>
   <div class="mb-5">
     <%= render 'shared/tabs',
           tabs: [
@@ -285,7 +286,7 @@
 
   <!-- グループ分け実行ボタン -->
   <div id="settings-action-groups" class="mt-7">
-    <div class="mx-auto mb-3 grid max-w-[320px] grid-cols-1 gap-2">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3 w-full">
       <%= render 'shared/button',
         f: nil,
         button_text: 'グループ分け実行',
@@ -294,7 +295,7 @@
         variant: 'primary',
         full_mobile: false,
         full_width: true,
-        wrapper_class: '',
+        wrapper_class: 'md:col-start-2',
         extra_class: 'text-center px-6 py-3 rounded-xl shadow-sm w-full',
         icon: 'icons/play_arrow_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
         icon_class: 'inline-block' %>
@@ -303,7 +304,7 @@
 
   <!-- 順番決め実行ボタン -->
   <div id="settings-action-order" class="mt-7 hidden">
-    <div class="mx-auto mb-3 grid max-w-[320px] grid-cols-1 gap-2">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3 w-full">
       <%= render 'shared/button',
         f: nil,
         button_text: '順番決め実行',
@@ -312,7 +313,7 @@
         variant: 'primary',
         full_mobile: false,
         full_width: true,
-        wrapper_class: '',
+        wrapper_class: 'md:col-start-2',
         extra_class: 'text-center px-6 py-3 rounded-xl shadow-sm w-full',
         icon: 'icons/play_arrow_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
         icon_class: 'inline-block' %>
@@ -321,7 +322,7 @@
 
   <!-- 役割決め実行ボタン -->
   <div id="settings-action-roles" class="mt-7 hidden">
-    <div class="mx-auto mb-3 grid max-w-[320px] grid-cols-1 gap-2">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3 w-full">
       <%= render 'shared/button',
         f: nil,
         button_text: '役割決め実行',
@@ -330,7 +331,7 @@
         variant: 'primary',
         full_mobile: false,
         full_width: true,
-        wrapper_class: '',
+        wrapper_class: 'md:col-start-2',
         extra_class: 'text-center px-6 py-3 rounded-xl shadow-sm w-full',
         icon: 'icons/play_arrow_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg',
         icon_class: 'inline-block' %>

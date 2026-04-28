@@ -22,6 +22,7 @@
   <!-- ========================================== -->
   <!-- タブナビゲーション                         -->
   <!-- ========================================== -->
+  <h3 class="shuffly-section-heading mb-2 font-semibold"><span class="shuffly-bullet">●</span> 見たい結果</h3>
   <div class="mb-5">
     <%= render 'shared/tabs',
           tabs: [
@@ -39,7 +40,7 @@
     <h3 class="shuffly-section-heading mb-2 font-semibold"><span class="shuffly-bullet">●</span> グループの結果</h3>
 
     <!-- 結果出力エリア -->
-    <textarea id="groupOutput" rows="10" readonly class="shuffly-output rounded-xl px-3 py-2 w-full mb-3 text-lg"></textarea>
+    <textarea id="groupOutput" rows="10" readonly class="shuffly-output rounded-xl px-3 py-2 w-full mb-3 text-lg" data-controller="textarea-meter"></textarea>
 
     <div class="mb-6 flex flex-col gap-3">
       <!-- グループ表示オプション（折りたたみ可能） -->
@@ -167,7 +168,7 @@
     <h3 class="shuffly-section-heading mb-2 font-semibold"><span class="shuffly-bullet">●</span> 順番の結果</h3>
 
     <!-- 結果出力エリア -->
-    <textarea id="orderOutput" rows="10" readonly class="shuffly-output rounded-xl px-3 py-2 w-full text-lg mb-4"></textarea>
+    <textarea id="orderOutput" rows="10" readonly class="shuffly-output rounded-xl px-3 py-2 w-full text-lg mb-4" data-controller="textarea-meter"></textarea>
 
     <!-- 回次表示インジケーター -->
     <div id="orderRoundHint" class="shuffly-indicator shuffly-indicator--warning text-base mt-1 mb-5 rounded-xl px-4 py-2">
@@ -233,7 +234,7 @@
     <h3 class="shuffly-section-heading mb-2 font-semibold"><span class="shuffly-bullet">●</span> 役割の結果</h3>
 
     <!-- 結果出力エリア -->
-    <textarea id="rolesOutput" rows="10" readonly class="shuffly-output rounded-xl px-3 py-2 w-full text-lg mb-4"></textarea>
+    <textarea id="rolesOutput" rows="10" readonly class="shuffly-output rounded-xl px-3 py-2 w-full text-lg mb-4" data-controller="textarea-meter"></textarea>
 
     <!-- 回次表示インジケーター -->
     <div id="rolesRoundHint" class="shuffly-indicator shuffly-indicator--warning text-base mt-1 mb-5 rounded-xl px-4 py-2">
@@ -290,5 +291,23 @@
               icon_class: 'inline-block' %>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- 結果拡大表示モーダル                       -->
+<!-- ========================================== -->
+<div id="results-expand-modal" class="results-expand-modal hidden fixed inset-0 z-[80] items-center justify-center px-4" role="dialog" aria-modal="true" aria-labelledby="results-expand-title">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" data-results-expand-close></div>
+  <div class="results-expand-modal-panel relative z-10 w-full max-w-3xl rounded-[28px] border border-[var(--shuffly-border)] bg-[rgba(255,255,255,0.97)] px-6 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
+    <div class="flex items-start justify-between gap-4 mb-3">
+      <h3 id="results-expand-title" class="text-xl font-bold text-[var(--shuffly-text)]">結果を拡大表示</h3>
+      <button type="button" class="lp-modal-close" data-results-expand-close aria-label="閉じる">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <pre id="results-expand-body" class="results-expand-body whitespace-pre-wrap break-words"></pre>
   </div>
 </div>
